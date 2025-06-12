@@ -23,6 +23,15 @@ CREATE INDEX IF NOT EXISTS idx_client_statistics_professional_id ON client_stati
 CREATE INDEX IF NOT EXISTS idx_client_statistics_session_date ON client_statistics(session_date);
 CREATE INDEX IF NOT EXISTS idx_client_statistics_client_identifier ON client_statistics(client_identifier);
 
+-- Grant necessary permissions to authenticated role
+GRANT SELECT ON TABLE public.professionals TO authenticated;
+GRANT INSERT ON TABLE public.professionals TO authenticated;
+GRANT UPDATE ON TABLE public.professionals TO authenticated;
+GRANT SELECT ON TABLE public.client_statistics TO authenticated;
+GRANT INSERT ON TABLE public.client_statistics TO authenticated;
+GRANT UPDATE ON TABLE public.client_statistics TO authenticated;
+GRANT DELETE ON TABLE public.client_statistics TO authenticated;
+
 -- Enable Row Level Security (RLS)
 ALTER TABLE professionals ENABLE ROW LEVEL SECURITY;
 ALTER TABLE client_statistics ENABLE ROW LEVEL SECURITY;
@@ -34,6 +43,9 @@ CREATE POLICY "Professionals can view own data" ON professionals
 
 CREATE POLICY "Professionals can update own data" ON professionals
     FOR UPDATE USING (auth.uid() = id);
+
+CREATE POLICY "Professionals can insert own data" ON professionals
+    FOR INSERT WITH CHECK (auth.uid() = id);
 
 -- RLS Policies for client_statistics table
 -- Professionals can only access statistics linked to their account

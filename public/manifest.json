@@ -1,0 +1,17 @@
+
+{
+  "name": "Bilişsel Egzersiz Uygulaması",
+  "short_name": "Bilişsel Egzersiz",
+  "description": "Ruh sağlığı uzmanları için bilişsel egzersiz ve analiz platformu",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#3b82f6",
+  "icons": [
+    {
+      "src": "/favicon.ico",
+      "sizes": "any",
+      "type": "image/x-icon"
+    }
+  ]
+}

@@ -64,7 +64,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
     const { data, error } = await supabase
       .from('professionals')
-      .select('*')
+      .select('id,email,display_name,created_at')
       .eq('id', userId)
       .single()
 
@@ -84,6 +84,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const { data, error } = await supabase.auth.signUp({
       email,
       password,
+      options: {
+        data: {
+          display_name: displayName
+        }
+      }
     })
 
     if (error) {
@@ -92,22 +97,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
 
     if (data.user) {
-      // Create professional profile
-      const { error: profileError } = await supabase
-        .from('professionals')
-        .insert([
-          {
-            id: data.user.id,
-            email: email,
-            display_name: displayName,
-          }
-        ])
-
-      if (profileError) {
-        toast.error(`Profil oluşturma hatası: ${profileError.message}`)
-        throw profileError
-      }
-
       toast.success('Hesap başarıyla oluşturuldu!')
     }
   }
