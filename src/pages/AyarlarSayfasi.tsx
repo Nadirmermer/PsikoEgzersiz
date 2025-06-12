@@ -23,6 +23,11 @@ const AyarlarSayfasi: React.FC = () => {
     return localStorage.getItem('dyslexic-mode') === 'true'
   })
 
+  // Font boyutu için state
+  const [fontSize, setFontSize] = useState(() => {
+    return localStorage.getItem('font-size') || 'normal'
+  })
+
   // Uzman giriş form states
   const [isLoginMode, setIsLoginMode] = useState(true)
   const [email, setEmail] = useState('')
@@ -53,6 +58,28 @@ const AyarlarSayfasi: React.FC = () => {
       document.documentElement.classList.remove('dyslexic-mode')
       toast.success('Disleksi okuma modu kapatıldı')
     }
+  }
+
+  const handleFontSizeChange = (size: string) => {
+    setFontSize(size)
+    localStorage.setItem('font-size', size)
+    
+    // Mevcut font size class'larını temizle
+    document.documentElement.classList.remove('font-small', 'font-normal', 'font-large', 'font-extra-large')
+    
+    // Yeni font size class'ını ekle
+    if (size !== 'normal') {
+      document.documentElement.classList.add(`font-${size}`)
+    }
+    
+    const sizeLabels = {
+      'small': 'Küçük',
+      'normal': 'Normal',
+      'large': 'Büyük',
+      'extra-large': 'Çok Büyük'
+    }
+    
+    toast.success(`Font boyutu: ${sizeLabels[size as keyof typeof sizeLabels]}`)
   }
 
   const handleUzmanAuth = async (e: React.FormEvent) => {
@@ -198,8 +225,15 @@ const AyarlarSayfasi: React.FC = () => {
 
   React.useEffect(() => {
     // Sayfa yüklendiğinde disleksi modunu kontrol et
-    if (isDyslexicMode) {
+    const isDyslexicEnabled = localStorage.getItem('dyslexic-mode') === 'true'
+    if (isDyslexicEnabled) {
       document.documentElement.classList.add('dyslexic-mode')
+    }
+
+    // Sayfa yüklendiğinde font boyutunu kontrol et
+    const savedFontSize = localStorage.getItem('font-size') || 'normal'
+    if (savedFontSize !== 'normal') {
+      document.documentElement.classList.add(`font-${savedFontSize}`)
     }
   }, [])
 
@@ -272,19 +306,21 @@ const AyarlarSayfasi: React.FC = () => {
 
             <Separator />
 
-            {/* Disleksi Okuma Modu */}
-            <div className="space-y-3">
+            {/* Erişilebilirlik Ayarları */}
+            <div className="space-y-4">
               <Label className="text-base font-medium flex items-center gap-2">
                 <Eye className="w-4 h-4" />
                 Erişilebilirlik
               </Label>
+              
+              {/* Disleksi Okuma Modu */}
               <div className="flex items-center justify-between p-3 rounded-lg border">
                 <div className="space-y-1">
                   <Label htmlFor="dyslexic-mode" className="text-sm font-medium">
                     Disleksi Okuma Modu
                   </Label>
                   <p className="text-xs text-muted-foreground">
-                    Okumayı kolaylaştıran font ve boşluklar
+                    Disleksi dostu fontlar, geniş satır aralıkları ve yüksek kontrast
                   </p>
                 </div>
                 <Switch
@@ -292,6 +328,44 @@ const AyarlarSayfasi: React.FC = () => {
                   checked={isDyslexicMode}
                   onCheckedChange={handleDyslexicModeToggle}
                 />
+              </div>
+
+              {/* Font Boyutu Ayarı */}
+              <div className="space-y-3">
+                <Label className="text-sm font-medium">Font Boyutu</Label>
+                <RadioGroup 
+                  value={fontSize} 
+                  onValueChange={handleFontSizeChange}
+                  className="grid grid-cols-2 gap-2"
+                >
+                  <div className="flex items-center space-x-2 p-2 rounded-lg border hover:bg-accent/50 transition-colors">
+                    <RadioGroupItem value="small" id="font-small" />
+                    <Label htmlFor="font-small" className="flex-1 cursor-pointer text-xs">
+                      Küçük
+                    </Label>
+                  </div>
+                  <div className="flex items-center space-x-2 p-2 rounded-lg border hover:bg-accent/50 transition-colors">
+                    <RadioGroupItem value="normal" id="font-normal" />
+                    <Label htmlFor="font-normal" className="flex-1 cursor-pointer text-sm">
+                      Normal
+                    </Label>
+                  </div>
+                  <div className="flex items-center space-x-2 p-2 rounded-lg border hover:bg-accent/50 transition-colors">
+                    <RadioGroupItem value="large" id="font-large" />
+                    <Label htmlFor="font-large" className="flex-1 cursor-pointer text-base">
+                      Büyük
+                    </Label>
+                  </div>
+                  <div className="flex items-center space-x-2 p-2 rounded-lg border hover:bg-accent/50 transition-colors">
+                    <RadioGroupItem value="extra-large" id="font-extra-large" />
+                    <Label htmlFor="font-extra-large" className="flex-1 cursor-pointer text-lg">
+                      Çok Büyük
+                    </Label>
+                  </div>
+                </RadioGroup>
+                <p className="text-xs text-muted-foreground">
+                  Tüm uygulama için font boyutunu ayarlayın
+                </p>
               </div>
             </div>
           </CardContent>

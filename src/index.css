@@ -1,3 +1,6 @@
+/* Disleksi Dostu Font Tanımları - Google Fonts'tan Lexend */
+@import url('https://fonts.googleapis.com/css2?family=Lexend:wght@300;400;500;600;700&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -217,6 +220,215 @@
   /* Remove default focus styles when focus-visible is supported */
   *:focus:not(:focus-visible) {
     outline: none;
+  }
+
+  /* Disleksi Okuma Modu Stilleri */
+  .dyslexic-mode,
+  .dyslexic-mode * {
+    font-family: 'Lexend', 'Comic Sans MS', 'Trebuchet MS', 'Verdana', 'Arial', sans-serif !important;
+    line-height: 1.6 !important;
+    letter-spacing: 0.08em !important;
+    word-spacing: 0.12em !important;
+    font-weight: 400 !important;
+  }
+
+  /* Sadece metin elementleri için hafif büyütme */
+  .dyslexic-mode p,
+  .dyslexic-mode span,
+  .dyslexic-mode div:not([class*="w-"]):not([class*="h-"]) {
+    font-size: 1.05em !important;
+  }
+
+  /* Başlıklar için normal boyut */
+  .dyslexic-mode h1,
+  .dyslexic-mode h2,
+  .dyslexic-mode h3,
+  .dyslexic-mode h4,
+  .dyslexic-mode h5,
+  .dyslexic-mode h6 {
+    font-size: inherit !important;
+  }
+
+  /* Buton ve form elementleri normal boyut */
+  .dyslexic-mode button,
+  .dyslexic-mode input,
+  .dyslexic-mode select,
+  .dyslexic-mode textarea {
+    font-size: inherit !important;
+  }
+
+  .dyslexic-mode {
+    /* Daha yüksek kontrast ve disleksi dostu renkler */
+    --background: 45 100% 96%; /* Hafif sarımsı beyaz */
+    --foreground: 0 0% 10%; /* Koyu gri (siyah değil) */
+    --muted-foreground: 0 0% 30%;
+    
+    /* Disleksi dostu renkler */
+    --primary: 210 100% 40%; /* Koyu mavi */
+    --secondary: 45 100% 92%; /* Açık sarı */
+    --border: 214.3 31.8% 80%;
+    
+    /* Daha yumuşak geçişler */
+    transition: all 0.3s ease !important;
+  }
+
+  .dyslexic-mode.dark {
+    /* Dark mode için özel ayarlar */
+    --background: 0 0% 8%;
+    --foreground: 0 0% 95%;
+    --muted-foreground: 0 0% 75%;
+    
+    --primary: 210 100% 60%;
+    --secondary: 210 40% 15%;
+    --border: 214.3 31.8% 20%;
+  }
+
+  /* Disleksi modu için özel metin stilleri */
+  .dyslexic-mode h1,
+  .dyslexic-mode h2,
+  .dyslexic-mode h3,
+  .dyslexic-mode h4,
+  .dyslexic-mode h5,
+  .dyslexic-mode h6 {
+    font-weight: 700 !important;
+    margin-bottom: 1rem !important;
+  }
+
+  .dyslexic-mode p {
+    margin-bottom: 1rem !important;
+    text-align: left !important;
+  }
+
+  /* Butonlar ve interaktif elementler için özel stiller */
+  .dyslexic-mode button,
+  .dyslexic-mode .btn,
+  .dyslexic-mode input,
+  .dyslexic-mode textarea,
+  .dyslexic-mode select {
+    font-size: 1.1em !important;
+    padding: 0.75rem 1rem !important;
+    border-radius: 0.5rem !important;
+    border: 2px solid hsl(var(--border)) !important;
+  }
+
+  /* Kartlar ve paneller için daha belirgin kenarlıklar */
+  .dyslexic-mode .card,
+  .dyslexic-mode [class*="card"] {
+    border: 2px solid hsl(var(--border)) !important;
+    border-radius: 1rem !important;
+    padding: 1.5rem !important;
+  }
+
+  /* Linkler için daha belirgin stiller */
+  .dyslexic-mode a {
+    text-decoration: underline !important;
+    text-decoration-thickness: 2px !important;
+    text-underline-offset: 4px !important;
+    color: hsl(var(--primary)) !important;
+  }
+
+  .dyslexic-mode a:hover {
+    text-decoration-thickness: 3px !important;
+    background-color: hsl(var(--primary) / 0.1) !important;
+    padding: 2px 4px !important;
+    border-radius: 4px !important;
+  }
+
+  /* Liste elementleri için daha iyi spacing */
+  .dyslexic-mode ul,
+  .dyslexic-mode ol {
+    margin-left: 2rem !important;
+    margin-bottom: 1rem !important;
+  }
+
+  .dyslexic-mode li {
+    margin-bottom: 0.5rem !important;
+    line-height: 2 !important;
+  }
+
+  /* Tablo stilleri */
+  .dyslexic-mode table {
+    border-collapse: separate !important;
+    border-spacing: 0 !important;
+    border: 2px solid hsl(var(--border)) !important;
+    border-radius: 0.5rem !important;
+  }
+
+  .dyslexic-mode th,
+  .dyslexic-mode td {
+    padding: 1rem !important;
+    border-bottom: 1px solid hsl(var(--border)) !important;
+    text-align: left !important;
+  }
+
+  .dyslexic-mode th {
+    background-color: hsl(var(--secondary)) !important;
+    font-weight: 700 !important;
+  }
+
+  /* Form elementleri için özel focus stilleri */
+  .dyslexic-mode input:focus,
+  .dyslexic-mode textarea:focus,
+  .dyslexic-mode select:focus {
+    outline: 3px solid hsl(var(--primary)) !important;
+    outline-offset: 2px !important;
+    border-color: hsl(var(--primary)) !important;
+  }
+
+  /* Egzersiz kartları için özel stiller */
+  .dyslexic-mode .exercise-card,
+  .dyslexic-mode .card,
+  .dyslexic-mode [class*="card"] {
+    border: 3px solid hsl(var(--primary) / 0.4) !important;
+    background: hsl(var(--background)) !important;
+    box-shadow: 0 6px 16px hsl(var(--primary) / 0.15) !important;
+    border-radius: 1rem !important;
+    padding: 1.5rem !important;
+  }
+
+  .dyslexic-mode .exercise-card:hover,
+  .dyslexic-mode .card:hover,
+  .dyslexic-mode [class*="card"]:hover {
+    border-color: hsl(var(--primary)) !important;
+    transform: translateY(-3px) !important;
+    box-shadow: 0 12px 32px hsl(var(--primary) / 0.25) !important;
+  }
+
+  /* Butonlar için daha belirgin stiller */
+  .dyslexic-mode button,
+  .dyslexic-mode .btn {
+    font-weight: 600 !important;
+    min-height: 44px !important; /* Touch target minimum */
+    border-radius: 0.75rem !important;
+    transition: all 0.2s ease !important;
+  }
+
+  .dyslexic-mode button:hover,
+  .dyslexic-mode .btn:hover {
+    transform: translateY(-1px) !important;
+    box-shadow: 0 4px 12px hsl(var(--primary) / 0.3) !important;
+  }
+
+  /* İkonlar için daha büyük boyutlar */
+  .dyslexic-mode svg,
+  .dyslexic-mode .icon {
+    width: 1.5em !important;
+    height: 1.5em !important;
+  }
+
+  /* Navigasyon için özel stiller */
+  .dyslexic-mode nav,
+  .dyslexic-mode .navigation {
+    border: 2px solid hsl(var(--border)) !important;
+    background: hsl(var(--background)) !important;
+  }
+
+  /* Daha belirgin focus stilleri */
+  .dyslexic-mode *:focus,
+  .dyslexic-mode *:focus-visible {
+    outline: 4px solid hsl(var(--primary)) !important;
+    outline-offset: 3px !important;
+    border-radius: 0.5rem !important;
   }
 }
 
@@ -597,3 +809,72 @@
   outline: 3px solid hsl(var(--focus-ring)) !important;
   outline-offset: 3px !important;
 }
+
+/* Font Boyutu Ayarları */
+.font-small {
+  font-size: 0.875rem !important; /* 14px */
+}
+
+.font-small h1 { font-size: 1.5rem !important; }
+.font-small h2 { font-size: 1.25rem !important; }
+.font-small h3 { font-size: 1.125rem !important; }
+.font-small h4 { font-size: 1rem !important; }
+.font-small h5 { font-size: 0.875rem !important; }
+.font-small h6 { font-size: 0.75rem !important; }
+
+.font-large {
+  font-size: 1.125rem !important; /* 18px */
+}
+
+.font-large h1 { font-size: 2.5rem !important; }
+.font-large h2 { font-size: 2rem !important; }
+.font-large h3 { font-size: 1.75rem !important; }
+.font-large h4 { font-size: 1.5rem !important; }
+.font-large h5 { font-size: 1.25rem !important; }
+.font-large h6 { font-size: 1.125rem !important; }
+
+.font-extra-large {
+  font-size: 1.25rem !important; /* 20px */
+}
+
+.font-extra-large h1 { font-size: 3rem !important; }
+.font-extra-large h2 { font-size: 2.5rem !important; }
+.font-extra-large h3 { font-size: 2rem !important; }
+.font-extra-large h4 { font-size: 1.75rem !important; }
+.font-extra-large h5 { font-size: 1.5rem !important; }
+.font-extra-large h6 { font-size: 1.25rem !important; }
+
+/* Buton ve input elementleri için font boyutu ayarları */
+.font-small button,
+.font-small input,
+.font-small select,
+.font-small textarea,
+.font-small .btn {
+  font-size: 0.875rem !important;
+}
+
+.font-large button,
+.font-large input,
+.font-large select,
+.font-large textarea,
+.font-large .btn {
+  font-size: 1.125rem !important;
+}
+
+.font-extra-large button,
+.font-extra-large input,
+.font-extra-large select,
+.font-extra-large textarea,
+.font-extra-large .btn {
+  font-size: 1.25rem !important;
+}
+
+/* Kart ve diğer UI elementleri için font boyutu ayarları */
+.font-small .card-title { font-size: 1rem !important; }
+.font-small .card-description { font-size: 0.75rem !important; }
+
+.font-large .card-title { font-size: 1.5rem !important; }
+.font-large .card-description { font-size: 1rem !important; }
+
+.font-extra-large .card-title { font-size: 1.75rem !important; }
+.font-extra-large .card-description { font-size: 1.125rem !important; }
