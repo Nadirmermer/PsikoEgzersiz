@@ -5,13 +5,19 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Progress } from '@/components/ui/progress'
 import { LocalStorageManager, MEMORY_GAME_LEVELS } from '../utils/localStorage'
-import { Brain, Target, Puzzle, Settings, Play, Clock, Trophy, CheckCircle, Star, Award, Zap } from 'lucide-react'
+import { Brain, Target, Puzzle, Settings, Play, Clock, Trophy, CheckCircle, Star, Award, Zap, ArrowRightLeft, Eye } from 'lucide-react'
 
 interface EgzersizlerSayfasiProps {
   onMemoryGameStart: () => void
+  onImageWordMatchingStart: () => void
+  onWordImageMatchingStart: () => void
 }
 
-const EgzersizlerSayfasi: React.FC<EgzersizlerSayfasiProps> = ({ onMemoryGameStart }) => {
+const EgzersizlerSayfasi: React.FC<EgzersizlerSayfasiProps> = ({ 
+  onMemoryGameStart, 
+  onImageWordMatchingStart,
+  onWordImageMatchingStart 
+}) => {
   const currentLevel = LocalStorageManager.getCurrentMemoryGameLevel()
   const currentLevelData = MEMORY_GAME_LEVELS[currentLevel - 1] || MEMORY_GAME_LEVELS[0]
   const progressPercentage = ((currentLevel - 1) / MEMORY_GAME_LEVELS.length) * 100
@@ -36,12 +42,38 @@ const EgzersizlerSayfasi: React.FC<EgzersizlerSayfasiProps> = ({ onMemoryGameSta
       highlights: ['4 Zorluk Seviyesi', 'Otomatik İlerleme', 'Detaylı Analiz']
     },
     {
-      title: 'Dikkat Egzersizleri',
-      description: 'Odaklanma ve dikkat sürenizi artırın',
-      icon: Target,
+      title: 'Resim-Kelime Eşleştirme',
+      description: 'Görseli karşılık gelen kelimeyle eşleştirin',
+      icon: Eye,
+      iconColor: 'text-primary',
+      bgGradient: 'bg-gradient-to-br from-primary/5 via-primary/10 to-primary/15',
+      borderColor: 'border-primary/20',
+      exercises: ['Emoji-Kelime', 'Görsel Tanıma', 'Kategori Eşleştirme'],
+      available: true,
+      onStart: onImageWordMatchingStart,
+      currentProgress: '15 Soru - Karışık Kategoriler',
+      highlights: ['10 Farklı Kategori', 'Akıllı Çeldiriciler', 'Hızlı Değerlendirme']
+    },
+    {
+      title: 'Kelime-Resim Eşleştirme',
+      description: 'Kelimeyi karşılık gelen görselle eşleştirin',
+      icon: ArrowRightLeft,
       iconColor: 'text-emerald-600 dark:text-emerald-400',
       bgGradient: 'bg-gradient-to-br from-emerald-50 via-green-50 to-teal-100 dark:from-emerald-950/40 dark:via-green-900/30 dark:to-teal-900/40',
       borderColor: 'border-emerald-200/60 dark:border-emerald-800/60',
+      exercises: ['Kelime-Emoji', 'Anlam Eşleştirme', 'Dil Becerileri'],
+      available: true,
+      onStart: onWordImageMatchingStart,
+      currentProgress: '15 Soru - Karışık Kategoriler',
+      highlights: ['Görsel İfade', 'Kelime Dağarcığı', 'Anlık Geri Bildirim']
+    },
+    {
+      title: 'Dikkat Egzersizleri',
+      description: 'Odaklanma ve dikkat sürenizi artırın',
+      icon: Target,
+      iconColor: 'text-violet-600 dark:text-violet-400',
+      bgGradient: 'bg-gradient-to-br from-violet-50 via-purple-50 to-fuchsia-100 dark:from-violet-950/40 dark:via-purple-900/30 dark:to-fuchsia-900/40',
+      borderColor: 'border-violet-200/60 dark:border-violet-800/60',
       exercises: ['Stroop Testi', 'Görsel Arama', 'Sürekli Performans'],
       available: false,
       comingSoon: true,
@@ -51,9 +83,9 @@ const EgzersizlerSayfasi: React.FC<EgzersizlerSayfasiProps> = ({ onMemoryGameSta
       title: 'Problem Çözme',
       description: 'Mantıksal düşünme ve problem çözme becerilerinizi geliştirin',
       icon: Puzzle,
-      iconColor: 'text-violet-600 dark:text-violet-400',
-      bgGradient: 'bg-gradient-to-br from-violet-50 via-purple-50 to-fuchsia-100 dark:from-violet-950/40 dark:via-purple-900/30 dark:to-fuchsia-900/40',
-      borderColor: 'border-violet-200/60 dark:border-violet-800/60',
+      iconColor: 'text-amber-600 dark:text-amber-400',
+      bgGradient: 'bg-gradient-to-br from-amber-50 via-orange-50 to-yellow-100 dark:from-amber-950/40 dark:via-orange-900/30 dark:to-yellow-900/40',
+      borderColor: 'border-amber-200/60 dark:border-amber-800/60',
       exercises: ['Matematik Problemleri', 'Mantık Bulmacaları', 'Planlama Görevleri'],
       available: false,
       comingSoon: true,
@@ -63,9 +95,9 @@ const EgzersizlerSayfasi: React.FC<EgzersizlerSayfasiProps> = ({ onMemoryGameSta
       title: 'Yürütücü Fonksiyonlar',
       description: 'Planlama, organizasyon ve karar verme becerilerinizi güçlendirin',
       icon: Settings,
-      iconColor: 'text-amber-600 dark:text-amber-400',
-      bgGradient: 'bg-gradient-to-br from-amber-50 via-orange-50 to-yellow-100 dark:from-amber-950/40 dark:via-orange-900/30 dark:to-yellow-900/40',
-      borderColor: 'border-amber-200/60 dark:border-amber-800/60',
+      iconColor: 'text-orange-600 dark:text-orange-400',
+      bgGradient: 'bg-gradient-to-br from-orange-50 via-red-50 to-pink-100 dark:from-orange-950/40 dark:via-red-900/30 dark:to-pink-900/40',
+      borderColor: 'border-orange-200/60 dark:border-orange-800/60',
       exercises: ['Görev Değiştirme', 'Çalışma Hafızası', 'İnhibisyon Kontrolü'],
       available: false,
       comingSoon: true,
@@ -97,7 +129,7 @@ const EgzersizlerSayfasi: React.FC<EgzersizlerSayfasiProps> = ({ onMemoryGameSta
         <div className="flex items-center justify-center gap-8 mt-8 text-sm">
           <div className="flex items-center gap-2 text-muted-foreground">
             <CheckCircle className="w-4 h-4 text-success" />
-            <span>1 Aktif Egzersiz</span>
+            <span>3 Aktif Egzersiz</span>
           </div>
           <div className="flex items-center gap-2 text-muted-foreground">
             <Clock className="w-4 h-4 text-warning" />
@@ -114,7 +146,6 @@ const EgzersizlerSayfasi: React.FC<EgzersizlerSayfasiProps> = ({ onMemoryGameSta
       <div className="grid gap-8 lg:grid-cols-2 content-spacing mb-12">
         {exerciseCategories.map((category, index) => {
           const IconComponent = category.icon;
-          const isMemoryGame = category.available;
           
           return (
             <Card 
@@ -160,7 +191,7 @@ const EgzersizlerSayfasi: React.FC<EgzersizlerSayfasiProps> = ({ onMemoryGameSta
                 </div>
                 
                 {/* Progress Section for Active Exercises */}
-                {isMemoryGame && category.stats && (
+                {category.available && category.stats && (
                   <div className="bg-background/70 backdrop-blur-sm rounded-xl p-5 border border-border/30 shadow-sm">
                     <div className="flex items-center justify-between mb-3">
                       <span className="text-sm font-semibold text-muted-foreground flex items-center gap-2">
@@ -184,6 +215,27 @@ const EgzersizlerSayfasi: React.FC<EgzersizlerSayfasiProps> = ({ onMemoryGameSta
                       </span>
                       <span className="text-primary font-semibold">
                         %{category.stats.percentage.toFixed(0)} Tamamlandı
+                      </span>
+                    </div>
+                  </div>
+                )}
+
+                {/* Progress Section for New Matching Exercises */}
+                {category.available && !category.stats && (
+                  <div className="bg-background/70 backdrop-blur-sm rounded-xl p-5 border border-border/30 shadow-sm">
+                    <div className="flex items-center justify-between mb-3">
+                      <span className="text-sm font-semibold text-muted-foreground flex items-center gap-2">
+                        <Trophy className="w-4 h-4" />
+                        Egzersiz Bilgileri
+                      </span>
+                      <Badge variant="outline" className="text-primary border-primary/30 bg-primary/10">
+                        Yeni!
+                      </Badge>
+                    </div>
+                    
+                    <div className="text-sm">
+                      <span className="text-muted-foreground font-medium">
+                        {category.currentProgress}
                       </span>
                     </div>
                   </div>
@@ -265,19 +317,19 @@ const EgzersizlerSayfasi: React.FC<EgzersizlerSayfasiProps> = ({ onMemoryGameSta
         <CardHeader className="relative">
           <div className="flex items-start gap-4 mb-4">
             <div className="p-3 bg-primary/10 rounded-xl shadow-sm">
-              <Trophy className="w-8 h-8 text-primary" />
+              <ArrowRightLeft className="w-8 h-8 text-primary" />
             </div>
             <div className="flex-1">
               <CardTitle className="text-2xl text-primary mb-2 flex items-center gap-3">
-                🎮 Hafıza Oyunu - İlerlemeli Seviye Sistemi
+                🎯 Yeni Eşleştirme Egzersizleri
                 <Badge className="bg-primary/10 text-primary border-primary/20 text-sm px-3 py-1">
                   <Award className="w-3 h-3 mr-1" />
                   Yeni
                 </Badge>
               </CardTitle>
               <CardDescription className="text-base leading-relaxed">
-                Hafıza oyunu artık 4 farklı zorluk seviyesine sahip. Her seviyeyi başarıyla tamamladığınızda 
-                otomatik olarak bir sonrakine geçeceksiniz.
+                Resim-Kelime ve Kelime-Resim eşleştirme egzersizleri artık mevcut! 
+                10 farklı kategoriden kelime ve emojilerle bilişsel becerilerinizi geliştirin.
               </CardDescription>
             </div>
           </div>
@@ -287,18 +339,19 @@ const EgzersizlerSayfasi: React.FC<EgzersizlerSayfasiProps> = ({ onMemoryGameSta
           <div className="grid md:grid-cols-2 gap-8">
             <div>
               <h4 className="font-bold mb-4 text-primary flex items-center gap-2">
-                <Star className="w-5 h-5" />
-                Seviye Detayları
+                <Eye className="w-5 h-5" />
+                Egzersiz Özellikleri
               </h4>
               <div className="space-y-3">
-                {MEMORY_GAME_LEVELS.map((level, index) => (
-                  <div key={index} className="flex items-center gap-3 p-3 rounded-lg bg-background/50 border border-border/30">
-                    <div className={`w-3 h-3 rounded-full ${index < currentLevel - 1 ? 'bg-success' : index === currentLevel - 1 ? 'bg-primary' : 'bg-muted'}`} />
-                    <span className={`text-sm ${index < currentLevel ? 'font-semibold' : 'text-muted-foreground'}`}>
-                      Seviye {index + 1}: {level.name} ({level.gridSize.rows}×{level.gridSize.cols} grid)
-                    </span>
-                    {index < currentLevel - 1 && <CheckCircle className="w-4 h-4 text-success ml-auto" />}
-                    {index === currentLevel - 1 && <Play className="w-4 h-4 text-primary ml-auto" />}
+                {[
+                  'Her seansta 15 rastgele soru',
+                  '10 farklı kategori (Hayvanlar, Yiyecekler, Renkler...)',
+                  'Akıllı çeldirici sistem (kategoriler karışmaz)',
+                  'Detaylı performans analizi ve istatistikler'
+                ].map((feature, index) => (
+                  <div key={index} className="flex items-center gap-3 text-sm">
+                    <CheckCircle className="w-5 h-5 text-success flex-shrink-0" />
+                    <span>{feature}</span>
                   </div>
                 ))}
               </div>
@@ -307,18 +360,18 @@ const EgzersizlerSayfasi: React.FC<EgzersizlerSayfasiProps> = ({ onMemoryGameSta
             <div>
               <h4 className="font-bold mb-4 text-primary flex items-center gap-2">
                 <Zap className="w-5 h-5" />
-                Özellikler
+                Bilişsel Faydalar
               </h4>
               <div className="space-y-3">
                 {[
-                  'Her seviye başında kartları inceleme süresi',
-                  'Detaylı performans takibi ve analiz',
-                  'Otomatik seviye ilerlemesi sistemi',
-                  'Kapsamlı istatistik ve gelişim raporları'
-                ].map((feature, index) => (
+                  'Görsel-dilsel bağlantı kurma',
+                  'Kelime dağarcığı geliştirme',
+                  'Hızlı karar verme becerisi',
+                  'Kategori tanıma ve sınıflandırma'
+                ].map((benefit, index) => (
                   <div key={index} className="flex items-center gap-3 text-sm">
-                    <CheckCircle className="w-5 h-5 text-success flex-shrink-0" />
-                    <span>{feature}</span>
+                    <Star className="w-5 h-5 text-primary flex-shrink-0" />
+                    <span>{benefit}</span>
                   </div>
                 ))}
               </div>

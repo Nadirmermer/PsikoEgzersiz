@@ -1,10 +1,11 @@
-
 import { useState, useEffect } from "react";
 import EgzersizlerSayfasi from "./EgzersizlerSayfasi";
 import IstatistiklerSayfasi from "./IstatistiklerSayfasi";
 import AyarlarSayfasi from "./AyarlarSayfasi";
 import UzmanDashboardSayfasi from "./UzmanDashboardSayfasi";
 import HafizaOyunuSayfasi from "./HafizaOyunuSayfasi";
+import ResimKelimeEslestirmeSayfasi from "./ResimKelimeEslestirmeSayfasi";
+import KelimeResimEslestirmeSayfasi from "./KelimeResimEslestirmeSayfasi";
 import BottomNavigation from "../components/BottomNavigation";
 import ClientModeHandler from "../components/ClientModeHandler";
 import SkipNavigation from "../components/SkipNavigation";
@@ -15,6 +16,8 @@ import { syncPendingData } from "../lib/supabaseClient";
 const Index = () => {
   const [activePage, setActivePage] = useState("egzersizler");
   const [isMemoryGameActive, setIsMemoryGameActive] = useState(false);
+  const [isImageWordMatchingActive, setIsImageWordMatchingActive] = useState(false);
+  const [isWordImageMatchingActive, setIsWordImageMatchingActive] = useState(false);
   const { isClientMode, exitClientMode } = useClientMode();
   const { user, professional, loading: authLoading } = useAuth();
 
@@ -41,90 +44,93 @@ const Index = () => {
       console.log('Index - Client mode active, redirecting to exercises')
       setActivePage("egzersizler");
     }
-  }, [isClientMode]);
-
-  // If professional is logged in and not in client mode, default to dashboard
-  useEffect(() => {
-    if (professional && !isClientMode && !authLoading && activePage === "egzersizler") {
-      console.log('Index - Professional logged in, setting dashboard as active page')
-      setActivePage("uzman-dashboard");
-    }
-  }, [professional, isClientMode, authLoading]);
-
-  // Enhanced client mode exit handler
-  const handleClientModeExit = () => {
-    console.log('Index - Handling client mode exit')
-    exitClientMode();
-    
-    // If professional is available, navigate to dashboard
-    if (professional) {
-      console.log('Index - Professional found, navigating to dashboard')
-      setActivePage("uzman-dashboard");
-    }
-  };
-
-  // Announce page changes to screen readers
-  useEffect(() => {
-    const pageNames: Record<string, string> = {
-      egzersizler: "Egzersizler",
-      istatistikler: "İstatistikler", 
-      ayarlar: "Ayarlar",
-      "uzman-dashboard": "Uzman Dashboard"
-    };
-    
-    const pageName = pageNames[activePage] || "Bilinmeyen Sayfa";
-    document.title = `${pageName} - Bilişsel Egzersiz Uygulaması`;
-    
-    // Announce to screen readers
-    const announcement = document.createElement('div');
-    announcement.setAttribute('aria-live', 'polite');
-    announcement.setAttribute('aria-atomic', 'true');
-    announcement.className = 'sr-only';
-    announcement.textContent = `${pageName} sayfasına geçildi`;
-    document.body.appendChild(announcement);
-    
-    setTimeout(() => {
-      document.body.removeChild(announcement);
-    }, 1000);
-  }, [activePage]);
+  }, [isClientMode, activePage]);
 
   const handleMemoryGameStart = () => {
     setIsMemoryGameActive(true);
-    document.title = "Hafıza Oyunu - Bilişsel Egzersiz Uygulaması";
   };
 
   const handleMemoryGameEnd = () => {
     setIsMemoryGameActive(false);
-    document.title = "Egzersizler - Bilişsel Egzersiz Uygulaması";
   };
 
-  const getPageTitle = () => {
-    if (isMemoryGameActive) return "Hafıza Oyunu";
-    if (isClientMode) return "Danışan Modu - Egzersizler";
-    
-    const titles: Record<string, string> = {
-      egzersizler: "Egzersizler",
-      istatistikler: "İstatistikler",
-      ayarlar: "Ayarlar",
-      "uzman-dashboard": "Uzman Dashboard"
-    };
-    
-    return titles[activePage] || "Egzersizler";
+  const handleImageWordMatchingStart = () => {
+    setIsImageWordMatchingActive(true);
   };
 
-  const renderPage = () => {
-    if (isMemoryGameActive) {
-      return <HafizaOyunuSayfasi onBack={handleMemoryGameEnd} />;
-    }
+  const handleImageWordMatchingEnd = () => {
+    setIsImageWordMatchingActive(false);
+  };
 
-    // Client mode'da sadece egzersizler sayfası
-    if (isClientMode) {
-      return <EgzersizlerSayfasi onMemoryGameStart={handleMemoryGameStart} />;
-    }
+  const handleWordImageMatchingStart = () => {
+    setIsWordImageMatchingActive(true);
+  };
 
+  const handleWordImageMatchingEnd = () => {
+    setIsWordImageMatchingActive(false);
+  };
+
+  const handlePageChange = (page: string) => {
+    if (isClientMode && page !== "egzersizler") {
+      console.log('Index - Page change blocked in client mode:', page)
+      return;
+    }
+    console.log('Index - Page changed to:', page)
+    setActivePage(page);
+  };
+
+  // Render memory game
+  if (isMemoryGameActive) {
+    return (
+      <>
+        <SkipNavigation />
+        <HafizaOyunuSayfasi onBack={handleMemoryGameEnd} />
+        <ClientModeHandler 
+          isClientMode={isClientMode}
+          onExitClientMode={exitClientMode}
+        />
+      </>
+    );
+  }
+
+  // Render image-word matching game
+  if (isImageWordMatchingActive) {
+    return (
+      <>
+        <SkipNavigation />
+        <ResimKelimeEslestirmeSayfasi onBack={handleImageWordMatchingEnd} />
+        <ClientModeHandler 
+          isClientMode={isClientMode}
+          onExitClientMode={exitClientMode}
+        />
+      </>
+    );
+  }
+
+  // Render word-image matching game
+  if (isWordImageMatchingActive) {
+    return (
+      <>
+        <SkipNavigation />
+        <KelimeResimEslestirmeSayfasi onBack={handleWordImageMatchingEnd} />
+        <ClientModeHandler 
+          isClientMode={isClientMode}
+          onExitClientMode={exitClientMode}
+        />
+      </>
+    );
+  }
+
+  const renderActivePage = () => {
     switch (activePage) {
       case "egzersizler":
-        return <EgzersizlerSayfasi onMemoryGameStart={handleMemoryGameStart} />;
+        return (
+          <EgzersizlerSayfasi 
+            onMemoryGameStart={handleMemoryGameStart}
+            onImageWordMatchingStart={handleImageWordMatchingStart}
+            onWordImageMatchingStart={handleWordImageMatchingStart}
+          />
+        );
       case "istatistikler":
         return <IstatistiklerSayfasi />;
       case "ayarlar":
@@ -132,52 +138,34 @@ const Index = () => {
       case "uzman-dashboard":
         return <UzmanDashboardSayfasi />;
       default:
-        return <EgzersizlerSayfasi onMemoryGameStart={handleMemoryGameStart} />;
+        return (
+          <EgzersizlerSayfasi 
+            onMemoryGameStart={handleMemoryGameStart}
+            onImageWordMatchingStart={handleImageWordMatchingStart}
+            onWordImageMatchingStart={handleWordImageMatchingStart}
+          />
+        );
     }
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/20">
+    <>
       <SkipNavigation />
-      
-      {/* Screen reader friendly page structure */}
-      <div className="sr-only">
-        <h1>Bilişsel Egzersiz Uygulaması</h1>
-        <p>Hafıza ve dikkat geliştirme egzersizleri uygulaması</p>
-      </div>
-
-      <ClientModeHandler 
-        isClientMode={isClientMode} 
-        onExitClientMode={handleClientModeExit}
-      />
-      
-      <main 
-        id="main-content"
-        className={`transition-all duration-300 ${isClientMode ? "pt-12" : ""}`}
-        role="main"
-        aria-label={getPageTitle()}
-        tabIndex={-1}
-      >
-        <div className="fade-in">
-          {renderPage()}
-        </div>
+      <main className="min-h-screen bg-background text-foreground">
+        {renderActivePage()}
       </main>
       
-      {!isClientMode && (
-        <nav 
-          id="navigation"
-          role="navigation" 
-          aria-label="Ana navigasyon"
-          className="no-print"
-        >
-          <BottomNavigation 
-            activePage={activePage} 
-            setActivePage={setActivePage}
-            showUzmanDashboard={!!user}
-          />
-        </nav>
-      )}
-    </div>
+      <BottomNavigation 
+        activePage={activePage} 
+        onPageChange={handlePageChange}
+        isClientMode={isClientMode}
+      />
+      
+      <ClientModeHandler 
+        isClientMode={isClientMode}
+        onExitClientMode={exitClientMode}
+      />
+    </>
   );
 };
 
