@@ -1,9 +1,9 @@
 
-# Bilişsel Egzersiz Uygulaması - Geliştirme Raporu (Aşama 6.2 - Kritik Yetki Hatalarının Kesin Çözümü)
+# Bilişsel Egzersiz Uygulaması - Geliştirme Raporu (Aşama 6.3 - Kritik Yetki Hatalarının Kesin Çözümü)
 
 ## Proje Özeti
 
-Bu aşamada, Aşama 6.1'den sonra devam eden kritik yetki hatalarını kesin olarak çözdük ve uzman hesaplarının tam işlevsellik kazanmasını sağladık. 403 "permission denied" hataları giderilerek uzmanların dashboard'larına erişimi restore edildi.
+Bu aşamada, Aşama 6.1 ve 6.2'den sonra devam eden kritik yetki hatalarını kesin olarak çözdük ve uzman hesaplarının tam işlevsellik kazanmasını sağladık. 403 "permission denied" hataları giderilerek uzmanların dashboard'larına erişimi restore edildi.
 
 ## Tamamlanan Kritik Düzeltmeler
 
@@ -15,6 +15,11 @@ Bu aşamada, Aşama 6.1'den sonra devam eden kritik yetki hatalarını kesin ola
 - **Etki**: Uzmanlar signup yapabiliyordu ama kendi verilerini okuyamıyordu
 
 #### 📊 **Uygulanan Çözümler**
+
+**Schema USAGE İzni**
+```sql
+GRANT USAGE ON SCHEMA public TO authenticated;
+```
 
 **Database Permissions (GRANT Statements)**
 ```sql

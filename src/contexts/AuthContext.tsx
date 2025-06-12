@@ -62,16 +62,21 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const fetchProfessional = async (userId: string) => {
     if (!supabase) return
 
-    const { data, error } = await supabase
-      .from('professionals')
-      .select('id,email,display_name,created_at')
-      .eq('id', userId)
-      .single()
+    try {
+      const { data, error } = await supabase
+        .from('professionals')
+        .select('id,email,display_name,created_at')
+        .eq('id', userId)
+        .single()
 
-    if (error) {
-      console.error('Error fetching professional:', error)
-    } else {
-      setProfessional(data)
+      if (error) {
+        console.error('Error fetching professional:', error)
+        toast.error(`Profesyonel bilgileri alınamadı: ${error.message}`)
+      } else {
+        setProfessional(data)
+      }
+    } catch (error) {
+      console.error('Fetch professional error:', error)
     }
   }
 
@@ -98,6 +103,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
     if (data.user) {
       toast.success('Hesap başarıyla oluşturuldu!')
+      // Trigger otomatik olarak professional kaydını oluşturacak
+      // Manuel POST yapmıyoruz, sadece trigger'ın çalışmasını bekliyoruz
     }
   }
 

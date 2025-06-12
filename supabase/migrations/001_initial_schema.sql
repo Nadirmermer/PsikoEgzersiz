@@ -23,10 +23,15 @@ CREATE INDEX IF NOT EXISTS idx_client_statistics_professional_id ON client_stati
 CREATE INDEX IF NOT EXISTS idx_client_statistics_session_date ON client_statistics(session_date);
 CREATE INDEX IF NOT EXISTS idx_client_statistics_client_identifier ON client_statistics(client_identifier);
 
--- Grant necessary permissions to authenticated role
+-- Grant schema usage permissions first
+GRANT USAGE ON SCHEMA public TO authenticated;
+
+-- Grant necessary permissions to authenticated role for professionals table
 GRANT SELECT ON TABLE public.professionals TO authenticated;
 GRANT INSERT ON TABLE public.professionals TO authenticated;
 GRANT UPDATE ON TABLE public.professionals TO authenticated;
+
+-- Grant necessary permissions to authenticated role for client_statistics table
 GRANT SELECT ON TABLE public.client_statistics TO authenticated;
 GRANT INSERT ON TABLE public.client_statistics TO authenticated;
 GRANT UPDATE ON TABLE public.client_statistics TO authenticated;
