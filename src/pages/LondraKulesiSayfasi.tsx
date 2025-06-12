@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useCallback } from 'react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -64,6 +65,7 @@ const LondraKulesiSayfasi: React.FC<LondraKulesiSayfasiProps> = ({ onBack }) => 
       setGameStarted(true)
       setShowCelebration(false)
       setCurrentTime(0)
+      setSelectedPeg(null)
     }
   }
 
@@ -80,17 +82,17 @@ const LondraKulesiSayfasi: React.FC<LondraKulesiSayfasiProps> = ({ onBack }) => 
   const handlePegClick = (pegIndex: number) => {
     if (!gameState || gameState.isCompleted) return
 
-    if (gameState.selectedPeg === null) {
+    if (selectedPeg === null) {
       const pegs = [gameState.currentConfig.peg1, gameState.currentConfig.peg2, gameState.currentConfig.peg3]
       if (pegs[pegIndex].length > 0) {
-        setGameState({ ...gameState, selectedPeg: pegIndex })
+        setSelectedPeg(pegIndex)
       }
     } else {
-      const fromPeg = gameState.selectedPeg
+      const fromPeg = selectedPeg
       const toPeg = pegIndex
       
       if (fromPeg === toPeg) {
-        setGameState({ ...gameState, selectedPeg: null })
+        setSelectedPeg(null)
         return
       }
       
@@ -108,12 +110,13 @@ const LondraKulesiSayfasi: React.FC<LondraKulesiSayfasiProps> = ({ onBack }) => 
         }
         
         setGameState(newGameState)
+        setSelectedPeg(null)
         
         if (isCompleted) {
           handleLevelComplete(newGameState)
         }
       } else {
-        setGameState({ ...gameState, selectedPeg: null })
+        setSelectedPeg(null)
       }
     }
   }
@@ -171,10 +174,10 @@ const LondraKulesiSayfasi: React.FC<LondraKulesiSayfasiProps> = ({ onBack }) => 
     const pegs = [gameState.currentConfig.peg1, gameState.currentConfig.peg2, gameState.currentConfig.peg3]
     const peg = pegs[pegIndex]
     const capacity = PEG_CAPACITIES[pegIndex]
-    const isSelected = gameState.selectedPeg === pegIndex
+    const isSelected = selectedPeg === pegIndex
     const isEmpty = peg.length === 0
-    const canSelect = !isEmpty || gameState.selectedPeg !== null
-    const canReceiveBead = gameState.selectedPeg !== null && gameState.selectedPeg !== pegIndex && peg.length < capacity
+    const canSelect = !isEmpty || selectedPeg !== null
+    const canReceiveBead = selectedPeg !== null && selectedPeg !== pegIndex && peg.length < capacity
     
     return (
       <div className="flex flex-col items-center space-y-2">
@@ -244,12 +247,6 @@ const LondraKulesiSayfasi: React.FC<LondraKulesiSayfasiProps> = ({ onBack }) => 
   }
 
   const isLevelCompleted = gameState && gameState.isCompleted
-
-  const canPlaceBead = useCallback((pegIndex: number) => {
-    if (!gameState) return false
-    const peg = gameState.currentConfig.peg1[pegIndex]
-    return peg !== undefined && peg !== null
-  }, [gameState])
 
   const nextLevel = () => {
     if (currentLevel < TOWER_LEVELS.length) {
@@ -424,19 +421,9 @@ const LondraKulesiSayfasi: React.FC<LondraKulesiSayfasiProps> = ({ onBack }) => 
               </CardHeader>
               <CardContent>
                 <div className="grid grid-cols-3 gap-4 justify-items-center">
-                  {currentLevelData.targetConfig.map((pegConfig, pegIndex) => (
-                    <div key={pegIndex} className="text-center">
-                      <div className="text-xs text-muted-foreground mb-1">Ç{pegIndex + 1}</div>
-                      <div className="relative w-12 h-16 border border-border/50 rounded bg-muted/5">
-                        <div className="absolute bottom-0 left-1/2 transform -translate-x-1/2 flex flex-col-reverse gap-0.5">
-                          {pegConfig.map((color, beadIndex) => (
-                            <div 
-                              key={beadIndex} 
-                              className={`w-8 h-4 rounded-full border ${BEAD_COLORS[color].bgColor} opacity-70`}
-                            />
-                          ))}
-                        </div>
-                      </div>
+                  {[0, 1, 2].map((pegIndex) => (
+                    <div key={pegIndex}>
+                      {renderTargetPeg(pegIndex)}
                     </div>
                   ))}
                 </div>
@@ -452,38 +439,9 @@ const LondraKulesiSayfasi: React.FC<LondraKulesiSayfasiProps> = ({ onBack }) => 
               </CardHeader>
               <CardContent>
                 <div className="grid grid-cols-3 gap-8 justify-items-center">
-                  {gameState.pegs.map((peg, pegIndex) => (
-                    <div key={pegIndex} className="text-center">
-                      <div className="text-sm font-medium mb-2">Çubuk {pegIndex + 1}</div>
-                      <div 
-                        className={`
-                          relative w-16 h-24 border-2 rounded-lg cursor-pointer transition-all duration-200
-                          ${selectedPeg === pegIndex 
-                            ? 'border-primary bg-primary/10 ring-2 ring-primary/30' 
-                            : canPlaceBead(pegIndex) && selectedPeg !== null
-                              ? 'border-green-400 bg-green-50 hover:bg-green-100'
-                              : 'border-border hover:border-primary/60 hover:bg-primary/5'
-                          }
-                        `}
-                        onClick={() => handlePegClick(pegIndex)}
-                        role="button"
-                        tabIndex={0}
-                        aria-label={`Çubuk ${pegIndex + 1}, kapasite ${peg.length}/${PEG_CAPACITIES[pegIndex]}`}
-                      >
-                        {/* Kapasite göstergesi */}
-                        <div className="absolute -top-6 left-1/2 transform -translate-x-1/2 text-xs text-muted-foreground">
-                          {peg.length}/{PEG_CAPACITIES[pegIndex]}
-                        </div>
-                        
-                        {/* Toplar */}
-                        <div className="absolute bottom-1 left-1/2 transform -translate-x-1/2 flex flex-col-reverse gap-1">
-                          {peg.map((color, beadIndex) => (
-                            <div key={beadIndex}>
-                              {renderBead(color, selectedPeg === pegIndex && beadIndex === peg.length - 1)}
-                            </div>
-                          ))}
-                        </div>
-                      </div>
+                  {[0, 1, 2].map((pegIndex) => (
+                    <div key={pegIndex}>
+                      {renderPeg(pegIndex)}
                     </div>
                   ))}
                 </div>
