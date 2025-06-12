@@ -2,8 +2,9 @@
 import React, { useEffect } from 'react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible'
 import { useMemoryGame } from '../hooks/useMemoryGame'
-import { ArrowLeft, RotateCcw, Play } from 'lucide-react'
+import { ArrowLeft, RotateCcw, Play, ChevronDown } from 'lucide-react'
 
 interface HafizaOyunuSayfasiProps {
   onBack: () => void
@@ -53,7 +54,7 @@ const HafizaOyunuSayfasi: React.FC<HafizaOyunuSayfasiProps> = ({ onBack }) => {
           <Button variant="ghost" size="icon" onClick={onBack}>
             <ArrowLeft className="h-5 w-5" />
           </Button>
-          <div>
+          <div className="flex-1">
             <h1 className="text-2xl font-bold text-foreground">
               Hafıza Oyunu
             </h1>
@@ -61,64 +62,36 @@ const HafizaOyunuSayfasi: React.FC<HafizaOyunuSayfasiProps> = ({ onBack }) => {
               {levelName} - {gridSize.rows}x{gridSize.cols} Grid
             </p>
           </div>
+          <Button variant="outline" onClick={initializeGame} className="ml-auto">
+            <RotateCcw className="mr-2 h-4 w-4" />
+            Yeniden Başla
+          </Button>
         </div>
       </div>
 
-      {/* Game Stats */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-        <Card className="text-center">
-          <CardContent className="pt-4">
-            <div className="text-2xl font-bold text-primary">
-              {formatTime(duration)}
-            </div>
-            <div className="text-sm text-muted-foreground">Süre</div>
-          </CardContent>
-        </Card>
-        
-        <Card className="text-center">
-          <CardContent className="pt-4">
-            <div className="text-2xl font-bold text-primary">
-              {moves}
-            </div>
-            <div className="text-sm text-muted-foreground">Hamle</div>
-          </CardContent>
-        </Card>
-        
-        <Card className="text-center">
-          <CardContent className="pt-4">
-            <div className="text-2xl font-bold text-primary">
-              {pairsFound}/{totalPairs}
-            </div>
-            <div className="text-sm text-muted-foreground">Çiftler</div>
-          </CardContent>
-        </Card>
-        
-        <Card className="text-center">
-          <CardContent className="pt-4">
-            <div className="text-2xl font-bold text-primary">
-              {incorrectMoves}
-            </div>
-            <div className="text-sm text-muted-foreground">Hata</div>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Game Instructions */}
+      {/* Game Instructions - Collapsible */}
       {!gameStarted && (
-        <Card className="mb-6 bg-blue-50 dark:bg-blue-900/20 border-blue-200 dark:border-blue-800">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-lg">
-              🎯 Nasıl Oynanır?
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <ul className="space-y-2 text-sm">
-              <li>• Kartları tıklayarak çevirin ve aynı emojileri eşleştirin</li>
-              <li>• Tüm çiftleri bularak oyunu tamamlayın</li>
-              <li>• En az hamle ve sürede bitirmeye çalışın</li>
-            </ul>
-          </CardContent>
-        </Card>
+        <Collapsible className="mb-6">
+          <CollapsibleTrigger asChild>
+            <Button variant="outline" className="w-full justify-between mb-4">
+              <span className="flex items-center gap-2">
+                🎯 Nasıl Oynanır?
+              </span>
+              <ChevronDown className="h-4 w-4" />
+            </Button>
+          </CollapsibleTrigger>
+          <CollapsibleContent>
+            <Card className="bg-blue-50 dark:bg-blue-900/20 border-blue-200 dark:border-blue-800">
+              <CardContent className="pt-6">
+                <ul className="space-y-2 text-sm">
+                  <li>• Kartları tıklayarak çevirin ve aynı emojileri eşleştirin</li>
+                  <li>• Tüm çiftleri bularak oyunu tamamlayın</li>
+                  <li>• En az hamle ve sürede bitirmeye çalışın</li>
+                </ul>
+              </CardContent>
+            </Card>
+          </CollapsibleContent>
+        </Collapsible>
       )}
 
       {/* Game Board */}
@@ -164,7 +137,7 @@ const HafizaOyunuSayfasi: React.FC<HafizaOyunuSayfasiProps> = ({ onBack }) => {
         </div>
       )}
 
-      {/* Game Completed */}
+      {/* Game Completed - Show Statistics */}
       {gameCompleted && (
         <Card className="mb-6 bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-800">
           <CardHeader>
@@ -193,17 +166,6 @@ const HafizaOyunuSayfasi: React.FC<HafizaOyunuSayfasiProps> = ({ onBack }) => {
           </CardContent>
         </Card>
       )}
-
-      {/* Action Buttons */}
-      <div className="flex gap-3 justify-center">
-        <Button variant="outline" onClick={initializeGame}>
-          <RotateCcw className="mr-2 h-4 w-4" />
-          Yeniden Başla
-        </Button>
-        <Button variant="secondary" onClick={onBack}>
-          Egzersizlere Dön
-        </Button>
-      </div>
     </div>
   )
 }

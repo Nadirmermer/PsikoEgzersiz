@@ -20,7 +20,7 @@ export const useMemoryGame = ({ gridSize, levelName }: UseMemoryGameProps) => {
   const [cardFlips, setCardFlips] = useState(0)
   const [firstMatchTime, setFirstMatchTime] = useState<number | null>(null)
 
-  // Kartları başlat
+  // Kartları başlat - useCallback ile sarmalayarak bağımlılık sorununu çözüyoruz
   const initializeGame = useCallback(() => {
     const newCards = generateCards(gridSize)
     setCards(newCards)
@@ -33,7 +33,7 @@ export const useMemoryGame = ({ gridSize, levelName }: UseMemoryGameProps) => {
     setIncorrectMoves(0)
     setCardFlips(0)
     setFirstMatchTime(null)
-  }, [gridSize])
+  }, [gridSize.rows, gridSize.cols]) // Sadece grid boyutu değiştiğinde yeniden oluştur
 
   // Oyunu başlat
   const startGame = useCallback(() => {
@@ -64,7 +64,7 @@ export const useMemoryGame = ({ gridSize, levelName }: UseMemoryGameProps) => {
     })
   }, [gameStarted, gameCompleted])
 
-  // Süre sayacı
+  // Süre sayacı - bağımlılıkları optimize ettik
   useEffect(() => {
     let interval: NodeJS.Timeout
     
@@ -79,7 +79,7 @@ export const useMemoryGame = ({ gridSize, levelName }: UseMemoryGameProps) => {
     }
   }, [gameStarted, gameCompleted, startTime])
 
-  // Eşleşme kontrolü
+  // Eşleşme kontrolü - flippedCards.length kontrolü eklendi
   useEffect(() => {
     if (flippedCards.length === 2) {
       setMoves(prev => prev + 1)
@@ -118,14 +118,16 @@ export const useMemoryGame = ({ gridSize, levelName }: UseMemoryGameProps) => {
         }, 1500)
       }
     }
-  }, [flippedCards, firstMatchTime, startTime])
+  }, [flippedCards.length, firstMatchTime, startTime]) // Sadece gerekli bağımlılıklar
 
-  // Oyun tamamlanma kontrolü
+  // Oyun tamamlanma kontrolü - cards.length kontrolü eklendi ve bağımlılıklar optimize edildi
   useEffect(() => {
+    if (cards.length === 0) return // Kartlar henüz yüklenmemişse çıkış yap
+    
     const matchedCards = cards.filter(card => card.isMatched)
     const totalPairs = cards.length / 2
     
-    if (matchedCards.length === cards.length && cards.length > 0 && !gameCompleted) {
+    if (matchedCards.length === cards.length && !gameCompleted) {
       setGameCompleted(true)
       
       // İstatistikleri kaydet
@@ -159,7 +161,7 @@ export const useMemoryGame = ({ gridSize, levelName }: UseMemoryGameProps) => {
         details: finalStats
       })
     }
-  }, [cards, gameCompleted, moves, incorrectMoves, duration, startTime, firstMatchTime, cardFlips, levelName, gridSize])
+  }, [cards, gameCompleted, moves, incorrectMoves, duration, startTime, firstMatchTime, cardFlips, levelName, gridSize.rows, gridSize.cols])
 
   return {
     cards,
