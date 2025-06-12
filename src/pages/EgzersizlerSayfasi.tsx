@@ -295,7 +295,7 @@ const EgzersizlerSayfasi: React.FC<EgzersizlerSayfasiProps> = ({ onMemoryGameSta
                   <div key={index} className="flex items-center gap-3 p-3 rounded-lg bg-background/50 border border-border/30">
                     <div className={`w-3 h-3 rounded-full ${index < currentLevel - 1 ? 'bg-success' : index === currentLevel - 1 ? 'bg-primary' : 'bg-muted'}`} />
                     <span className={`text-sm ${index < currentLevel ? 'font-semibold' : 'text-muted-foreground'}`}>
-                      Seviye {index + 1}: {level.name} ({level.rows}×{level.cols} grid)
+                      Seviye {index + 1}: {level.name} ({level.gridSize.rows}×{level.gridSize.cols} grid)
                     </span>
                     {index < currentLevel - 1 && <CheckCircle className="w-4 h-4 text-success ml-auto" />}
                     {index === currentLevel - 1 && <Play className="w-4 h-4 text-primary ml-auto" />}
