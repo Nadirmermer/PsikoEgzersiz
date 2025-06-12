@@ -3,35 +3,44 @@ import React from 'react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 
-const EgzersizlerSayfasi: React.FC = () => {
+interface EgzersizlerSayfasiProps {
+  onMemoryGameStart: () => void
+}
+
+const EgzersizlerSayfasi: React.FC<EgzersizlerSayfasiProps> = ({ onMemoryGameStart }) => {
   const exerciseCategories = [
     {
       title: 'Hafıza Egzersizleri',
       description: 'Kısa ve uzun süreli hafızanızı güçlendirin',
       icon: '🧠',
-      exercises: ['Kelime Listesi', 'Sayı Dizisi', 'Görsel Hafıza'],
-      color: 'bg-blue-50 dark:bg-blue-900/20 border-blue-200 dark:border-blue-800'
+      exercises: ['Kart Eşleştirme', 'Sayı Dizisi', 'Görsel Hafıza'],
+      color: 'bg-blue-50 dark:bg-blue-900/20 border-blue-200 dark:border-blue-800',
+      available: true,
+      onStart: onMemoryGameStart
     },
     {
       title: 'Dikkat Egzersizleri',
       description: 'Odaklanma ve dikkat sürenizi artırın',
       icon: '🎯',
       exercises: ['Stroop Testi', 'Görsel Arama', 'Sürekli Performans'],
-      color: 'bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-800'
+      color: 'bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-800',
+      available: false
     },
     {
       title: 'Problem Çözme',
       description: 'Mantıksal düşünme ve problem çözme becerilerinizi geliştirin',
       icon: '🧩',
       exercises: ['Matematik Problemleri', 'Mantık Bulmacaları', 'Planlama Görevleri'],
-      color: 'bg-purple-50 dark:bg-purple-900/20 border-purple-200 dark:border-purple-800'
+      color: 'bg-purple-50 dark:bg-purple-900/20 border-purple-200 dark:border-purple-800',
+      available: false
     },
     {
       title: 'Yürütücü Fonksiyonlar',
       description: 'Planlama, organizasyon ve karar verme becerilerinizi güçlendirin',
       icon: '🎛️',
       exercises: ['Görev Değiştirme', 'Çalışma Hafızası', 'İnhibisyon Kontrolü'],
-      color: 'bg-orange-50 dark:bg-orange-900/20 border-orange-200 dark:border-orange-800'
+      color: 'bg-orange-50 dark:bg-orange-900/20 border-orange-200 dark:border-orange-800',
+      available: false
     }
   ]
 
@@ -75,9 +84,10 @@ const EgzersizlerSayfasi: React.FC = () => {
                 <Button 
                   className="w-full mt-4" 
                   variant="default"
-                  disabled
+                  disabled={!category.available}
+                  onClick={category.onStart}
                 >
-                  Yakında Geliyor
+                  {category.available ? 'Egzersize Başla' : 'Yakında Geliyor'}
                 </Button>
               </div>
             </CardContent>
@@ -85,11 +95,27 @@ const EgzersizlerSayfasi: React.FC = () => {
         ))}
       </div>
 
-      <div className="mt-8 p-6 bg-muted/50 rounded-lg text-center">
-        <h3 className="text-lg font-semibold mb-2">Egzersizler Geliştiriliyor</h3>
+      {/* Available Exercise Info */}
+      <div className="mt-8 p-6 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg">
+        <h3 className="text-lg font-semibold mb-2 text-green-800 dark:text-green-200">
+          🎮 Hafıza Oyunu Hazır!
+        </h3>
+        <p className="text-green-700 dark:text-green-300 mb-3">
+          İlk bilişsel egzersizimiz olan "Kart Eşleştirme Hafıza Oyunu" artık oynanabilir durumda. 
+          Bu oyun hafıza ve dikkat becerilerinizi geliştirir.
+        </p>
+        <ul className="text-sm text-green-600 dark:text-green-400 space-y-1">
+          <li>• Başlangıç seviyesi: 4x2 grid (8 kart, 4 çift)</li>
+          <li>• Detaylı performans takibi</li>
+          <li>• Hamle, süre ve hata sayısı istatistikleri</li>
+        </ul>
+      </div>
+
+      <div className="mt-6 p-6 bg-muted/50 rounded-lg text-center">
+        <h3 className="text-lg font-semibold mb-2">Diğer Egzersizler Geliştiriliyor</h3>
         <p className="text-muted-foreground">
-          Bilimsel araştırmalara dayalı egzersizlerimiz yakında burada olacak. 
-          Bu sürümde temel yapı ve kullanıcı deneyimi hazırlanmıştır.
+          Bilimsel araştırmalara dayalı daha fazla egzersiz yakında eklenecek.
+          Her yeni egzersiz, farklı bilişsel becerileri hedefleyecek şekilde tasarlanmaktadır.
         </p>
       </div>
     </div>
