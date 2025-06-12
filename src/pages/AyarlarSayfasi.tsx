@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -6,8 +5,11 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Switch } from '@/components/ui/switch'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
 import { useTheme } from '../contexts/ThemeContext'
 import { useAuth } from '../contexts/AuthContext'
+import { LocalStorageManager } from '../utils/localStorage'
+import { uploadLocalDataToSupabase } from '../lib/supabaseClient'
 import { toast } from 'sonner'
 
 const AyarlarSayfasi: React.FC = () => {
@@ -20,6 +22,15 @@ const AyarlarSayfasi: React.FC = () => {
   const [password, setPassword] = useState('')
   const [displayName, setDisplayName] = useState('')
   const [authLoading, setAuthLoading] = useState(false)
+
+  // Professional connection states
+  const [professionalId, setProfessionalId] = useState('')
+  const [clientIdentifier, setClientIdentifier] = useState('')
+  const [uploading, setUploading] = useState(false)
+  const [connectionDialogOpen, setConnectionDialogOpen] = useState(false)
+
+  // Check if already connected
+  const connectionData = LocalStorageManager.getConnectionData()
 
   const handleAuth = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -48,6 +59,63 @@ const AyarlarSayfasi: React.FC = () => {
     } catch (error) {
       console.error('Sign out error:', error)
     }
+  }
+
+  const handleConnectToProfessional = async () => {
+    if (!professionalId.trim() || !clientIdentifier.trim()) {
+      toast.error('Lütfen tüm alanları doldurun')
+      return
+    }
+
+    setUploading(true)
+
+    try {
+      // Get unuploaded local data
+      const localData = LocalStorageManager.getUnuploadedResults()
+      
+      if (localData.length === 0) {
+        // Just save connection without uploading
+        LocalStorageManager.setConnectionData(professionalId.trim(), clientIdentifier.trim())
+        toast.success('Uzman bağlantısı kaydedildi!')
+        setConnectionDialogOpen(false)
+        setProfessionalId('')
+        setClientIdentifier('')
+        return
+      }
+
+      // Upload existing data
+      const result = await uploadLocalDataToSupabase(
+        professionalId.trim(),
+        clientIdentifier.trim(),
+        localData
+      )
+
+      if (result.success) {
+        // Save connection data
+        LocalStorageManager.setConnectionData(professionalId.trim(), clientIdentifier.trim())
+        
+        // Mark results as uploaded
+        const resultIds = localData.map((_, index) => index.toString())
+        LocalStorageManager.markResultsAsUploaded(resultIds)
+        
+        toast.success(`Bağlantı kuruldu ve ${result.uploaded} veri başarıyla yüklendi!`)
+        setConnectionDialogOpen(false)
+        setProfessionalId('')
+        setClientIdentifier('')
+      } else {
+        toast.error(`Yükleme sırasında hata: ${result.failed} veri yüklenemedi`)
+      }
+    } catch (error) {
+      console.error('Connection error:', error)
+      toast.error('Bağlantı kurulurken hata oluştu')
+    } finally {
+      setUploading(false)
+    }
+  }
+
+  const handleDisconnectFromProfessional = () => {
+    LocalStorageManager.clearConnectionData()
+    toast.success('Uzman bağlantısı kaldırıldı')
   }
 
   return (
@@ -88,6 +156,101 @@ const AyarlarSayfasi: React.FC = () => {
             </div>
           </CardContent>
         </Card>
+
+        {/* Professional Connection - Only show for non-professionals */}
+        {!user && (
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                🔗 Ruh Sağlığı Uzmanı Bağlantısı
+              </CardTitle>
+              <CardDescription>
+                Verilerinizi ruh sağlığı uzmanınızla paylaşın
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              {connectionData ? (
+                <div className="space-y-4">
+                  <div className="p-4 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg">
+                    <h4 className="font-semibold text-green-800 dark:text-green-200 mb-2">
+                      Uzman Bağlantısı Aktif
+                    </h4>
+                    <div className="space-y-1 text-sm">
+                      <div>
+                        <span className="font-medium">Uzman ID: </span>
+                        <span className="font-mono">{connectionData.professionalId}</span>
+                      </div>
+                      <div>
+                        <span className="font-medium">Tanımlayıcınız: </span>
+                        <span>{connectionData.clientIdentifier}</span>
+                      </div>
+                    </div>
+                    <p className="text-green-700 dark:text-green-300 text-sm mt-2">
+                      Yeni egzersiz verileriniz otomatik olarak uzmanınıza gönderilecektir.
+                    </p>
+                  </div>
+                  <Button 
+                    variant="outline" 
+                    onClick={handleDisconnectFromProfessional}
+                    className="w-full"
+                  >
+                    Bağlantıyı Kaldır
+                  </Button>
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  <p className="text-sm text-muted-foreground">
+                    Ruh sağlığı uzmanınızın ID'sini kullanarak bağlantı kurun. 
+                    Mevcut ve gelecekteki egzersiz verileriniz uzmanınızla paylaşılacaktır.
+                  </p>
+                  
+                  <Dialog open={connectionDialogOpen} onOpenChange={setConnectionDialogOpen}>
+                    <DialogTrigger asChild>
+                      <Button className="w-full">
+                        Uzman Bağlantısı Kur
+                      </Button>
+                    </DialogTrigger>
+                    <DialogContent>
+                      <DialogHeader>
+                        <DialogTitle>Ruh Sağlığı Uzmanına Bağlan</DialogTitle>
+                        <DialogDescription>
+                          Uzmanınızın size verdiği bilgileri girin
+                        </DialogDescription>
+                      </DialogHeader>
+                      <div className="space-y-4">
+                        <div>
+                          <Label htmlFor="professionalId">Uzman ID</Label>
+                          <Input
+                            id="professionalId"
+                            value={professionalId}
+                            onChange={(e) => setProfessionalId(e.target.value)}
+                            placeholder="Uzman ID'sini girin"
+                          />
+                        </div>
+                        <div>
+                          <Label htmlFor="clientIdentifier">Tanımlayıcı Adınız</Label>
+                          <Input
+                            id="clientIdentifier"
+                            value={clientIdentifier}
+                            onChange={(e) => setClientIdentifier(e.target.value)}
+                            placeholder="Adınızı veya takma adınızı girin"
+                          />
+                        </div>
+                        <Button 
+                          onClick={handleConnectToProfessional}
+                          disabled={!professionalId.trim() || !clientIdentifier.trim() || uploading}
+                          className="w-full"
+                        >
+                          {uploading ? 'Bağlanıyor...' : 'Bağlan ve Verileri Yükle'}
+                        </Button>
+                      </div>
+                    </DialogContent>
+                  </Dialog>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        )}
 
         {/* Professional Auth */}
         <Card>

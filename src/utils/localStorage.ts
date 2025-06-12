@@ -1,4 +1,3 @@
-
 export interface ExerciseResult {
   exerciseName: string
   score: number
@@ -59,17 +58,62 @@ export const MEMORY_GAME_LEVELS: MemoryGameLevel[] = [
   }
 ]
 
+import { saveToSupabase, addToPendingSync } from '../lib/supabaseClient'
+
 export const LocalStorageManager = {
   getExerciseResults(): ExerciseResult[] {
     const data = localStorage.getItem('exerciseResults')
     return data ? JSON.parse(data) : []
   },
 
-  saveExerciseResult(result: ExerciseResult): void {
+  saveExerciseResult(result: ExerciseResult): Promise<void> {
     const results = this.getExerciseResults()
     results.push(result)
     localStorage.setItem('exerciseResults', JSON.stringify(results))
     console.log('Egzersiz sonucu kaydedildi:', result)
+
+    // Check if user is connected to a professional
+    const connectionData = this.getConnectionData()
+    if (connectionData) {
+      const supabaseData = {
+        professional_id: connectionData.professionalId,
+        client_identifier: connectionData.clientIdentifier,
+        exercise_data: result.details || result,
+        is_client_mode_session: false
+      }
+
+      const success = await saveToSupabase(supabaseData)
+      if (!success) {
+        // Add to pending sync if failed
+        addToPendingSync(supabaseData)
+        console.log('Supabase kayıt başarısız, senkronizasyon kuyruğuna eklendi')
+      } else {
+        console.log('Supabase\'e başarıyla kaydedildi')
+      }
+    }
+
+    // Client mode handling
+    const clientMode = localStorage.getItem('clientMode')
+    const clientModeDataStr = localStorage.getItem('clientModeData')
+    
+    if (clientMode === 'true' && clientModeDataStr) {
+      try {
+        const clientModeData = JSON.parse(clientModeDataStr)
+        const supabaseData = {
+          professional_id: clientModeData.professionalId,
+          client_identifier: clientModeData.clientIdentifier,
+          exercise_data: result.details || result,
+          is_client_mode_session: true
+        }
+
+        const success = await saveToSupabase(supabaseData)
+        if (!success) {
+          addToPendingSync(supabaseData)
+        }
+      } catch (error) {
+        console.error('Client mode data save error:', error)
+      }
+    }
   },
 
   clearExerciseResults(): void {
@@ -107,5 +151,50 @@ export const LocalStorageManager = {
     const settings = this.getSettings()
     settings[key] = value
     localStorage.setItem('appSettings', JSON.stringify(settings))
+  },
+
+  // Professional connection methods
+  getConnectionData(): { professionalId: string; clientIdentifier: string } | null {
+    const dataStr = localStorage.getItem('professionalConnection')
+    if (!dataStr) return null
+    
+    try {
+      return JSON.parse(dataStr)
+    } catch {
+      return null
+    }
+  },
+
+  setConnectionData(professionalId: string, clientIdentifier: string): void {
+    const data = { professionalId, clientIdentifier }
+    localStorage.setItem('professionalConnection', JSON.stringify(data))
+    console.log('Uzman bağlantısı kaydedildi:', data)
+  },
+
+  clearConnectionData(): void {
+    localStorage.removeItem('professionalConnection')
+    console.log('Uzman bağlantısı temizlendi')
+  },
+
+  // Mark results as uploaded to prevent re-upload
+  markResultsAsUploaded(resultIds: string[]): void {
+    const uploadedStr = localStorage.getItem('uploadedResults')
+    const uploaded = uploadedStr ? JSON.parse(uploadedStr) : []
+    
+    resultIds.forEach(id => {
+      if (!uploaded.includes(id)) {
+        uploaded.push(id)
+      }
+    })
+    
+    localStorage.setItem('uploadedResults', JSON.stringify(uploaded))
+  },
+
+  getUnuploadedResults(): ExerciseResult[] {
+    const allResults = this.getExerciseResults()
+    const uploadedStr = localStorage.getItem('uploadedResults')
+    const uploaded = uploadedStr ? JSON.parse(uploadedStr) : []
+    
+    return allResults.filter((result, index) => !uploaded.includes(index.toString()))
   }
 }
