@@ -217,18 +217,25 @@ const MantikDizileriSayfasi: React.FC<MantikDizileriSayfasiProps> = ({ onBack })
   const handleEndSession = () => {
     if (sessionStats.questionsAttempted > 0) {
       const sessionDuration = (Date.now() - sessionStats.sessionStartTime) / 1000
-      const exerciseData = {
-        exercise_name: 'Mantık Dizileri',
-        questions_attempted: sessionStats.questionsAttempted,
-        correct_answers: sessionStats.correctAnswers,
-        incorrect_answers: sessionStats.incorrectAnswers,
-        session_duration_seconds: Math.round(sessionDuration),
+      
+      const exerciseResult = {
+        exerciseName: 'Mantık Dizileri',
         score: sessionStats.totalScore,
-        timestamp: new Date().toISOString()
+        duration: Math.round(sessionDuration),
+        date: new Date().toISOString(),
+        details: {
+          exercise_name: 'Mantık Dizileri',
+          questions_attempted: sessionStats.questionsAttempted,
+          correct_answers: sessionStats.correctAnswers,
+          incorrect_answers: sessionStats.incorrectAnswers,
+          session_duration_seconds: Math.round(sessionDuration),
+          score: sessionStats.totalScore,
+          timestamp: new Date().toISOString()
+        }
       }
 
-      LocalStorageManager.saveExerciseData(exerciseData)
-      console.log('Mantık Dizileri - Seans verileri kaydedildi:', exerciseData)
+      LocalStorageManager.saveExerciseResult(exerciseResult)
+      console.log('Mantık Dizileri - Seans verileri kaydedildi:', exerciseResult)
     }
     onBack()
   }
