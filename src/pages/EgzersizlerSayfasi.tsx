@@ -1,24 +1,27 @@
-
 import React from 'react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Progress } from '@/components/ui/progress'
 import { LocalStorageManager, MEMORY_GAME_LEVELS } from '../utils/localStorage'
-import { Brain, Target, Puzzle, Settings, Play, Clock, Trophy, CheckCircle, Star, Award, Zap, ArrowRightLeft, Eye, Layers } from 'lucide-react'
+import { Brain, Target, Puzzle, Settings, Play, Clock, Trophy, CheckCircle, Star, Award, Zap, ArrowRightLeft, Eye, Layers, Hash, Palette } from 'lucide-react'
 
 interface EgzersizlerSayfasiProps {
   onMemoryGameStart: () => void
   onImageWordMatchingStart: () => void
   onWordImageMatchingStart: () => void
   onTowerOfLondonStart: () => void
+  onNumberSequenceStart: () => void
+  onColorSequenceStart: () => void
 }
 
 const EgzersizlerSayfasi: React.FC<EgzersizlerSayfasiProps> = ({ 
   onMemoryGameStart, 
   onImageWordMatchingStart,
   onWordImageMatchingStart,
-  onTowerOfLondonStart
+  onTowerOfLondonStart,
+  onNumberSequenceStart,
+  onColorSequenceStart
 }) => {
   const currentLevel = LocalStorageManager.getCurrentMemoryGameLevel()
   const currentLevelData = MEMORY_GAME_LEVELS[currentLevel - 1] || MEMORY_GAME_LEVELS[0]
@@ -83,6 +86,32 @@ const EgzersizlerSayfasi: React.FC<EgzersizlerSayfasiProps> = ({
       highlights: ['15 Zorluk Seviyesi', 'Optimal Çözüm Analizi', 'Strateji Geliştirme']
     },
     {
+      title: 'Sayı Dizisi Takibi',
+      description: 'Sayı dizilerini hatırlayın ve tekrar edin',
+      icon: Hash,
+      iconColor: 'text-cyan-600 dark:text-cyan-400',
+      bgGradient: 'bg-gradient-to-br from-cyan-50 via-blue-50 to-sky-100 dark:from-cyan-950/40 dark:via-blue-900/30 dark:to-sky-900/40',
+      borderColor: 'border-cyan-200/60 dark:border-cyan-800/60',
+      exercises: ['Sıralı Hafıza', 'Çalışma Belleği', 'Dikkat Kontrolü'],
+      available: true,
+      onStart: onNumberSequenceStart,
+      currentProgress: 'Sonsuz Seviye - 3 Rakamla Başlar',
+      highlights: ['Sonsuz İlerleme', 'Gerçek Zamanlı Skor', 'Adaptatif Zorluk']
+    },
+    {
+      title: 'Renk Dizisi Takibi',
+      description: 'Renk dizilerini hatırlayın ve tekrar edin',
+      icon: Palette,
+      iconColor: 'text-pink-600 dark:text-pink-400',
+      bgGradient: 'bg-gradient-to-br from-pink-50 via-rose-50 to-red-100 dark:from-pink-950/40 dark:via-rose-900/30 dark:to-red-900/40',
+      borderColor: 'border-pink-200/60 dark:border-pink-800/60',
+      exercises: ['Görsel Sıralama', 'Renk Hafızası', 'Tekrar Becerileri'],
+      available: true,
+      onStart: onColorSequenceStart,
+      currentProgress: 'Sonsuz Seviye - 2 Renkle Başlar',
+      highlights: ['Simon Benzeri', 'Görsel Takip', 'Hafıza Geliştirme']
+    },
+    {
       title: 'Dikkat Egzersizleri',
       description: 'Odaklanma ve dikkat sürenizi artırın',
       icon: Target,
@@ -144,7 +173,7 @@ const EgzersizlerSayfasi: React.FC<EgzersizlerSayfasiProps> = ({
         <div className="flex items-center justify-center gap-8 mt-8 text-sm">
           <div className="flex items-center gap-2 text-muted-foreground">
             <CheckCircle className="w-4 h-4 text-success" />
-            <span>4 Aktif Egzersiz</span>
+            <span>6 Aktif Egzersiz</span>
           </div>
           <div className="flex items-center gap-2 text-muted-foreground">
             <Clock className="w-4 h-4 text-warning" />
@@ -244,7 +273,8 @@ const EgzersizlerSayfasi: React.FC<EgzersizlerSayfasiProps> = ({
                         Egzersiz Bilgileri
                       </span>
                       <Badge variant="outline" className="text-primary border-primary/30 bg-primary/10">
-                        {category.title === 'Londra Kulesi Testi' ? 'Yeni!' : 'Aktif'}
+                        {['Sayı Dizisi Takibi', 'Renk Dizisi Takibi'].includes(category.title) ? 'Yeni!' : 
+                         category.title === 'Londra Kulesi Testi' ? 'Güncel!' : 'Aktif'}
                       </Badge>
                     </div>
                     
@@ -325,26 +355,26 @@ const EgzersizlerSayfasi: React.FC<EgzersizlerSayfasiProps> = ({
         })}
       </div>
 
-      {/* Enhanced Feature Highlight - Londra Kulesi Tanıtımı */}
-      <Card className="card-enhanced bg-gradient-to-r from-purple-5 via-purple/8 to-purple/5 border-purple/20 mb-12 overflow-hidden relative">
-        <div className="absolute inset-0 bg-gradient-to-r from-transparent via-purple/5 to-transparent opacity-50" />
+      {/* Enhanced Feature Highlight - Yeni Egzersizler */}
+      <Card className="card-enhanced bg-gradient-to-r from-cyan-5 via-cyan/8 to-pink/5 border-cyan/20 mb-12 overflow-hidden relative">
+        <div className="absolute inset-0 bg-gradient-to-r from-transparent via-cyan/5 to-transparent opacity-50" />
         
         <CardHeader className="relative">
           <div className="flex items-start gap-4 mb-4">
-            <div className="p-3 bg-purple-500/10 rounded-xl shadow-sm">
-              <Layers className="w-8 h-8 text-purple-600" />
+            <div className="p-3 bg-cyan-500/10 rounded-xl shadow-sm">
+              <Hash className="w-8 h-8 text-cyan-600" />
             </div>
             <div className="flex-1">
-              <CardTitle className="text-2xl text-purple-600 mb-2 flex items-center gap-3">
-                🧠 Londra Kulesi Testi
-                <Badge className="bg-purple-500/10 text-purple-600 border-purple-500/20 text-sm px-3 py-1">
+              <CardTitle className="text-2xl text-cyan-600 mb-2 flex items-center gap-3">
+                🧠 Yeni Dizi Takip Egzersizleri
+                <Badge className="bg-cyan-500/10 text-cyan-600 border-cyan-500/20 text-sm px-3 py-1">
                   <Award className="w-3 h-3 mr-1" />
                   Yeni!
                 </Badge>
               </CardTitle>
               <CardDescription className="text-base leading-relaxed">
-                Planlama ve problem çözme becerilerinizi test eden klasik nöropsikolojik test artık mevcut! 
-                15 farklı zorluk seviyesi ile stratejik düşünme becerinizi geliştirin.
+                Sayı ve renk dizilerini takip eden yeni egzersizler eklendi! 
+                Sonsuz seviye sistemi ile çalışma hafızanızı ve dikkat becerinizi geliştirin.
               </CardDescription>
             </div>
           </div>
@@ -353,16 +383,16 @@ const EgzersizlerSayfasi: React.FC<EgzersizlerSayfasiProps> = ({
         <CardContent className="relative">
           <div className="grid md:grid-cols-2 gap-8">
             <div>
-              <h4 className="font-bold mb-4 text-purple-600 flex items-center gap-2">
-                <Layers className="w-5 h-5" />
-                Test Özellikleri
+              <h4 className="font-bold mb-4 text-cyan-600 flex items-center gap-2">
+                <Hash className="w-5 h-5" />
+                Sayı Dizisi Takibi
               </h4>
               <div className="space-y-3">
                 {[
-                  '15 kademeli zorluk seviyesi',
-                  '3 çubuk, 3 renkli top sistemi',
-                  'Minimum hamle analizi',
-                  'Gerçek zamanlı performans takibi'
+                  'Sonsuz seviye sistemi',
+                  '3 rakamla başlayıp uzar',
+                  'Gerçek zamanlı performans',
+                  'Tablet uyumlu tuş takımı'
                 ].map((feature, index) => (
                   <div key={index} className="flex items-center gap-3 text-sm">
                     <CheckCircle className="w-5 h-5 text-success flex-shrink-0" />
@@ -373,19 +403,19 @@ const EgzersizlerSayfasi: React.FC<EgzersizlerSayfasiProps> = ({
             </div>
             
             <div>
-              <h4 className="font-bold mb-4 text-purple-600 flex items-center gap-2">
-                <Brain className="w-5 h-5" />
-                Bilişsel Faydalar
+              <h4 className="font-bold mb-4 text-pink-600 flex items-center gap-2">
+                <Palette className="w-5 h-5" />
+                Renk Dizisi Takibi
               </h4>
               <div className="space-y-3">
                 {[
-                  'Stratejik planlama becerisi',
-                  'Problem çözme kapasitesi',
-                  'Mantıksal düşünme geliştirme',
-                  'Yürütücü fonksiyon güçlendirme'
+                  'Simon benzeri oyun mekaniği',
+                  '4 renkli buton sistemi',
+                  'Görsel takip becerileri',
+                  'Aşamalı zorluk artışı'
                 ].map((benefit, index) => (
                   <div key={index} className="flex items-center gap-3 text-sm">
-                    <Star className="w-5 h-5 text-purple-600 flex-shrink-0" />
+                    <Star className="w-5 h-5 text-pink-600 flex-shrink-0" />
                     <span>{benefit}</span>
                   </div>
                 ))}

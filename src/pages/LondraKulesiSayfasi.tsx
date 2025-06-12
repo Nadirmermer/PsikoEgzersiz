@@ -1,5 +1,4 @@
-
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useCallback } from 'react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -19,7 +18,7 @@ import {
   BeadColor
 } from '../utils/towerOfLondonUtils'
 import { LocalStorageManager } from '../utils/localStorage'
-import { ArrowLeft, RotateCcw, Target, Clock, Move, Trophy, Star, CheckCircle, Play, HelpCircle, ChevronDown } from 'lucide-react'
+import { ArrowLeft, RotateCcw, Target, Clock, Move, Trophy, Star, CheckCircle, Play, HelpCircle, ChevronDown, Mouse } from 'lucide-react'
 
 interface LondraKulesiSayfasiProps {
   onBack: () => void
@@ -33,6 +32,7 @@ const LondraKulesiSayfasi: React.FC<LondraKulesiSayfasiProps> = ({ onBack }) => 
   const [allLevelsCompleted, setAllLevelsCompleted] = useState(false)
   const [isHelpOpen, setIsHelpOpen] = useState(false)
   const [currentTime, setCurrentTime] = useState(0)
+  const [selectedPeg, setSelectedPeg] = useState<number | null>(null)
 
   const currentLevelData = TOWER_LEVELS[currentLevel - 1]
   
@@ -156,16 +156,13 @@ const LondraKulesiSayfasi: React.FC<LondraKulesiSayfasiProps> = ({ onBack }) => 
   }
 
   const renderBead = (color: BeadColor, isHighlighted = false) => (
-    <div 
-      className={`
-        w-10 h-6 rounded-full border-2 shadow-md transition-all duration-200
-        ${BEAD_COLORS[color].bgColor}
-        ${isHighlighted ? 'border-primary ring-2 ring-primary/50 scale-110' : 'border-white'}
-      `}
-      style={{ 
-        background: `linear-gradient(135deg, ${BEAD_COLORS[color].color}, ${BEAD_COLORS[color].color}dd)`
-      }}
-    />
+    <div className={`
+      w-10 h-6 rounded-full border-2 shadow-md transition-all duration-200
+      ${BEAD_COLORS[color].bgColor}
+      ${isHighlighted ? 'border-primary ring-2 ring-primary/50 scale-110' : 'border-white'}
+    `}>
+      <div className="w-full h-full rounded-full opacity-80" />
+    </div>
   )
 
   const renderPeg = (pegIndex: number, isInteractive = true) => {
@@ -246,6 +243,22 @@ const LondraKulesiSayfasi: React.FC<LondraKulesiSayfasiProps> = ({ onBack }) => 
     )
   }
 
+  const isLevelCompleted = gameState && gameState.isCompleted
+
+  const canPlaceBead = useCallback((pegIndex: number) => {
+    if (!gameState) return false
+    const peg = gameState.currentConfig.peg1[pegIndex]
+    return peg !== undefined && peg !== null
+  }, [gameState])
+
+  const nextLevel = () => {
+    if (currentLevel < TOWER_LEVELS.length) {
+      setCurrentLevel(currentLevel + 1)
+    } else {
+      setAllLevelsCompleted(true)
+    }
+  }
+
   if (allLevelsCompleted) {
     return (
       <div className="container mx-auto px-4 py-6 max-w-4xl">
@@ -303,50 +316,65 @@ const LondraKulesiSayfasi: React.FC<LondraKulesiSayfasiProps> = ({ onBack }) => 
   const progressPercentage = ((currentLevel - 1) / TOWER_LEVELS.length) * 100
 
   return (
-    <div className="container mx-auto px-4 py-6 pb-24 max-w-6xl">
-      {/* Kompakt Header */}
-      <Card className="card-enhanced mb-4">
-        <CardHeader className="pb-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <Button variant="ghost" size="sm" onClick={onBack}>
-                <ArrowLeft className="w-4 h-4" />
-              </Button>
-              <div>
-                <CardTitle className="text-xl">
-                  Seviye {currentLevel}/15 - Min. Hamle: {currentLevelData.minMoves}
-                </CardTitle>
-                <CardDescription className="flex items-center gap-4 text-sm">
-                  <span className="flex items-center gap-1">
-                    <Move className="w-3 h-3" />
-                    Hamle: {gameState.moves}
-                  </span>
-                  <span className="flex items-center gap-1">
-                    <Clock className="w-3 h-3" />
-                    Süre: {formatTime(currentTime)}
-                  </span>
-                  <Badge className={getDifficultyColor(currentLevelData.difficulty)} variant="outline">
-                    {currentLevelData.difficulty}
-                  </Badge>
-                </CardDescription>
-              </div>
-            </div>
+    <div className="min-h-screen bg-background p-4">
+      <div className="container mx-auto max-w-6xl">
+        {/* Header */}
+        <div className="flex items-center justify-between mb-6">
+          <Button 
+            variant="ghost" 
+            size="sm" 
+            onClick={onBack}
+            className="text-muted-foreground hover:text-foreground"
+          >
+            <ArrowLeft className="w-4 h-4 mr-2" />
+            Geri
+          </Button>
+          
+          <div className="text-center">
+            <h1 className="text-2xl font-bold text-primary">Londra Kulesi Testi</h1>
+            <p className="text-sm text-muted-foreground">Planlama ve problem çözme becerilerinizi test edin</p>
           </div>
           
-          <div className="space-y-1">
-            <div className="flex justify-between text-xs text-muted-foreground">
-              <span>{currentLevelData.description}</span>
-            </div>
-            <Progress value={progressPercentage} className="h-1.5" />
-          </div>
-        </CardHeader>
-      </Card>
+          <div className="w-20" />
+        </div>
 
-      {/* Yardım Bölümü */}
-      <Card className="card-enhanced mb-4">
+        {/* Kompakt Bilgi Paneli */}
+        <Card className="card-enhanced mb-6">
+          <CardHeader className="pb-4">
+            <CardTitle className="text-xl">
+              Seviye {currentLevel}/15 - Min. Hamle: {currentLevelData.minMoves}
+            </CardTitle>
+            <CardDescription className="flex items-center gap-4 text-sm">
+              <span className="flex items-center gap-1">
+                <Move className="w-3 h-3" />
+                Hamle: {gameState.moves}
+              </span>
+              <span className="flex items-center gap-1">
+                <Clock className="w-3 h-3" />
+                Süre: {formatTime(currentTime)}
+              </span>
+              <Badge className={getDifficultyColor(currentLevelData.difficulty)} variant="outline">
+                {currentLevelData.difficulty}
+              </Badge>
+              {selectedPeg !== null && (
+                <Badge variant="secondary">
+                  Seçili: Çubuk {selectedPeg + 1}
+                </Badge>
+              )}
+            </CardDescription>
+            
+            <Progress 
+              value={(currentLevel / 15) * 100} 
+              className="h-2 mt-3"
+              aria-label={`Seviye ilerlemesi: ${currentLevel}/15`}
+            />
+          </CardHeader>
+        </Card>
+
+        {/* Nasıl Oynanır - Açılır Kapanır */}
         <Collapsible open={isHelpOpen} onOpenChange={setIsHelpOpen}>
           <CollapsibleTrigger asChild>
-            <Button variant="ghost" className="w-full justify-between p-4 h-auto">
+            <Button variant="ghost" className="w-full justify-between p-4 h-auto mb-4">
               <div className="flex items-center gap-2">
                 <HelpCircle className="w-4 h-4" />
                 <span className="font-medium">Nasıl Oynanır?</span>
@@ -354,121 +382,146 @@ const LondraKulesiSayfasi: React.FC<LondraKulesiSayfasiProps> = ({ onBack }) => 
               <ChevronDown className={`w-4 h-4 transition-transform duration-200 ${isHelpOpen ? 'rotate-180' : ''}`} />
             </Button>
           </CollapsibleTrigger>
-          <CollapsibleContent>
-            <div className="px-4 pb-4 text-sm text-muted-foreground space-y-2">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+          <CollapsibleContent className="space-y-0 data-[state=closed]:animate-accordion-up data-[state=open]:animate-accordion-down">
+            <Card className="border-dashed">
+              <CardContent className="p-6 grid md:grid-cols-2 gap-6">
                 <div>
-                  <strong className="text-foreground">Oyun Kuralları:</strong>
-                  <ul className="list-disc list-inside space-y-1 mt-1">
-                    <li>Bir seferde sadece bir top hareket ettirin</li>
-                    <li>Sadece en üstteki topu alabilirsiniz</li>
-                    <li>Kapasitesi dolu çubuklara top konulamaz</li>
+                  <h4 className="font-semibold mb-3 flex items-center gap-2">
+                    <Target className="w-4 h-4" />
+                    Temel Kurallar
+                  </h4>
+                  <ul className="space-y-2 text-sm text-muted-foreground">
+                    <li>• Çubukların kapasitesi sınırlıdır</li>
+                    <li>• Her seferinde sadece en üstteki top alınabilir</li>
+                    <li>• Hedef düzenini minimum hamle ile oluşturun</li>
+                    <li>• Stratejik düşünme gerektirir</li>
                   </ul>
                 </div>
                 <div>
-                  <strong className="text-foreground">Nasıl Oynarsınız:</strong>
-                  <ul className="list-disc list-inside space-y-1 mt-1">
-                    <li>Bir çubuktan top seçin (tıklayın)</li>
-                    <li>Hedef çubuğu seçin</li>
-                    <li>En az hamlede hedefe ulaşmaya çalışın</li>
+                  <h4 className="font-semibold mb-3 flex items-center gap-2">
+                    <Mouse className="w-4 h-4" />
+                    Nasıl Oynanır
+                  </h4>
+                  <ul className="space-y-2 text-sm text-muted-foreground">
+                    <li>• İlk önce kaynak çubuğa tıklayın</li>
+                    <li>• Sonra hedef çubuğa tıklayın</li>
+                    <li>• Geçersiz hamleler engellenecektir</li>
+                    <li>• Hamle sayınızı minimize etmeye çalışın</li>
                   </ul>
                 </div>
-              </div>
-            </div>
+              </CardContent>
+            </Card>
           </CollapsibleContent>
         </Collapsible>
-      </Card>
 
-      {/* Ana Oyun Alanı */}
-      <div className="grid lg:grid-cols-4 gap-4">
-        {/* Hedef Düzeni - Kompakt Referans */}
-        <div className="lg:col-span-1">
-          <Card className="bg-muted/30 border-dashed">
-            <CardHeader className="pb-3">
-              <div className="flex items-center gap-2">
-                <Target className="w-4 h-4 text-muted-foreground" />
-                <CardTitle className="text-sm font-medium text-muted-foreground">Hedef Düzeni</CardTitle>
-              </div>
-            </CardHeader>
-            <CardContent className="pt-0">
-              <div className="grid grid-cols-3 gap-2">
-                {[0, 1, 2].map(pegIndex => renderTargetPeg(pegIndex))}
-              </div>
-            </CardContent>
-          </Card>
+        {/* Ana Oyun Alanı - Responsive Grid */}
+        <div className="grid lg:grid-cols-4 gap-4 mb-6">
+          {/* Hedef Düzeni - Kompakt Referans */}
+          <div className="lg:col-span-1">
+            <Card className="bg-muted/30 border-dashed">
+              <CardHeader className="pb-3">
+                <CardTitle className="text-lg">Hedef</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="grid grid-cols-3 gap-4 justify-items-center">
+                  {currentLevelData.targetConfig.map((pegConfig, pegIndex) => (
+                    <div key={pegIndex} className="text-center">
+                      <div className="text-xs text-muted-foreground mb-1">Ç{pegIndex + 1}</div>
+                      <div className="relative w-12 h-16 border border-border/50 rounded bg-muted/5">
+                        <div className="absolute bottom-0 left-1/2 transform -translate-x-1/2 flex flex-col-reverse gap-0.5">
+                          {pegConfig.map((color, beadIndex) => (
+                            <div 
+                              key={beadIndex} 
+                              className={`w-8 h-4 rounded-full border ${BEAD_COLORS[color].bgColor} opacity-70`}
+                            />
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Mevcut Durum - Ana Oyun Alanı */}
+          <div className="lg:col-span-3">
+            <Card className="card-enhanced border-primary/20">
+              <CardHeader className="pb-3">
+                <CardTitle className="text-lg">Mevcut Durum</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="grid grid-cols-3 gap-8 justify-items-center">
+                  {gameState.pegs.map((peg, pegIndex) => (
+                    <div key={pegIndex} className="text-center">
+                      <div className="text-sm font-medium mb-2">Çubuk {pegIndex + 1}</div>
+                      <div 
+                        className={`
+                          relative w-16 h-24 border-2 rounded-lg cursor-pointer transition-all duration-200
+                          ${selectedPeg === pegIndex 
+                            ? 'border-primary bg-primary/10 ring-2 ring-primary/30' 
+                            : canPlaceBead(pegIndex) && selectedPeg !== null
+                              ? 'border-green-400 bg-green-50 hover:bg-green-100'
+                              : 'border-border hover:border-primary/60 hover:bg-primary/5'
+                          }
+                        `}
+                        onClick={() => handlePegClick(pegIndex)}
+                        role="button"
+                        tabIndex={0}
+                        aria-label={`Çubuk ${pegIndex + 1}, kapasite ${peg.length}/${PEG_CAPACITIES[pegIndex]}`}
+                      >
+                        {/* Kapasite göstergesi */}
+                        <div className="absolute -top-6 left-1/2 transform -translate-x-1/2 text-xs text-muted-foreground">
+                          {peg.length}/{PEG_CAPACITIES[pegIndex]}
+                        </div>
+                        
+                        {/* Toplar */}
+                        <div className="absolute bottom-1 left-1/2 transform -translate-x-1/2 flex flex-col-reverse gap-1">
+                          {peg.map((color, beadIndex) => (
+                            <div key={beadIndex}>
+                              {renderBead(color, selectedPeg === pegIndex && beadIndex === peg.length - 1)}
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+          </div>
         </div>
 
-        {/* Mevcut Durum - Ana Oyun Alanı */}
-        <div className="lg:col-span-3">
-          <Card className="card-enhanced border-primary/20">
-            <CardHeader className="pb-3">
-              <CardTitle className="text-lg flex items-center gap-2">
-                Mevcut Durum
-                {gameState.selectedPeg !== null && (
-                  <Badge variant="outline" className="text-primary border-primary/30 text-xs">
-                    Çubuk {gameState.selectedPeg + 1} seçildi - Hedef seçin
-                  </Badge>
-                )}
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-3 gap-8 justify-items-center">
-                {[0, 1, 2].map(pegIndex => renderPeg(pegIndex, true))}
-              </div>
-              
-              {/* Kontroller */}
-              <div className="flex justify-center mt-6">
-                <Button 
-                  variant="outline" 
-                  onClick={resetLevel}
-                  size="sm"
-                >
-                  <RotateCcw className="w-4 h-4 mr-2" />
-                  Seviyeyi Sıfırla
+        {/* Kontroller */}
+        <div className="text-center space-y-4">
+          <Button 
+            variant="outline" 
+            size="sm"
+            onClick={resetLevel}
+            className="mr-4"
+          >
+            <RotateCcw className="w-4 h-4 mr-2" />
+            Seviyeyi Sıfırla
+          </Button>
+
+          {isLevelCompleted && (
+            <div className="bg-success/10 border border-success/20 rounded-lg p-4">
+              <h3 className="text-lg font-semibold text-success mb-2">🎉 Seviye Tamamlandı!</h3>
+              <p className="text-sm text-muted-foreground mb-4">
+                {gameState.moves} hamle ile tamamladınız (En az: {currentLevelData.minMoves})
+              </p>
+              <div className="space-x-2">
+                <Button onClick={nextLevel} className="font-semibold">
+                  {currentLevel < 15 ? 'Sonraki Seviye' : 'Testi Tamamla'}
+                </Button>
+                <Button variant="outline" onClick={resetLevel}>
+                  Tekrar Dene
                 </Button>
               </div>
-            </CardContent>
-          </Card>
+            </div>
+          )}
         </div>
       </div>
-
-      {/* Tebrik Modalı */}
-      {showCelebration && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <Card className="max-w-md w-full animate-scale-in">
-            <CardHeader className="text-center">
-              <div className="mx-auto w-16 h-16 bg-gradient-to-br from-emerald-400 to-emerald-600 rounded-full flex items-center justify-center mb-4">
-                <CheckCircle className="w-8 h-8 text-white" />
-              </div>
-              <CardTitle className="text-2xl text-emerald-600">Seviye Tamamlandı!</CardTitle>
-              <CardDescription>
-                {gameState.moves <= currentLevelData.minMoves ? 'Mükemmel performans!' : 'Tebrikler!'}
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="text-center space-y-4">
-              <div className="grid grid-cols-2 gap-4 text-sm">
-                <div>
-                  <div className="font-semibold">Hamle Sayısı</div>
-                  <div className="text-2xl font-bold text-primary">{gameState.moves}</div>
-                </div>
-                <div>
-                  <div className="font-semibold">Verimlilik</div>
-                  <div className="text-2xl font-bold text-emerald-600">
-                    {Math.round((currentLevelData.minMoves / gameState.moves) * 100)}%
-                  </div>
-                </div>
-              </div>
-              
-              {gameState.moves <= currentLevelData.minMoves && (
-                <Badge className="bg-amber-100 text-amber-800 border-amber-200">
-                  <Star className="w-3 h-3 mr-1" />
-                  Optimal Çözüm!
-                </Badge>
-              )}
-            </CardContent>
-          </Card>
-        </div>
-      )}
     </div>
   )
 }

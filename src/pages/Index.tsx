@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import EgzersizlerSayfasi from "./EgzersizlerSayfasi";
 import IstatistiklerSayfasi from "./IstatistiklerSayfasi";
@@ -7,6 +8,8 @@ import HafizaOyunuSayfasi from "./HafizaOyunuSayfasi";
 import ResimKelimeEslestirmeSayfasi from "./ResimKelimeEslestirmeSayfasi";
 import KelimeResimEslestirmeSayfasi from "./KelimeResimEslestirmeSayfasi";
 import LondraKulesiSayfasi from "./LondraKulesiSayfasi";
+import SayiDizisiTakibiSayfasi from "./SayiDizisiTakibiSayfasi";
+import RenkDizisiTakibiSayfasi from "./RenkDizisiTakibiSayfasi";
 import BottomNavigation from "../components/BottomNavigation";
 import ClientModeHandler from "../components/ClientModeHandler";
 import SkipNavigation from "../components/SkipNavigation";
@@ -20,6 +23,8 @@ const Index = () => {
   const [isImageWordMatchingActive, setIsImageWordMatchingActive] = useState(false);
   const [isWordImageMatchingActive, setIsWordImageMatchingActive] = useState(false);
   const [isTowerOfLondonActive, setIsTowerOfLondonActive] = useState(false);
+  const [isNumberSequenceActive, setIsNumberSequenceActive] = useState(false);
+  const [isColorSequenceActive, setIsColorSequenceActive] = useState(false);
   const { isClientMode, exitClientMode } = useClientMode();
   const { user, professional, loading: authLoading } = useAuth();
 
@@ -78,6 +83,22 @@ const Index = () => {
 
   const handleTowerOfLondonEnd = () => {
     setIsTowerOfLondonActive(false);
+  };
+
+  const handleNumberSequenceStart = () => {
+    setIsNumberSequenceActive(true);
+  };
+
+  const handleNumberSequenceEnd = () => {
+    setIsNumberSequenceActive(false);
+  };
+
+  const handleColorSequenceStart = () => {
+    setIsColorSequenceActive(true);
+  };
+
+  const handleColorSequenceEnd = () => {
+    setIsColorSequenceActive(false);
   };
 
   const handlePageChange = (page: string) => {
@@ -145,6 +166,34 @@ const Index = () => {
     );
   }
 
+  // Render Number Sequence game
+  if (isNumberSequenceActive) {
+    return (
+      <>
+        <SkipNavigation />
+        <SayiDizisiTakibiSayfasi onBack={handleNumberSequenceEnd} />
+        <ClientModeHandler 
+          isClientMode={isClientMode}
+          onExitClientMode={exitClientMode}
+        />
+      </>
+    );
+  }
+
+  // Render Color Sequence game
+  if (isColorSequenceActive) {
+    return (
+      <>
+        <SkipNavigation />
+        <RenkDizisiTakibiSayfasi onBack={handleColorSequenceEnd} />
+        <ClientModeHandler 
+          isClientMode={isClientMode}
+          onExitClientMode={exitClientMode}
+        />
+      </>
+    );
+  }
+
   const renderActivePage = () => {
     switch (activePage) {
       case "egzersizler":
@@ -154,6 +203,8 @@ const Index = () => {
             onImageWordMatchingStart={handleImageWordMatchingStart}
             onWordImageMatchingStart={handleWordImageMatchingStart}
             onTowerOfLondonStart={handleTowerOfLondonStart}
+            onNumberSequenceStart={handleNumberSequenceStart}
+            onColorSequenceStart={handleColorSequenceStart}
           />
         );
       case "istatistikler":
@@ -169,6 +220,8 @@ const Index = () => {
             onImageWordMatchingStart={handleImageWordMatchingStart}
             onWordImageMatchingStart={handleWordImageMatchingStart}
             onTowerOfLondonStart={handleTowerOfLondonStart}
+            onNumberSequenceStart={handleNumberSequenceStart}
+            onColorSequenceStart={handleColorSequenceStart}
           />
         );
     }
