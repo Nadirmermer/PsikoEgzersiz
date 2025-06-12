@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Progress } from '@/components/ui/progress'
 import { LocalStorageManager, MEMORY_GAME_LEVELS } from '../utils/localStorage'
-import { Brain, Target, Play, Clock, Trophy, CheckCircle, Star, ArrowRightLeft, Eye, Layers, Hash, Palette, BookOpen, Calculator } from 'lucide-react'
+import { Brain, Target, Play, Clock, Trophy, CheckCircle, Star, ArrowRightLeft, Eye, Layers, Hash, Palette, BookOpen, Calculator, Sparkles } from 'lucide-react'
 
 interface EgzersizlerSayfasiProps {
   onMemoryGameStart: () => void
@@ -34,12 +34,16 @@ const EgzersizlerSayfasi: React.FC<EgzersizlerSayfasiProps> = ({
 
   const exerciseCategories = [
     {
-      title: 'Hafıza Egzersizleri',
-      description: 'Kısa ve uzun süreli hafızanızı güçlendirin',
+      id: 'memory-game',
+      title: 'Hafıza Oyunu',
+      description: 'Kısa süreli hafızanızı güçlendirin',
+      motto: 'Eşleştir ve hatırla',
       icon: Brain,
       iconColor: 'text-blue-600 dark:text-blue-400',
-      bgGradient: 'bg-gradient-to-br from-blue-50 via-blue-50 to-indigo-100 dark:from-blue-950/40 dark:via-blue-900/30 dark:to-indigo-900/40',
+      bgGradient: 'bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 dark:from-blue-950/40 dark:via-indigo-900/30 dark:to-purple-900/40',
+      bgPattern: 'radial-gradient(circle at 20% 80%, rgba(59, 130, 246, 0.15) 0%, transparent 50%), radial-gradient(circle at 80% 20%, rgba(99, 102, 241, 0.15) 0%, transparent 50%)',
       borderColor: 'border-blue-200/60 dark:border-blue-800/60',
+      accentColor: 'bg-blue-500',
       available: true,
       onStart: onMemoryGameStart,
       currentProgress: `Seviye ${currentLevel}`,
@@ -48,98 +52,126 @@ const EgzersizlerSayfasi: React.FC<EgzersizlerSayfasiProps> = ({
         total: MEMORY_GAME_LEVELS.length,
         percentage: progressPercentage
       },
-      highlights: ['Seviyeli İlerleme', 'Görsel Hafıza', 'Eşleştirme']
+      highlights: ['Seviyeli İlerleme', 'Görsel Hafıza']
     },
     {
-      title: 'Resim-Kelime Eşleştirme',
+      id: 'image-word-matching',
+      title: 'Resim-Kelime',
       description: 'Görseli doğru kelimeyle eşleştirin',
+      motto: 'Gör ve tanı',
       icon: Eye,
-      iconColor: 'text-primary',
-      bgGradient: 'bg-gradient-to-br from-primary/5 via-primary/10 to-primary/15',
-      borderColor: 'border-primary/20',
+      iconColor: 'text-emerald-600 dark:text-emerald-400',
+      bgGradient: 'bg-gradient-to-br from-emerald-50 via-green-50 to-teal-50 dark:from-emerald-950/40 dark:via-green-900/30 dark:to-teal-900/40',
+      bgPattern: 'radial-gradient(circle at 30% 40%, rgba(16, 185, 129, 0.15) 0%, transparent 50%), linear-gradient(135deg, rgba(5, 150, 105, 0.1) 0%, transparent 70%)',
+      borderColor: 'border-emerald-200/60 dark:border-emerald-800/60',
+      accentColor: 'bg-emerald-500',
       available: true,
       onStart: onImageWordMatchingStart,
-      currentProgress: '15 Soru - Karışık Kategoriler',
-      highlights: ['Görsel Tanıma', 'Hızlı Düşünme', 'Kategori Bilgisi']
+      currentProgress: '15 Çeşitli Soru',
+      highlights: ['Görsel Tanıma', 'Hızlı Düşünme']
     },
     {
-      title: 'Kelime-Resim Eşleştirme',
+      id: 'word-image-matching',
+      title: 'Kelime-Resim',
       description: 'Kelimeyi doğru görselle eşleştirin',
+      motto: 'Düşün ve eşleştir',
       icon: ArrowRightLeft,
-      iconColor: 'text-emerald-600 dark:text-emerald-400',
-      bgGradient: 'bg-gradient-to-br from-emerald-50 via-green-50 to-teal-100 dark:from-emerald-950/40 dark:via-green-900/30 dark:to-teal-900/40',
-      borderColor: 'border-emerald-200/60 dark:border-emerald-800/60',
+      iconColor: 'text-cyan-600 dark:text-cyan-400',
+      bgGradient: 'bg-gradient-to-br from-cyan-50 via-sky-50 to-blue-50 dark:from-cyan-950/40 dark:via-sky-900/30 dark:to-blue-900/40',
+      bgPattern: 'radial-gradient(circle at 70% 30%, rgba(6, 182, 212, 0.15) 0%, transparent 50%), linear-gradient(45deg, rgba(14, 165, 233, 0.1) 0%, transparent 60%)',
+      borderColor: 'border-cyan-200/60 dark:border-cyan-800/60',
+      accentColor: 'bg-cyan-500',
       available: true,
       onStart: onWordImageMatchingStart,
-      currentProgress: '15 Soru - Karışık Kategoriler',
-      highlights: ['Kelime Anlama', 'Görsel İlişki', 'Hızlı Karar']
+      currentProgress: '15 Çeşitli Soru',
+      highlights: ['Kelime Anlama', 'Görsel İlişki']
     },
     {
-      title: 'Londra Kulesi Testi',
+      id: 'tower-of-london',
+      title: 'Londra Kulesi',
       description: 'Planlama ve strateji geliştirin',
+      motto: 'Planla ve çöz',
       icon: Layers,
       iconColor: 'text-purple-600 dark:text-purple-400',
-      bgGradient: 'bg-gradient-to-br from-purple-50 via-indigo-50 to-violet-100 dark:from-purple-950/40 dark:via-indigo-900/30 dark:to-violet-900/40',
+      bgGradient: 'bg-gradient-to-br from-purple-50 via-violet-50 to-indigo-50 dark:from-purple-950/40 dark:via-violet-900/30 dark:to-indigo-900/40',
+      bgPattern: 'radial-gradient(circle at 60% 20%, rgba(147, 51, 234, 0.15) 0%, transparent 50%), radial-gradient(circle at 20% 80%, rgba(99, 102, 241, 0.15) 0%, transparent 50%)',
       borderColor: 'border-purple-200/60 dark:border-purple-800/60',
+      accentColor: 'bg-purple-500',
       available: true,
       onStart: onTowerOfLondonStart,
-      currentProgress: '15 Seviye - Artan Zorluk',
-      highlights: ['Strateji', 'Problem Çözme', 'Planlama']
+      currentProgress: '15 Artan Seviye',
+      highlights: ['Strateji', 'Problem Çözme']
     },
     {
-      title: 'Sayı Dizisi Takibi',
-      description: 'Sayı dizilerini hatırlayın ve tekrarlayın',
+      id: 'number-sequence',
+      title: 'Sayı Dizisi',
+      description: 'Sayı dizilerini hatırlayın',
+      motto: 'Sırayla hatırla',
       icon: Hash,
-      iconColor: 'text-cyan-600 dark:text-cyan-400',
-      bgGradient: 'bg-gradient-to-br from-cyan-50 via-blue-50 to-sky-100 dark:from-cyan-950/40 dark:via-blue-900/30 dark:to-sky-900/40',
-      borderColor: 'border-cyan-200/60 dark:border-cyan-800/60',
+      iconColor: 'text-orange-600 dark:text-orange-400',
+      bgGradient: 'bg-gradient-to-br from-orange-50 via-amber-50 to-yellow-50 dark:from-orange-950/40 dark:via-amber-900/30 dark:to-yellow-900/40',
+      bgPattern: 'radial-gradient(circle at 40% 60%, rgba(251, 146, 60, 0.15) 0%, transparent 50%), linear-gradient(225deg, rgba(245, 158, 11, 0.1) 0%, transparent 65%)',
+      borderColor: 'border-orange-200/60 dark:border-orange-800/60',
+      accentColor: 'bg-orange-500',
       available: true,
       onStart: onNumberSequenceStart,
       currentProgress: 'Sonsuz Seviye',
-      highlights: ['Sıralı Hafıza', 'Dikkat', 'Konsantrasyon']
+      highlights: ['Sıralı Hafıza', 'Dikkat']
     },
     {
-      title: 'Renk Dizisi Takibi',
-      description: 'Renk sıralarını hatırlayın ve tekrarlayın',
+      id: 'color-sequence',
+      title: 'Renk Dizisi',
+      description: 'Renk sıralarını takip edin',
+      motto: 'Renkleri hatırla',
       icon: Palette,
       iconColor: 'text-pink-600 dark:text-pink-400',
-      bgGradient: 'bg-gradient-to-br from-pink-50 via-rose-50 to-red-100 dark:from-pink-950/40 dark:via-rose-900/30 dark:to-red-900/40',
+      bgGradient: 'bg-gradient-to-br from-pink-50 via-rose-50 to-red-50 dark:from-pink-950/40 dark:via-rose-900/30 dark:to-red-900/40',
+      bgPattern: 'radial-gradient(circle at 80% 40%, rgba(236, 72, 153, 0.15) 0%, transparent 50%), radial-gradient(circle at 20% 70%, rgba(244, 63, 94, 0.15) 0%, transparent 50%)',
       borderColor: 'border-pink-200/60 dark:border-pink-800/60',
+      accentColor: 'bg-pink-500',
       available: true,
       onStart: onColorSequenceStart,
       currentProgress: 'Sonsuz Seviye',
-      highlights: ['Görsel Hafıza', 'Renk Tanıma', 'Simon Oyunu']
+      highlights: ['Görsel Hafıza', 'Simon Oyunu']
     },
     {
-      title: 'Kelime Çemberi Bulmacası',
-      description: 'Harfleri birleştirerek kelimeleri bulun',
+      id: 'word-circle-puzzle',
+      title: 'Kelime Çemberi',
+      description: 'Harfleri birleştirerek kelime bulun',
+      motto: 'Çember kuralları',
       icon: BookOpen,
       iconColor: 'text-indigo-600 dark:text-indigo-400',
-      bgGradient: 'bg-gradient-to-br from-indigo-50 via-blue-50 to-purple-100 dark:from-indigo-950/40 dark:via-blue-900/30 dark:to-purple-900/40',
+      bgGradient: 'bg-gradient-to-br from-indigo-50 via-blue-50 to-slate-50 dark:from-indigo-950/40 dark:via-blue-900/30 dark:to-slate-900/40',
+      bgPattern: 'radial-gradient(circle at 50% 30%, rgba(99, 102, 241, 0.15) 0%, transparent 50%), linear-gradient(165deg, rgba(79, 70, 229, 0.1) 0%, transparent 70%)',
       borderColor: 'border-indigo-200/60 dark:border-indigo-800/60',
+      accentColor: 'bg-indigo-500',
       available: true,
       onStart: onWordCirclePuzzleStart,
-      currentProgress: '7 Seviye - Bonus Kelimeler',
-      highlights: ['Kelime Oyunu', 'WOW Tarzı', 'Bonus Sistem']
+      currentProgress: '7 Seviye',
+      highlights: ['Kelime Oyunu', 'Bonus Sistem']
     },
     {
+      id: 'logic-sequences',
       title: 'Mantık Dizileri',
-      description: 'Sayısal örüntüleri keşfedin ve tamamlayın',
+      description: 'Sayısal örüntüleri keşfedin',
+      motto: 'Mantık kuralları',
       icon: Calculator,
       iconColor: 'text-amber-600 dark:text-amber-400',
-      bgGradient: 'bg-gradient-to-br from-amber-50 via-orange-50 to-yellow-100 dark:from-amber-950/40 dark:via-orange-900/30 dark:to-yellow-900/40',
+      bgGradient: 'bg-gradient-to-br from-amber-50 via-yellow-50 to-lime-50 dark:from-amber-950/40 dark:via-yellow-900/30 dark:to-lime-900/40',
+      bgPattern: 'radial-gradient(circle at 30% 70%, rgba(245, 158, 11, 0.15) 0%, transparent 50%), radial-gradient(circle at 70% 30%, rgba(163, 163, 163, 0.1) 0%, transparent 50%)',
       borderColor: 'border-amber-200/60 dark:border-amber-800/60',
+      accentColor: 'bg-amber-500',
       available: true,
       onStart: onLogicSequencesStart,
-      currentProgress: 'Sonsuz Soru - 15 Dizi Türü',
-      highlights: ['Matematik', 'Örüntü Tanıma', 'Mantık']
+      currentProgress: 'Sonsuz Soru',
+      highlights: ['Matematik', 'Örüntü Tanıma']
     }
   ]
 
   return (
     <div className="container mx-auto section-padding pb-28 max-w-7xl">
-      {/* Hero Section - Temizlenmiş ve odaklanmış */}
-      <div className="text-center mb-12 animate-fade-in">
+      {/* Hero Section - Modern ve kompakt */}
+      <div className="text-center mb-8 animate-fade-in">
         <div className="relative inline-flex items-center justify-center mb-6">
           <div className="absolute inset-0 bg-primary/10 rounded-full blur-xl scale-150 animate-pulse" />
           <div className="relative w-16 h-16 bg-gradient-to-br from-primary to-primary/70 rounded-2xl flex items-center justify-center shadow-lg">
@@ -147,23 +179,22 @@ const EgzersizlerSayfasi: React.FC<EgzersizlerSayfasiProps> = ({
           </div>
         </div>
         
-        <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold mb-4 bg-gradient-to-r from-primary via-primary/80 to-primary/60 bg-clip-text text-transparent leading-tight">
+        <h1 className="text-3xl md:text-4xl font-bold mb-3 bg-gradient-to-r from-primary via-primary/80 to-primary/60 bg-clip-text text-transparent leading-tight">
           Bilişsel Egzersizler
         </h1>
         
-        <p className="text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto leading-relaxed">
-          Zihin sağlığınızı destekleyen bilimsel egzersizlerle 
-          <span className="text-primary font-semibold"> beyin gücünüzü artırın</span>
+        <p className="text-base md:text-lg text-muted-foreground max-w-2xl mx-auto leading-relaxed mb-4">
+          Zihin sağlığınızı destekleyen bilimsel egzersizlerle beyin gücünüzü artırın
         </p>
 
-        {/* Özet istatistikler - kompakt */}
-        <div className="flex items-center justify-center gap-6 mt-6 text-sm">
+        {/* Kompakt istatistikler */}
+        <div className="flex items-center justify-center gap-6 text-sm">
           <div className="flex items-center gap-2 text-muted-foreground">
             <CheckCircle className="w-4 h-4 text-success" />
             <span>8 Egzersiz</span>
           </div>
           <div className="flex items-center gap-2 text-muted-foreground">
-            <Star className="w-4 h-4 text-primary" />
+            <Sparkles className="w-4 h-4 text-primary" />
             <span>Bilimsel</span>
           </div>
           <div className="flex items-center gap-2 text-muted-foreground">
@@ -173,62 +204,67 @@ const EgzersizlerSayfasi: React.FC<EgzersizlerSayfasiProps> = ({
         </div>
       </div>
 
-      {/* Egzersiz Kartları Grid - Tutarlı tasarım */}
-      <div className="grid gap-6 lg:grid-cols-2 mb-8">
+      {/* Modern Grid Layout - Egzersiz Kartları */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-6 mb-6">
         {exerciseCategories.map((category, index) => {
           const IconComponent = category.icon;
           
           return (
             <Card 
-              key={index} 
-              className={`card-enhanced interactive-lift relative overflow-hidden ${category.bgGradient} ${category.borderColor} group transition-all duration-500 hover:shadow-xl border-2`}
+              key={category.id} 
+              className={`card-enhanced interactive-lift relative overflow-hidden ${category.bgGradient} ${category.borderColor} group transition-all duration-500 hover:shadow-xl border-2 h-full`}
+              style={{ backgroundImage: category.bgPattern }}
               role="article"
-              aria-labelledby={`exercise-${index}-title`}
+              aria-labelledby={`exercise-${category.id}-title`}
             >
-              {/* Status Badge */}
-              <div className="absolute top-4 right-4 z-10">
-                <Badge className="bg-success/15 text-success border-success/30 font-medium px-2.5 py-1 shadow-sm">
-                  <CheckCircle className="w-3 h-3 mr-1.5" />
+              {/* Status Badge - Küçük ve zarif */}
+              <div className="absolute top-3 right-3 z-10">
+                <Badge className="bg-success/15 text-success border-success/30 font-medium text-xs px-2 py-1 shadow-sm">
+                  <CheckCircle className="w-3 h-3 mr-1" />
                   Aktif
                 </Badge>
               </div>
 
-              <CardHeader className="pb-4">
+              {/* Accent line */}
+              <div className={`absolute top-0 left-0 right-0 h-1 ${category.accentColor}`} />
+
+              <CardHeader className="pb-3 pt-4">
                 {/* Icon and Title */}
-                <div className="flex items-start gap-4 mb-4">
-                  <div className={`p-3 rounded-xl bg-background/80 backdrop-blur-sm shadow-md group-hover:scale-110 group-hover:shadow-lg transition-all duration-300`}>
-                    <IconComponent className={`w-8 h-8 ${category.iconColor}`} />
+                <div className="flex items-start gap-3 mb-3">
+                  <div className={`p-2.5 rounded-xl bg-background/80 backdrop-blur-sm shadow-md group-hover:scale-110 group-hover:shadow-lg transition-all duration-300 flex-shrink-0`}>
+                    <IconComponent className={`w-6 h-6 ${category.iconColor}`} />
                   </div>
                   
-                  <div className="flex-1">
+                  <div className="flex-1 min-w-0">
                     <CardTitle 
-                      id={`exercise-${index}-title`}
-                      className="text-xl mb-2 group-hover:text-primary transition-colors duration-300 leading-tight"
+                      id={`exercise-${category.id}-title`}
+                      className="text-lg mb-1 group-hover:text-primary transition-colors duration-300 leading-tight truncate"
                     >
                       {category.title}
                     </CardTitle>
-                    <CardDescription className="text-sm leading-relaxed text-muted-foreground/90">
+                    <p className="text-xs text-primary/70 font-medium mb-1">{category.motto}</p>
+                    <CardDescription className="text-xs leading-relaxed text-muted-foreground/90 line-clamp-2">
                       {category.description}
                     </CardDescription>
                   </div>
                 </div>
                 
-                {/* Progress Section - Sadece hafıza oyunu için */}
-                {category.stats && (
-                  <div className="bg-background/70 backdrop-blur-sm rounded-lg p-4 border border-border/30 shadow-sm">
+                {/* Progress Section - Sadece hafıza oyunu için detaylı */}
+                {category.stats ? (
+                  <div className="bg-background/70 backdrop-blur-sm rounded-lg p-3 border border-border/30 shadow-sm">
                     <div className="flex items-center justify-between mb-2">
-                      <span className="text-sm font-medium text-muted-foreground flex items-center gap-2">
+                      <span className="text-xs font-medium text-muted-foreground flex items-center gap-1">
                         <Trophy className="w-3 h-3" />
                         İlerleme
                       </span>
-                      <span className="text-sm font-bold text-primary">
+                      <span className="text-xs font-bold text-primary">
                         {category.stats.completed}/{category.stats.total}
                       </span>
                     </div>
                     
                     <Progress 
                       value={category.stats.percentage} 
-                      className="h-2 mb-2"
+                      className="h-1.5 mb-2"
                       aria-label={`İlerleme: ${category.stats.percentage.toFixed(0)}%`}
                     />
                     
@@ -236,15 +272,12 @@ const EgzersizlerSayfasi: React.FC<EgzersizlerSayfasiProps> = ({
                       {category.currentProgress}
                     </span>
                   </div>
-                )}
-
-                {/* Diğer egzersizler için sadece bilgi */}
-                {!category.stats && (
-                  <div className="bg-background/70 backdrop-blur-sm rounded-lg p-4 border border-border/30 shadow-sm">
-                    <div className="flex items-center justify-between mb-2">
-                      <span className="text-sm font-medium text-muted-foreground flex items-center gap-2">
+                ) : (
+                  <div className="bg-background/70 backdrop-blur-sm rounded-lg p-3 border border-border/30 shadow-sm">
+                    <div className="flex items-center justify-between mb-1">
+                      <span className="text-xs font-medium text-muted-foreground flex items-center gap-1">
                         <Target className="w-3 h-3" />
-                        Egzersiz Bilgi
+                        Hazır
                       </span>
                     </div>
                     <span className="text-xs text-muted-foreground">
@@ -254,12 +287,12 @@ const EgzersizlerSayfasi: React.FC<EgzersizlerSayfasiProps> = ({
                 )}
 
                 {/* Highlights - kompakt */}
-                <div className="flex flex-wrap gap-2 mt-3">
+                <div className="flex flex-wrap gap-1.5 mt-3">
                   {category.highlights.map((highlight, highlightIndex) => (
                     <Badge 
                       key={highlightIndex}
                       variant="outline"
-                      className="text-xs bg-background/60 hover:bg-background/80 transition-colors duration-200 px-2 py-1"
+                      className="text-xs bg-background/60 hover:bg-background/80 transition-colors duration-200 px-2 py-0.5 h-6"
                     >
                       {highlight}
                     </Badge>
@@ -267,10 +300,10 @@ const EgzersizlerSayfasi: React.FC<EgzersizlerSayfasiProps> = ({
                 </div>
               </CardHeader>
               
-              <CardContent className="pt-0">
-                {/* Action Button */}
+              <CardContent className="pt-0 pb-4">
+                {/* Action Button - kompakt */}
                 <Button 
-                  className="w-full font-semibold text-sm py-5 transition-all duration-300 bg-primary hover:bg-primary/90 text-primary-foreground shadow-md hover:shadow-lg hover:scale-[1.02] focus:scale-[1.02]"
+                  className="w-full font-semibold text-sm py-2 h-9 transition-all duration-300 bg-primary hover:bg-primary/90 text-primary-foreground shadow-md hover:shadow-lg hover:scale-[1.02] focus:scale-[1.02]"
                   onClick={category.onStart}
                   aria-label={`${category.title} egzersizine başla`}
                 >
@@ -281,23 +314,22 @@ const EgzersizlerSayfasi: React.FC<EgzersizlerSayfasiProps> = ({
 
               {/* Hover efekti */}
               <div className="absolute inset-0 rounded-xl transition-all duration-300 opacity-0 group-hover:opacity-100 pointer-events-none">
-                <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-bl from-white/10 to-transparent rounded-full -translate-y-16 translate-x-16" />
+                <div className="absolute top-0 right-0 w-20 h-20 bg-gradient-to-bl from-white/10 to-transparent rounded-full -translate-y-8 translate-x-8" />
               </div>
             </Card>
           );
         })}
       </div>
 
-      {/* Bilgi kartı - basitleştirilmiş */}
-      <Card className="card-enhanced bg-muted/30 border-border/50 text-center">
-        <CardContent className="py-8">
-          <div className="inline-flex items-center justify-center w-12 h-12 bg-muted/50 rounded-xl mb-4">
+      {/* Bilgi kartı - çok kompakt */}
+      <Card className="card-enhanced bg-muted/30 border-border/50 text-center py-6">
+        <CardContent className="py-0">
+          <div className="inline-flex items-center justify-center w-12 h-12 bg-muted/50 rounded-xl mb-3">
             <Brain className="w-6 h-6 text-muted-foreground" />
           </div>
           <h3 className="text-lg font-bold mb-2">8 Aktif Egzersiz Hazır!</h3>
           <p className="text-muted-foreground text-sm leading-relaxed max-w-xl mx-auto">
-            Bilişsel egzersiz platformumuz 8 farklı egzersiz türüyle komplet. 
-            Her egzersiz farklı bilişsel becerileri hedefler.
+            Bilişsel performansınızı artırmak için tasarlanmış 8 farklı egzersiz türü.
           </p>
         </CardContent>
       </Card>

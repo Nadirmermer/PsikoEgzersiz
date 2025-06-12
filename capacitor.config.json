@@ -1,0 +1,34 @@
+
+{
+  "appId": "app.lovable.bilisseleg-zersiz",
+  "appName": "Bilişsel Egzersiz",
+  "webDir": "dist",
+  "server": {
+    "androidScheme": "https"
+  },
+  "plugins": {
+    "StatusBar": {
+      "style": "default",
+      "backgroundColor": "#ffffff"
+    },
+    "SplashScreen": {
+      "launchShowDuration": 2000,
+      "backgroundColor": "#ffffff",
+      "androidSplashResourceName": "splash",
+      "iosSplashResourceName": "Default"
+    },
+    "Keyboard": {
+      "resize": "body",
+      "resizeOnFullScreen": true
+    }
+  },
+  "android": {
+    "allowMixedContent": true,
+    "minWebViewVersion": 60,
+    "webContentsDebuggingEnabled": true
+  },
+  "ios": {
+    "scheme": "Bilişsel Egzersiz",
+    "contentInset": "automatic"
+  }
+}
