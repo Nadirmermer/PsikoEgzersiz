@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
 import { Progress } from '@/components/ui/progress'
-import { ArrowLeft, Brain, CheckCircle, X, Trophy, Clock, Target, Zap } from 'lucide-react'
+import { ArrowLeft, Brain, CheckCircle, X, Trophy, Clock, Target, Zap, Lightbulb, Star } from 'lucide-react'
 import { LocalStorageManager } from '../utils/localStorage'
 
 interface SequenceProblem {
@@ -200,10 +200,10 @@ const MantikDizileriSayfasi: React.FC<MantikDizileriSayfasiProps> = ({ onBack })
       totalScore: prev.totalScore + scoreForQuestion
     }))
 
-    // 2 saniye sonra yeni soru
+    // 2.5 saniye sonra yeni soru
     setTimeout(() => {
       getNewProblem()
-    }, 2000)
+    }, 2500)
   }
 
   // Enter tuşu desteği
@@ -242,11 +242,20 @@ const MantikDizileriSayfasi: React.FC<MantikDizileriSayfasiProps> = ({ onBack })
 
   const getDifficultyColor = (difficulty: string) => {
     switch (difficulty) {
-      case 'Kolay': return 'text-green-600 dark:text-green-400 bg-green-50 dark:bg-green-950'
-      case 'Orta': return 'text-yellow-600 dark:text-yellow-400 bg-yellow-50 dark:bg-yellow-950'
-      case 'Zor': return 'text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-950'
-      default: return 'text-muted-foreground'
+      case 'Kolay': return 'text-success bg-success/10 border-success/20'
+      case 'Orta': return 'text-warning bg-warning/10 border-warning/20'
+      case 'Zor': return 'text-destructive bg-destructive/10 border-destructive/20'
+      default: return 'text-muted-foreground bg-muted/10 border-border'
     }
+  }
+
+  const getPatternIcon = (patternType: string) => {
+    if (patternType.includes('Fibonacci')) return '🌀'
+    if (patternType.includes('Geometrik')) return '📈'
+    if (patternType.includes('Aritmetik')) return '➕'
+    if (patternType.includes('Kare')) return '⬜'
+    if (patternType.includes('Küp')) return '🧊'
+    return '🔢'
   }
 
   const accuracyPercentage = sessionStats.questionsAttempted > 0 
@@ -255,37 +264,51 @@ const MantikDizileriSayfasi: React.FC<MantikDizileriSayfasiProps> = ({ onBack })
 
   if (!currentProblem) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <div className="text-center">
-          <Brain className="w-12 h-12 mx-auto mb-4 text-primary animate-pulse" />
-          <p>Soru yükleniyor...</p>
+      <div className="min-h-screen bg-gradient-to-br from-amber-50 via-orange-50 to-yellow-50 dark:from-amber-950/20 dark:via-orange-950/20 dark:to-yellow-950/20 flex items-center justify-center">
+        <div className="text-center animate-fade-in">
+          <div className="w-16 h-16 mx-auto mb-6 bg-gradient-to-br from-amber-500 to-orange-500 rounded-2xl flex items-center justify-center shadow-lg">
+            <Brain className="w-8 h-8 text-white animate-pulse" />
+          </div>
+          <p className="text-lg font-medium text-foreground">Soru hazırlanıyor...</p>
         </div>
       </div>
     )
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 dark:from-blue-950/20 dark:via-indigo-950/20 dark:to-purple-950/20">
-      {/* Header */}
-      <div className="bg-background/80 backdrop-blur-sm border-b border-border/50 sticky top-0 z-10">
+    <div className="min-h-screen bg-gradient-to-br from-amber-50 via-orange-50 to-yellow-50 dark:from-amber-950/20 dark:via-orange-950/20 dark:to-yellow-950/20">
+      {/* Header - Tutarlı tasarım */}
+      <div className="bg-background/90 backdrop-blur-sm border-b border-border/50 sticky top-0 z-10 shadow-sm">
         <div className="container mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
-            <Button 
-              variant="ghost" 
-              onClick={handleEndSession}
-              className="gap-2 hover:bg-muted/80"
-            >
-              <ArrowLeft className="w-4 h-4" />
-              Geri Dön
-            </Button>
-            
             <div className="flex items-center gap-4">
-              <Badge variant="outline" className="gap-2">
-                <Target className="w-4 h-4" />
+              <Button 
+                variant="ghost" 
+                onClick={handleEndSession}
+                className="gap-2 hover:bg-muted/80 transition-colors"
+              >
+                <ArrowLeft className="w-4 h-4" />
+                Geri Dön
+              </Button>
+              
+              <div className="hidden md:flex items-center gap-3">
+                <div className="w-10 h-10 bg-gradient-to-br from-amber-500 to-orange-500 rounded-xl flex items-center justify-center shadow-md">
+                  <Brain className="w-5 h-5 text-white" />
+                </div>
+                <div>
+                  <h1 className="text-lg font-semibold">Mantık Dizileri</h1>
+                  <p className="text-sm text-muted-foreground">Sayısal örüntü tanıma</p>
+                </div>
+              </div>
+            </div>
+            
+            <div className="flex items-center gap-3">
+              <Badge variant="outline" className="gap-2 hidden sm:flex">
+                <Target className="w-3 h-3" />
                 {sessionStats.questionsAttempted} Soru
               </Badge>
               <Badge variant="outline" className="gap-2">
-                <Trophy className="w-4 h-4" />
+                <Trophy className="w-3 h-3" />
                 {sessionStats.totalScore} Puan
               </Badge>
             </div>
@@ -293,76 +316,88 @@ const MantikDizileriSayfasi: React.FC<MantikDizileriSayfasiProps> = ({ onBack })
         </div>
       </div>
 
-      <div className="container mx-auto px-4 py-8 max-w-4xl">
-        {/* İstatistik Kartları */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
-          <Card>
-            <CardContent className="p-6 text-center">
-              <div className="text-2xl font-bold text-primary mb-2">{sessionStats.correctAnswers}</div>
-              <div className="text-sm text-muted-foreground">Doğru Cevap</div>
+      <div className="container mx-auto px-4 py-6 max-w-4xl">
+        {/* İstatistik Kartları - Kompakt ve tutarlı */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+          <Card className="bg-background/80 backdrop-blur-sm border-border/50 hover:bg-background/90 transition-colors">
+            <CardContent className="p-4 text-center">
+              <div className="text-xl font-bold text-success mb-1">{sessionStats.correctAnswers}</div>
+              <div className="text-xs text-muted-foreground">Doğru</div>
             </CardContent>
           </Card>
           
-          <Card>
-            <CardContent className="p-6 text-center">
-              <div className="text-2xl font-bold text-destructive mb-2">{sessionStats.incorrectAnswers}</div>
-              <div className="text-sm text-muted-foreground">Yanlış Cevap</div>
+          <Card className="bg-background/80 backdrop-blur-sm border-border/50 hover:bg-background/90 transition-colors">
+            <CardContent className="p-4 text-center">
+              <div className="text-xl font-bold text-destructive mb-1">{sessionStats.incorrectAnswers}</div>
+              <div className="text-xs text-muted-foreground">Yanlış</div>
             </CardContent>
           </Card>
           
-          <Card>
-            <CardContent className="p-6 text-center">
-              <div className="text-2xl font-bold text-success mb-2">{accuracyPercentage}%</div>
-              <div className="text-sm text-muted-foreground">Başarı Oranı</div>
+          <Card className="bg-background/80 backdrop-blur-sm border-border/50 hover:bg-background/90 transition-colors">
+            <CardContent className="p-4 text-center">
+              <div className="text-xl font-bold text-primary mb-1">{accuracyPercentage}%</div>
+              <div className="text-xs text-muted-foreground">Başarı</div>
+            </CardContent>
+          </Card>
+
+          <Card className="bg-background/80 backdrop-blur-sm border-border/50 hover:bg-background/90 transition-colors">
+            <CardContent className="p-4 text-center">
+              <div className="text-xl font-bold text-amber-600 mb-1">{sessionStats.totalScore}</div>
+              <div className="text-xs text-muted-foreground">Toplam</div>
             </CardContent>
           </Card>
         </div>
 
-        {/* Ana Oyun Kartı */}
-        <Card className="mx-auto max-w-2xl shadow-lg">
-          <CardHeader className="text-center pb-6">
-            <div className="flex items-center justify-center gap-3 mb-4">
-              <div className="p-3 bg-primary/10 rounded-xl">
-                <Brain className="w-8 h-8 text-primary" />
-              </div>
+        {/* Ana Oyun Kartı - Cilalı tasarım */}
+        <Card className="mx-auto max-w-2xl shadow-xl bg-background/95 backdrop-blur-sm border-border/50">
+          <CardHeader className="text-center pb-4">
+            <div className="flex items-center justify-center gap-4 mb-4">
+              <div className="text-2xl">{getPatternIcon(currentProblem.patternType)}</div>
               <div>
-                <CardTitle className="text-2xl">Mantık Dizileri</CardTitle>
-                <CardDescription>Dizideki örüntüyü bulun ve tamamlayın</CardDescription>
+                <CardTitle className="text-xl">Dizinin Devamını Bulun</CardTitle>
+                <CardDescription>Örüntüyü keşfedin ve tamamlayın</CardDescription>
               </div>
             </div>
 
-            <div className="flex items-center justify-center gap-4">
-              <Badge className={getDifficultyColor(currentProblem.difficulty)}>
+            <div className="flex items-center justify-center gap-3 flex-wrap">
+              <Badge className={`${getDifficultyColor(currentProblem.difficulty)} font-medium px-3 py-1`}>
                 {currentProblem.difficulty}
               </Badge>
-              <Badge variant="outline">{currentProblem.patternType}</Badge>
+              <Badge variant="outline" className="px-3 py-1">
+                {currentProblem.patternType}
+              </Badge>
             </div>
           </CardHeader>
 
-          <CardContent className="space-y-8">
-            {/* Dizi Gösterimi */}
+          <CardContent className="space-y-6">
+            {/* Dizi Gösterimi - Geliştirilmiş animasyonlar */}
             <div className="text-center">
-              <div className="text-sm text-muted-foreground mb-4">Dizinin devamını bulun:</div>
-              <div className="flex items-center justify-center gap-4 mb-6 flex-wrap">
+              <div className="text-sm text-muted-foreground mb-4 flex items-center justify-center gap-2">
+                <Lightbulb className="w-4 h-4" />
+                <span>Dizinin mantığını bulun:</span>
+              </div>
+              <div className="flex items-center justify-center gap-3 mb-6 flex-wrap">
                 {currentProblem.sequence.map((num, index) => (
                   <div
                     key={index}
-                    className="w-16 h-16 bg-primary/10 border-2 border-primary/20 rounded-xl flex items-center justify-center text-xl font-bold text-primary"
+                    className="w-14 h-14 bg-gradient-to-br from-primary/20 to-primary/10 border-2 border-primary/30 rounded-xl flex items-center justify-center text-lg font-bold text-primary shadow-sm transition-all duration-300 hover:scale-105 animate-scale-in"
+                    style={{ animationDelay: `${index * 100}ms` }}
                   >
                     {num}
                   </div>
                 ))}
-                <div className="w-16 h-16 bg-muted border-2 border-dashed border-muted-foreground/30 rounded-xl flex items-center justify-center text-xl font-bold text-muted-foreground">
+                <div className="w-14 h-14 bg-gradient-to-br from-muted to-muted/50 border-2 border-dashed border-muted-foreground/40 rounded-xl flex items-center justify-center text-xl font-bold text-muted-foreground animate-pulse">
                   ?
                 </div>
               </div>
             </div>
 
-            {/* Cevap Girişi */}
+            {/* Cevap Girişi - Tutarlı kontroller */}
             {!showFeedback && (
-              <div className="space-y-4">
+              <div className="space-y-4 animate-fade-in">
                 <div className="text-center">
-                  <label className="text-sm font-medium text-muted-foreground mb-2 block">
+                  <label className="text-sm font-medium text-muted-foreground mb-3 block flex items-center justify-center gap-2">
+                    <Target className="w-4 h-4" />
                     Cevabınızı girin:
                   </label>
                   <Input
@@ -371,7 +406,7 @@ const MantikDizileriSayfasi: React.FC<MantikDizileriSayfasiProps> = ({ onBack })
                     onChange={(e) => setUserAnswer(e.target.value)}
                     onKeyPress={handleKeyPress}
                     placeholder="Sayı girin..."
-                    className="w-32 h-12 text-center text-xl font-bold mx-auto"
+                    className="w-40 h-12 text-center text-xl font-bold mx-auto border-2 focus:border-primary transition-colors"
                     autoFocus
                   />
                 </div>
@@ -380,47 +415,59 @@ const MantikDizileriSayfasi: React.FC<MantikDizileriSayfasiProps> = ({ onBack })
                   <Button 
                     onClick={handleAnswerSubmit}
                     disabled={userAnswer.trim() === ''}
-                    className="px-8 py-3 text-lg"
+                    className="px-8 py-3 text-base font-semibold bg-gradient-to-r from-primary to-primary/90 hover:from-primary/90 hover:to-primary/80 shadow-md hover:shadow-lg transition-all duration-200 hover:scale-[1.02]"
                   >
-                    Cevabı Kontrol Et
+                    <CheckCircle className="w-5 h-5 mr-2" />
+                    Kontrol Et
                   </Button>
                 </div>
               </div>
             )}
 
-            {/* Geri Bildirim */}
+            {/* Geri Bildirim - Geliştirilmiş görsel feedback */}
             {showFeedback && (
-              <div className={`text-center p-6 rounded-xl ${isCorrect ? 'bg-green-50 dark:bg-green-950/20' : 'bg-red-50 dark:bg-red-950/20'}`}>
+              <div className={`text-center p-6 rounded-xl border-2 transition-all duration-500 animate-scale-in ${
+                isCorrect 
+                  ? 'bg-success/10 border-success/30 text-success' 
+                  : 'bg-destructive/10 border-destructive/30 text-destructive'
+              }`}>
                 <div className="flex items-center justify-center gap-3 mb-4">
                   {isCorrect ? (
-                    <CheckCircle className="w-8 h-8 text-green-600" />
+                    <CheckCircle className="w-8 h-8 text-success animate-bounce" />
                   ) : (
-                    <X className="w-8 h-8 text-red-600" />
+                    <X className="w-8 h-8 text-destructive animate-pulse" />
                   )}
                   <div className="text-xl font-bold">
-                    {isCorrect ? 'Doğru!' : 'Yanlış!'}
+                    {isCorrect ? '🎉 Harika!' : '😔 Yanlış!'}
                   </div>
                 </div>
                 
-                <div className="space-y-2">
+                <div className="space-y-3">
                   <div className="text-lg font-semibold">
-                    Doğru cevap: {currentProblem.correctAnswer}
+                    Doğru cevap: <span className="text-primary">{currentProblem.correctAnswer}</span>
                   </div>
-                  <div className="text-muted-foreground">
-                    {currentProblem.explanation}
+                  <div className="text-sm text-muted-foreground bg-background/50 p-3 rounded-lg">
+                    <strong>Açıklama:</strong> {currentProblem.explanation}
                   </div>
+                  
+                  {isCorrect && (
+                    <div className="flex items-center justify-center gap-2 text-sm text-amber-600">
+                      <Star className="w-4 h-4" />
+                      <span>+{Math.max(100 - Math.floor((Date.now() - questionStartTime) / 1000), 10)} puan!</span>
+                    </div>
+                  )}
                 </div>
               </div>
             )}
           </CardContent>
         </Card>
 
-        {/* Sonraki Soru Bilgisi */}
+        {/* Sonraki Soru Bilgisi - Tutarlı bilgilendirme */}
         {showFeedback && (
-          <div className="text-center mt-6">
-            <div className="flex items-center justify-center gap-2 text-muted-foreground">
-              <Clock className="w-4 h-4" />
-              <span>Sonraki soru 2 saniye içinde yüklenecek...</span>
+          <div className="text-center mt-6 animate-fade-in">
+            <div className="flex items-center justify-center gap-2 text-muted-foreground bg-background/60 backdrop-blur-sm px-4 py-2 rounded-full border border-border/50">
+              <Clock className="w-4 h-4 animate-pulse" />
+              <span className="text-sm">Yeni soru 2.5 saniye içinde gelecek...</span>
             </div>
           </div>
         )}
