@@ -11,6 +11,7 @@ interface AuthContextType {
   signUp: (email: string, password: string, displayName: string) => Promise<void>
   signIn: (email: string, password: string) => Promise<void>
   signOut: () => Promise<void>
+  isSupabaseConfigured: boolean
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
@@ -27,8 +28,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [user, setUser] = useState<User | null>(null)
   const [professional, setProfessional] = useState<Professional | null>(null)
   const [loading, setLoading] = useState(true)
+  const isSupabaseConfigured = supabase !== null
 
   useEffect(() => {
+    if (!supabase) {
+      setLoading(false)
+      return
+    }
+
     // Get initial session
     supabase.auth.getSession().then(({ data: { session } }) => {
       setUser(session?.user ?? null)
@@ -53,6 +60,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   }, [])
 
   const fetchProfessional = async (userId: string) => {
+    if (!supabase) return
+
     const { data, error } = await supabase
       .from('professionals')
       .select('*')
@@ -67,6 +76,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   }
 
   const signUp = async (email: string, password: string, displayName: string) => {
+    if (!supabase) {
+      toast.error('Supabase yapılandırılmamış. Lütfen önce Supabase bağlantısını kurun.')
+      throw new Error('Supabase not configured')
+    }
+
     const { data, error } = await supabase.auth.signUp({
       email,
       password,
@@ -99,6 +113,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   }
 
   const signIn = async (email: string, password: string) => {
+    if (!supabase) {
+      toast.error('Supabase yapılandırılmamış. Lütfen önce Supabase bağlantısını kurun.')
+      throw new Error('Supabase not configured')
+    }
+
     const { error } = await supabase.auth.signInWithPassword({
       email,
       password,
@@ -113,6 +132,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   }
 
   const signOut = async () => {
+    if (!supabase) {
+      toast.error('Supabase yapılandırılmamış.')
+      throw new Error('Supabase not configured')
+    }
+
     const { error } = await supabase.auth.signOut()
     if (error) {
       toast.error(`Çıkış hatası: ${error.message}`)
@@ -129,6 +153,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       signUp,
       signIn,
       signOut,
+      isSupabaseConfigured,
     }}>
       {children}
     </AuthContext.Provider>
