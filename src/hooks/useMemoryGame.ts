@@ -1,14 +1,13 @@
 
 import { useState, useEffect, useCallback } from 'react'
 import { Card, GameStats, generateCards, calculateScore } from '../utils/memoryGameUtils'
-import { LocalStorageManager } from '../utils/localStorage'
+import { LocalStorageManager, MemoryGameLevel, MEMORY_GAME_LEVELS } from '../utils/localStorage'
 
 interface UseMemoryGameProps {
-  gridSize: { rows: number; cols: number }
-  levelName: string
+  level: MemoryGameLevel
 }
 
-export const useMemoryGame = ({ gridSize, levelName }: UseMemoryGameProps) => {
+export const useMemoryGame = ({ level }: UseMemoryGameProps) => {
   const [cards, setCards] = useState<Card[]>([])
   const [flippedCards, setFlippedCards] = useState<Card[]>([])
   const [gameStarted, setGameStarted] = useState(false)
@@ -19,10 +18,13 @@ export const useMemoryGame = ({ gridSize, levelName }: UseMemoryGameProps) => {
   const [incorrectMoves, setIncorrectMoves] = useState(0)
   const [cardFlips, setCardFlips] = useState(0)
   const [firstMatchTime, setFirstMatchTime] = useState<number | null>(null)
+  const [showingPreview, setShowingPreview] = useState(false)
+  const [levelCompleted, setLevelCompleted] = useState(false)
+  const [nextLevelUnlocked, setNextLevelUnlocked] = useState(false)
 
-  // Kartları başlat - useCallback ile sarmalayarak bağımlılık sorununu çözüyoruz
+  // Kartları başlat
   const initializeGame = useCallback(() => {
-    const newCards = generateCards(gridSize)
+    const newCards = generateCards(level.gridSize)
     setCards(newCards)
     setFlippedCards([])
     setGameStarted(false)
@@ -33,17 +35,27 @@ export const useMemoryGame = ({ gridSize, levelName }: UseMemoryGameProps) => {
     setIncorrectMoves(0)
     setCardFlips(0)
     setFirstMatchTime(null)
-  }, [gridSize.rows, gridSize.cols]) // Sadece grid boyutu değiştiğinde yeniden oluştur
+    setLevelCompleted(false)
+    setNextLevelUnlocked(false)
+    
+    // Kart önizlemesini başlat
+    setShowingPreview(true)
+    setTimeout(() => {
+      setShowingPreview(false)
+    }, level.previewTime)
+  }, [level.gridSize, level.previewTime])
 
   // Oyunu başlat
   const startGame = useCallback(() => {
-    setGameStarted(true)
-    setStartTime(Date.now())
-  }, [])
+    if (!showingPreview) {
+      setGameStarted(true)
+      setStartTime(Date.now())
+    }
+  }, [showingPreview])
 
   // Kart tıklama
   const flipCard = useCallback((cardId: string) => {
-    if (!gameStarted || gameCompleted) return
+    if (!gameStarted || gameCompleted || showingPreview) return
     
     setCardFlips(prev => prev + 1)
     
@@ -62,9 +74,9 @@ export const useMemoryGame = ({ gridSize, levelName }: UseMemoryGameProps) => {
       
       return newCards
     })
-  }, [gameStarted, gameCompleted])
+  }, [gameStarted, gameCompleted, showingPreview])
 
-  // Süre sayacı - bağımlılıkları optimize ettik
+  // Süre sayacı
   useEffect(() => {
     let interval: NodeJS.Timeout
     
@@ -79,7 +91,7 @@ export const useMemoryGame = ({ gridSize, levelName }: UseMemoryGameProps) => {
     }
   }, [gameStarted, gameCompleted, startTime])
 
-  // Eşleşme kontrolü - flippedCards.length kontrolü eklendi
+  // Eşleşme kontrolü
   useEffect(() => {
     if (flippedCards.length === 2) {
       setMoves(prev => prev + 1)
@@ -118,24 +130,25 @@ export const useMemoryGame = ({ gridSize, levelName }: UseMemoryGameProps) => {
         }, 1500)
       }
     }
-  }, [flippedCards.length, firstMatchTime, startTime]) // Sadece gerekli bağımlılıklar
+  }, [flippedCards.length, firstMatchTime, startTime])
 
-  // Oyun tamamlanma kontrolü - cards.length kontrolü eklendi ve bağımlılıklar optimize edildi
+  // Oyun tamamlanma kontrolü
   useEffect(() => {
-    if (cards.length === 0) return // Kartlar henüz yüklenmemişse çıkış yap
+    if (cards.length === 0) return
     
     const matchedCards = cards.filter(card => card.isMatched)
     const totalPairs = cards.length / 2
     
     if (matchedCards.length === cards.length && !gameCompleted) {
       setGameCompleted(true)
+      setLevelCompleted(true)
       
       // İstatistikleri kaydet
       const finalDuration = startTime ? Math.floor((Date.now() - startTime) / 1000) : duration
       
       const stats: Omit<GameStats, 'score' | 'timestamp' | 'exercise_name'> = {
-        level_identifier: levelName,
-        grid_size: `${gridSize.rows}x${gridSize.cols}`,
+        level_identifier: `${level.name} (${level.gridSize.rows}x${level.gridSize.cols})`,
+        grid_size: `${level.gridSize.rows}x${level.gridSize.cols}`,
         duration_seconds: finalDuration,
         moves_count: moves,
         incorrect_moves_count: incorrectMoves,
@@ -160,8 +173,14 @@ export const useMemoryGame = ({ gridSize, levelName }: UseMemoryGameProps) => {
         date: finalStats.timestamp,
         details: finalStats
       })
+
+      // Seviye ilerlemesini kontrol et
+      const levelUp = LocalStorageManager.completeMemoryGameLevel(level.id)
+      if (levelUp) {
+        setNextLevelUnlocked(true)
+      }
     }
-  }, [cards, gameCompleted, moves, incorrectMoves, duration, startTime, firstMatchTime, cardFlips, levelName, gridSize.rows, gridSize.cols])
+  }, [cards, gameCompleted, moves, incorrectMoves, duration, startTime, firstMatchTime, cardFlips, level])
 
   return {
     cards,
@@ -175,6 +194,10 @@ export const useMemoryGame = ({ gridSize, levelName }: UseMemoryGameProps) => {
     initializeGame,
     startGame,
     flipCard,
-    flippedCards: flippedCards.length
+    flippedCards: flippedCards.length,
+    showingPreview,
+    levelCompleted,
+    nextLevelUnlocked,
+    currentLevel: level
   }
 }

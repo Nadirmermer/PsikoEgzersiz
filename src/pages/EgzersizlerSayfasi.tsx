@@ -2,12 +2,16 @@
 import React from 'react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
+import { LocalStorageManager, MEMORY_GAME_LEVELS } from '../utils/localStorage'
 
 interface EgzersizlerSayfasiProps {
   onMemoryGameStart: () => void
 }
 
 const EgzersizlerSayfasi: React.FC<EgzersizlerSayfasiProps> = ({ onMemoryGameStart }) => {
+  const currentLevel = LocalStorageManager.getCurrentMemoryGameLevel()
+  const currentLevelData = MEMORY_GAME_LEVELS[currentLevel - 1] || MEMORY_GAME_LEVELS[0]
+
   const exerciseCategories = [
     {
       title: 'Hafıza Egzersizleri',
@@ -16,7 +20,8 @@ const EgzersizlerSayfasi: React.FC<EgzersizlerSayfasiProps> = ({ onMemoryGameSta
       exercises: ['Kart Eşleştirme', 'Sayı Dizisi', 'Görsel Hafıza'],
       color: 'bg-blue-50 dark:bg-blue-900/20 border-blue-200 dark:border-blue-800',
       available: true,
-      onStart: onMemoryGameStart
+      onStart: onMemoryGameStart,
+      currentProgress: `Mevcut: ${currentLevelData.name} (${currentLevelData.description})`
     },
     {
       title: 'Dikkat Egzersizleri',
@@ -68,6 +73,11 @@ const EgzersizlerSayfasi: React.FC<EgzersizlerSayfasiProps> = ({ onMemoryGameSta
               <CardDescription className="text-sm">
                 {category.description}
               </CardDescription>
+              {category.currentProgress && (
+                <div className="text-xs bg-background/80 rounded-full px-2 py-1 border">
+                  {category.currentProgress}
+                </div>
+              )}
             </CardHeader>
             <CardContent>
               <div className="space-y-3">
@@ -98,16 +108,19 @@ const EgzersizlerSayfasi: React.FC<EgzersizlerSayfasiProps> = ({ onMemoryGameSta
       {/* Available Exercise Info */}
       <div className="mt-8 p-6 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg">
         <h3 className="text-lg font-semibold mb-2 text-green-800 dark:text-green-200">
-          🎮 Hafıza Oyunu Hazır!
+          🎮 Hafıza Oyunu - İlerlemeli Seviye Sistemi!
         </h3>
         <p className="text-green-700 dark:text-green-300 mb-3">
-          İlk bilişsel egzersizimiz olan "Kart Eşleştirme Hafıza Oyunu" artık oynanabilir durumda. 
-          Bu oyun hafıza ve dikkat becerilerinizi geliştirir.
+          Hafıza oyunu artık 4 farklı zorluk seviyesine sahip. Her seviyeyi tamamladığınızda 
+          otomatik olarak bir sonrakine geçeceksiniz.
         </p>
         <ul className="text-sm text-green-600 dark:text-green-400 space-y-1">
-          <li>• Başlangıç seviyesi: 4x2 grid (8 kart, 4 çift)</li>
-          <li>• Detaylı performans takibi</li>
-          <li>• Hamle, süre ve hata sayısı istatistikleri</li>
+          <li>• Seviye 1: 2x4 grid (8 kart, 4 çift) - Başlangıç</li>
+          <li>• Seviye 2: 3x4 grid (12 kart, 6 çift) - Kolay</li>
+          <li>• Seviye 3: 4x4 grid (16 kart, 8 çift) - Orta</li>
+          <li>• Seviye 4: 4x5 grid (20 kart, 10 çift) - Zor</li>
+          <li>• Her seviye başında kartları inceleme süresi</li>
+          <li>• Detaylı performans takibi ve istatistikler</li>
         </ul>
       </div>
 
