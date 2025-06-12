@@ -185,7 +185,6 @@ const Index = () => {
         activePage={activePage} 
         setActivePage={handlePageChange}
         showUzmanDashboard={!!professional}
-        isClientMode={isClientMode}
       />
       
       <ClientModeHandler 
