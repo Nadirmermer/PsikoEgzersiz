@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import EgzersizlerSayfasi from "./EgzersizlerSayfasi";
 import IstatistiklerSayfasi from "./IstatistiklerSayfasi";
@@ -39,7 +38,7 @@ const Index = () => {
 
   const renderPage = () => {
     if (isMemoryGameActive) {
-      return <HafizaOyunuSayfasi />;
+      return <HafizaOyunuSayfasi onBack={handleMemoryGameEnd} />;
     }
 
     // Client mode'da sadece egzersizler sayfası
