@@ -39,7 +39,7 @@ const Index = () => {
 
   const renderPage = () => {
     if (isMemoryGameActive) {
-      return <HafizaOyunuSayfasi onGameEnd={handleMemoryGameEnd} />;
+      return <HafizaOyunuSayfasi />;
     }
 
     // Client mode'da sadece egzersizler sayfası

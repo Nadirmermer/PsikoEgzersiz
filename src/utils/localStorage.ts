@@ -1,3 +1,4 @@
+
 export interface ExerciseResult {
   exerciseName: string
   score: number
@@ -66,7 +67,7 @@ export const LocalStorageManager = {
     return data ? JSON.parse(data) : []
   },
 
-  saveExerciseResult(result: ExerciseResult): Promise<void> {
+  async saveExerciseResult(result: ExerciseResult): Promise<void> {
     const results = this.getExerciseResults()
     results.push(result)
     localStorage.setItem('exerciseResults', JSON.stringify(results))
