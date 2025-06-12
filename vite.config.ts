@@ -1,4 +1,3 @@
-
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react-swc";
 import path from "path";
@@ -7,6 +6,7 @@ import { VitePWA } from 'vite-plugin-pwa';
 
 // https://vitejs.dev/config/
 export default defineConfig(({ mode }) => ({
+  base: mode === 'production' ? '/Ruh-sagligi-egzersiz/' : '/',
   server: {
     host: "::",
     port: 8080,
@@ -17,30 +17,11 @@ export default defineConfig(({ mode }) => ({
     componentTagger(),
     VitePWA({
       registerType: 'autoUpdate',
-      includeAssets: ['favicon.ico', 'apple-touch-icon.png', 'mask-icon.svg'],
-      manifest: {
-        name: 'Bilişsel Egzersiz Uygulaması',
-        short_name: 'Bilişsel Egzersiz',
-        description: 'Bilişsel egzersizler yapın ve performansınızı takip edin',
-        theme_color: '#ffffff',
-        background_color: '#ffffff',
-        display: 'standalone',
-        orientation: 'portrait',
-        icons: [
-          {
-            src: 'pwa-192x192.png',
-            sizes: '192x192',
-            type: 'image/png'
-          },
-          {
-            src: 'pwa-512x512.png',
-            sizes: '512x512',
-            type: 'image/png'
-          }
-        ]
-      },
+      includeAssets: ['favicon.ico', 'logo.png', 'placeholder.svg'],
+      manifest: false,
       workbox: {
         globPatterns: ['**/*.{js,css,html,ico,png,svg}'],
+        navigateFallbackDenylist: [/^chrome-extension:\/\//],
         runtimeCaching: [
           {
             urlPattern: /^https:\/\/fonts\.googleapis\.com/,
@@ -57,6 +38,18 @@ export default defineConfig(({ mode }) => ({
               expiration: {
                 maxEntries: 30,
                 maxAgeSeconds: 60 * 60 * 24 * 365 // 1 year
+              }
+            }
+          },
+          {
+            urlPattern: /^https:\/\/.*\.supabase\.co/,
+            handler: 'NetworkOnly',
+            options: {
+              backgroundSync: {
+                name: 'supabase-queue',
+                options: {
+                  maxRetentionTime: 24 * 60 // 24 saat
+                }
               }
             }
           }

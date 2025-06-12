@@ -5,7 +5,6 @@ import { Badge } from '@/components/ui/badge'
 import { Progress } from '@/components/ui/progress'
 import { LocalStorageManager, MEMORY_GAME_LEVELS } from '../utils/localStorage'
 import { Brain, Target, Play, Clock, Trophy, CheckCircle, Star, ArrowRightLeft, Eye, Layers, Hash, Palette, BookOpen, Calculator, Sparkles } from 'lucide-react'
-import logo from '/public/logo.png';
 
 interface EgzersizlerSayfasiProps {
   onMemoryGameStart: () => void
@@ -175,7 +174,7 @@ const EgzersizlerSayfasi: React.FC<EgzersizlerSayfasiProps> = ({
         <div className="relative inline-flex items-center justify-center mb-6">
           <div className="absolute inset-0 bg-primary/10 rounded-full blur-xl scale-150 animate-pulse" />
           <div className="relative w-20 h-20 flex items-center justify-center shadow-lg rounded-full bg-white border-4 border-primary/30">
-            <img src={logo} alt="Maskot Beyin" className="w-16 h-16 object-contain" />
+            <img src="/logo.png" alt="Maskot Beyin" className="w-16 h-16 object-contain" />
           </div>
         </div>
         <div className="flex items-center justify-center gap-2 mb-2">
