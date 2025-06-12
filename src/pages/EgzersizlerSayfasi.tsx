@@ -1,4 +1,3 @@
-
 import React from 'react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -6,6 +5,7 @@ import { Badge } from '@/components/ui/badge'
 import { Progress } from '@/components/ui/progress'
 import { LocalStorageManager, MEMORY_GAME_LEVELS } from '../utils/localStorage'
 import { Brain, Target, Play, Clock, Trophy, CheckCircle, Star, ArrowRightLeft, Eye, Layers, Hash, Palette, BookOpen, Calculator, Sparkles } from 'lucide-react'
+import logo from '/public/logo.png';
 
 interface EgzersizlerSayfasiProps {
   onMemoryGameStart: () => void
@@ -174,15 +174,16 @@ const EgzersizlerSayfasi: React.FC<EgzersizlerSayfasiProps> = ({
       <div className="text-center mb-8 animate-fade-in">
         <div className="relative inline-flex items-center justify-center mb-6">
           <div className="absolute inset-0 bg-primary/10 rounded-full blur-xl scale-150 animate-pulse" />
-          <div className="relative w-16 h-16 bg-gradient-to-br from-primary to-primary/70 rounded-2xl flex items-center justify-center shadow-lg">
-            <Brain className="w-8 h-8 text-white" />
+          <div className="relative w-20 h-20 flex items-center justify-center shadow-lg rounded-full bg-white border-4 border-primary/30">
+            <img src={logo} alt="Maskot Beyin" className="w-16 h-16 object-contain" />
           </div>
         </div>
-        
+        <div className="flex items-center justify-center gap-2 mb-2">
+          <span className="text-lg font-semibold text-primary">Merhaba! Ben sizin bilişsel maskotunuzum 🧠🌱</span>
+        </div>
         <h1 className="text-3xl md:text-4xl font-bold mb-3 bg-gradient-to-r from-primary via-primary/80 to-primary/60 bg-clip-text text-transparent leading-tight">
           Bilişsel Egzersizler
         </h1>
-        
         <p className="text-base md:text-lg text-muted-foreground max-w-2xl mx-auto leading-relaxed mb-4">
           Zihin sağlığınızı destekleyen bilimsel egzersizlerle beyin gücünüzü artırın
         </p>
