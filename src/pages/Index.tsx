@@ -1,14 +1,39 @@
-// Update this page (the content is just a fallback if you fail to update the page)
+
+import React, { useState } from 'react'
+import BottomNavigation from '../components/BottomNavigation'
+import EgzersizlerSayfasi from './EgzersizlerSayfasi'
+import IstatistiklerSayfasi from './IstatistiklerSayfasi'
+import AyarlarSayfasi from './AyarlarSayfasi'
+
+type ActiveTab = 'exercises' | 'statistics' | 'settings'
 
 const Index = () => {
-  return (
-    <div className="min-h-screen flex items-center justify-center bg-background">
-      <div className="text-center">
-        <h1 className="text-4xl font-bold mb-4">Welcome to Your Blank App</h1>
-        <p className="text-xl text-muted-foreground">Start building your amazing project here!</p>
-      </div>
-    </div>
-  );
-};
+  const [activeTab, setActiveTab] = useState<ActiveTab>('exercises')
 
-export default Index;
+  const renderActiveTab = () => {
+    switch (activeTab) {
+      case 'exercises':
+        return <EgzersizlerSayfasi />
+      case 'statistics':
+        return <IstatistiklerSayfasi />
+      case 'settings':
+        return <AyarlarSayfasi />
+      default:
+        return <EgzersizlerSayfasi />
+    }
+  }
+
+  return (
+    <div className="min-h-screen bg-background">
+      <main className="min-h-screen">
+        {renderActiveTab()}
+      </main>
+      <BottomNavigation 
+        activeTab={activeTab} 
+        onTabChange={setActiveTab} 
+      />
+    </div>
+  )
+}
+
+export default Index
