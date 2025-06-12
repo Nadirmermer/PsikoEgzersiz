@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import EgzersizlerSayfasi from "./EgzersizlerSayfasi";
 import IstatistiklerSayfasi from "./IstatistiklerSayfasi";
@@ -184,7 +183,8 @@ const Index = () => {
       
       <BottomNavigation 
         activePage={activePage} 
-        onPageChange={handlePageChange}
+        setActivePage={handlePageChange}
+        showUzmanDashboard={!!professional}
         isClientMode={isClientMode}
       />
       
