@@ -7,24 +7,10 @@ import { Progress } from '@/components/ui/progress'
 import { ArrowLeft, Shuffle, Clock, Target, Eye, Star } from 'lucide-react'
 import { LocalStorageManager } from '../utils/localStorage'
 import { toast } from '@/components/ui/sonner'
+import { WORD_CIRCLE_LEVELS, WordCircleLevel, TargetWord } from '../data/wordCircleLevels'
 
 interface KelimeCemberiBulmacasiProps {
   onBack: () => void
-}
-
-interface TargetWord {
-  word: string
-  startX: number
-  startY: number
-  direction: 'horizontal' | 'vertical'
-}
-
-interface LevelData {
-  levelNumber: number
-  circleLetters: string[]
-  targetWords: TargetWord[]
-  gridDimensions: { rows: number; cols: number }
-  bonusWords?: string[]
 }
 
 interface GameState {
@@ -39,32 +25,6 @@ interface GameState {
   isGameActive: boolean
   grid: (string | null)[][]
 }
-
-// Örnek seviye verileri - kullanıcı tarafından sağlanacak
-const SAMPLE_LEVELS: LevelData[] = [
-  {
-    levelNumber: 1,
-    circleLetters: ['A', 'L', 'T', 'K', 'İ'],
-    targetWords: [
-      { word: 'ALT', startX: 0, startY: 0, direction: 'horizontal' },
-      { word: 'KİL', startX: 0, startY: 1, direction: 'horizontal' },
-      { word: 'TAL', startX: 1, startY: 0, direction: 'vertical' }
-    ],
-    gridDimensions: { rows: 3, cols: 3 },
-    bonusWords: ['İLK', 'TİL']
-  },
-  {
-    levelNumber: 2,
-    circleLetters: ['E', 'V', 'S', 'A', 'R'],
-    targetWords: [
-      { word: 'SER', startX: 0, startY: 0, direction: 'horizontal' },
-      { word: 'VER', startX: 0, startY: 1, direction: 'horizontal' },
-      { word: 'AS', startX: 2, startY: 0, direction: 'vertical' }
-    ],
-    gridDimensions: { rows: 3, cols: 3 },
-    bonusWords: ['AVE', 'SAR']
-  }
-]
 
 const KelimeCemberiBulmacasiSayfasi: React.FC<KelimeCemberiBulmacasiProps> = ({ onBack }) => {
   const [gameState, setGameState] = useState<GameState>({
@@ -81,7 +41,7 @@ const KelimeCemberiBulmacasiSayfasi: React.FC<KelimeCemberiBulmacasiProps> = ({ 
   })
 
   const [isDragging, setIsDragging] = useState(false)
-  const [currentLevelData, setCurrentLevelData] = useState<LevelData | null>(null)
+  const [currentLevelData, setCurrentLevelData] = useState<WordCircleLevel | null>(null)
 
   // Zamanlayıcı
   useEffect(() => {
@@ -99,14 +59,14 @@ const KelimeCemberiBulmacasiSayfasi: React.FC<KelimeCemberiBulmacasiProps> = ({ 
 
   // Seviye yükleme
   useEffect(() => {
-    const levelData = SAMPLE_LEVELS.find(level => level.levelNumber === gameState.currentLevel)
+    const levelData = WORD_CIRCLE_LEVELS.find(level => level.levelNumber === gameState.currentLevel)
     if (levelData) {
       setCurrentLevelData(levelData)
       initializeGrid(levelData)
     }
   }, [gameState.currentLevel])
 
-  const initializeGrid = useCallback((levelData: LevelData) => {
+  const initializeGrid = useCallback((levelData: WordCircleLevel) => {
     const { rows, cols } = levelData.gridDimensions
     const newGrid = Array(rows).fill(null).map(() => Array(cols).fill(null))
     
@@ -243,7 +203,7 @@ const KelimeCemberiBulmacasiSayfasi: React.FC<KelimeCemberiBulmacasiProps> = ({ 
     toast.success(`Seviye ${gameState.currentLevel} tamamlandı!`)
     
     // Sonraki seviyeye geç
-    if (gameState.currentLevel < SAMPLE_LEVELS.length) {
+    if (gameState.currentLevel < WORD_CIRCLE_LEVELS.length) {
       setGameState(prev => ({
         ...prev,
         currentLevel: prev.currentLevel + 1
