@@ -1,18 +1,20 @@
-
 import React, { useState, useEffect } from 'react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Badge } from '@/components/ui/badge'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { LocalStorageManager, ExerciseResult } from '../utils/localStorage'
 import { useAuth } from '../contexts/AuthContext'
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar, Legend, AreaChart, Area } from 'recharts'
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar, Legend, AreaChart, Area, PieChart, Pie, Cell } from 'recharts'
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import { BarChart3, TrendingUp, Clock, Trophy, Target, Brain, User, Trash2, Download, Zap, Award, Star, Layers } from 'lucide-react'
+import { BarChart3, TrendingUp, Clock, Trophy, Target, Brain, User, Trash2, Download, Zap, Award, Star, Layers, Filter, Calendar, Gauge } from 'lucide-react'
 
 const IstatistiklerSayfasi: React.FC = () => {
   const [exerciseResults, setExerciseResults] = useState<ExerciseResult[]>([])
+  const [selectedExerciseFilter, setSelectedExerciseFilter] = useState<string>('all')
+  const [selectedTimeRange, setSelectedTimeRange] = useState<string>('all')
   const { professional } = useAuth()
 
   useEffect(() => {
@@ -20,18 +22,53 @@ const IstatistiklerSayfasi: React.FC = () => {
     setExerciseResults(results)
   }, [])
 
-  const memoryGameResults = exerciseResults.filter(result => result.exerciseName === 'Hafıza Oyunu')
-  const towerOfLondonResults = exerciseResults.filter(result => result.exerciseName === 'Londra Kulesi Testi')
-  const imageWordResults = exerciseResults.filter(result => result.exerciseName === 'Resim-Kelime Eşleştirme')
-  const wordImageResults = exerciseResults.filter(result => result.exerciseName === 'Kelime-Resim Eşleştirme')
+  // Filter exercises based on selected filters
+  const filteredResults = exerciseResults.filter(result => {
+    let matchesExercise = true
+    let matchesTime = true
+
+    if (selectedExerciseFilter !== 'all') {
+      matchesExercise = result.exerciseName === selectedExerciseFilter
+    }
+
+    if (selectedTimeRange !== 'all') {
+      const resultDate = new Date(result.date)
+      const now = new Date()
+      const daysDiff = (now.getTime() - resultDate.getTime()) / (1000 * 3600 * 24)
+      
+      switch (selectedTimeRange) {
+        case '7days':
+          matchesTime = daysDiff <= 7
+          break
+        case '30days':
+          matchesTime = daysDiff <= 30
+          break
+        case '90days':
+          matchesTime = daysDiff <= 90
+          break
+      }
+    }
+
+    return matchesExercise && matchesTime
+  })
+
+  // Exercise type specific results
+  const memoryGameResults = filteredResults.filter(result => result.exerciseName === 'Hafıza Oyunu')
+  const towerOfLondonResults = filteredResults.filter(result => result.exerciseName === 'Londra Kulesi Testi')
+  const imageWordResults = filteredResults.filter(result => result.exerciseName === 'Resim-Kelime Eşleştirme')
+  const wordImageResults = filteredResults.filter(result => result.exerciseName === 'Kelime-Resim Eşleştirme')
+  const numberSequenceResults = filteredResults.filter(result => result.exerciseName === 'Sayı Dizisi Takibi')
+  const colorSequenceResults = filteredResults.filter(result => result.exerciseName === 'Renk Dizisi Takibi')
+  const wordCircleResults = filteredResults.filter(result => result.exerciseName === 'Kelime Çemberi Bulmacası')
+  const logicSequenceResults = filteredResults.filter(result => result.exerciseName === 'Mantık Dizileri')
   
-  const totalExercises = exerciseResults.length
+  const totalExercises = filteredResults.length
   const averageScore = totalExercises > 0 
-    ? (exerciseResults.reduce((sum, result) => sum + result.score, 0) / totalExercises).toFixed(1)
+    ? (filteredResults.reduce((sum, result) => sum + result.score, 0) / totalExercises).toFixed(1)
     : '0'
-  const totalTime = exerciseResults.reduce((sum, result) => sum + result.duration, 0)
+  const totalTime = filteredResults.reduce((sum, result) => sum + result.duration, 0)
   const highestScore = totalExercises > 0 
-    ? Math.max(...exerciseResults.map(result => result.score))
+    ? Math.max(...filteredResults.map(result => result.score))
     : 0
 
   const formatTime = (seconds: number) => {
@@ -53,99 +90,112 @@ const IstatistiklerSayfasi: React.FC = () => {
     setExerciseResults([])
   }
 
-  // Hafıza oyunu verilerini grafik için hazırla
-  const prepareMemoryChartData = () => {
-    return memoryGameResults.map((result, index) => ({
-      index: index + 1,
-      oyun: `Oyun ${index + 1}`,
-      skor: result.score,
-      sure: result.duration,
-      tarih: new Date(result.date).toLocaleDateString('tr-TR'),
-      seviye: result.details?.level_identifier || 'Bilinmiyor',
-      hamle: result.details?.moves_count || 0,
-      hata: result.details?.incorrect_moves_count || 0
+  // Exercise distribution for pie chart
+  const exerciseDistribution = [
+    { name: 'Hafıza Oyunu', count: memoryGameResults.length, color: '#3B82F6' },
+    { name: 'Londra Kulesi', count: towerOfLondonResults.length, color: '#8B5CF6' },
+    { name: 'Resim-Kelime', count: imageWordResults.length, color: '#10B981' },
+    { name: 'Kelime-Resim', count: wordImageResults.length, color: '#F59E0B' },
+    { name: 'Sayı Dizisi', count: numberSequenceResults.length, color: '#EF4444' },
+    { name: 'Renk Dizisi', count: colorSequenceResults.length, color: '#06B6D4' },
+    { name: 'Kelime Çemberi', count: wordCircleResults.length, color: '#84CC16' },
+    { name: 'Mantık Dizileri', count: logicSequenceResults.length, color: '#F97316' }
+  ].filter(item => item.count > 0)
+
+  // Memory Game specific analytics
+  const prepareMemoryGameAnalytics = () => {
+    if (memoryGameResults.length === 0) return null
+
+    const levelPerformance = memoryGameResults.reduce((acc, result) => {
+      const level = result.details?.level_identifier || 'Bilinmiyor'
+      if (!acc[level]) {
+        acc[level] = { scores: [], times: [], moves: [], incorrectMoves: [] }
+      }
+      acc[level].scores.push(result.score)
+      acc[level].times.push(result.duration)
+      acc[level].moves.push(result.details?.moves_count || 0)
+      acc[level].incorrectMoves.push(result.details?.incorrect_moves_count || 0)
+      return acc
+    }, {} as Record<string, { scores: number[], times: number[], moves: number[], incorrectMoves: number[] }>)
+
+    return Object.entries(levelPerformance).map(([level, data]) => ({
+      level,
+      avgScore: Math.round(data.scores.reduce((a, b) => a + b, 0) / data.scores.length),
+      avgTime: Math.round(data.times.reduce((a, b) => a + b, 0) / data.times.length),
+      avgMoves: Math.round(data.moves.reduce((a, b) => a + b, 0) / data.moves.length),
+      avgIncorrectMoves: Math.round(data.incorrectMoves.reduce((a, b) => a + b, 0) / data.incorrectMoves.length),
+      playCount: data.scores.length
     }))
   }
 
-  // Londra Kulesi verilerini grafik için hazırla
-  const prepareTowerChartData = () => {
-    return towerOfLondonResults.map((result, index) => ({
-      index: index + 1,
-      oyun: `Seviye ${result.details?.level_number || index + 1}`,
-      skor: result.score,
-      sure: result.duration,
-      tarih: new Date(result.date).toLocaleDateString('tr-TR'),
-      seviye: result.details?.level_identifier || 'Bilinmiyor',
-      hamle: result.details?.user_moves_taken || 0,
-      minHamle: result.details?.min_moves_required || 0,
-      verimlilik: result.details?.efficiency_percentage || 0,
-      optimal: result.details?.completed_optimally || false
+  // Tower of London specific analytics
+  const prepareTowerAnalytics = () => {
+    if (towerOfLondonResults.length === 0) return null
+
+    const levelPerformance = towerOfLondonResults.reduce((acc, result) => {
+      const level = result.details?.level_identifier || 'Bilinmiyor'
+      if (!acc[level]) {
+        acc[level] = { scores: [], times: [], efficiency: [], optimalCount: 0, totalCount: 0 }
+      }
+      acc[level].scores.push(result.score)
+      acc[level].times.push(result.duration)
+      acc[level].efficiency.push(result.details?.efficiency_percentage || 0)
+      if (result.details?.completed_optimally) acc[level].optimalCount++
+      acc[level].totalCount++
+      return acc
+    }, {} as Record<string, { scores: number[], times: number[], efficiency: number[], optimalCount: number, totalCount: number }>)
+
+    return Object.entries(levelPerformance).map(([level, data]) => ({
+      level,
+      avgScore: Math.round(data.scores.reduce((a, b) => a + b, 0) / data.scores.length),
+      avgTime: Math.round(data.times.reduce((a, b) => a + b, 0) / data.times.length),
+      avgEfficiency: Math.round(data.efficiency.reduce((a, b) => a + b, 0) / data.efficiency.length),
+      optimalRate: Math.round((data.optimalCount / data.totalCount) * 100),
+      playCount: data.scores.length
     }))
   }
 
-  const memoryChartData = prepareMemoryChartData()
-  const towerChartData = prepareTowerChartData()
+  // Sequence exercises analytics
+  const prepareSequenceAnalytics = (results: ExerciseResult[], exerciseName: string) => {
+    if (results.length === 0) return null
 
-  // Seviye bazlı performans - Hafıza Oyunu
-  const memoryLevelPerformance = memoryGameResults.reduce((acc, result) => {
-    const level = result.details?.level_identifier || 'Bilinmiyor'
-    if (!acc[level]) {
-      acc[level] = { totalScore: 0, count: 0, totalTime: 0 }
-    }
-    acc[level].totalScore += result.score
-    acc[level].totalTime += result.duration
-    acc[level].count += 1
-    return acc
-  }, {} as Record<string, { totalScore: number; count: number; totalTime: number }>)
+    const levelPerformance = results.reduce((acc, result) => {
+      const level = result.details?.max_sequence_length || result.details?.level || 1
+      if (!acc[level]) {
+        acc[level] = { scores: [], times: [], attempts: 0 }
+      }
+      acc[level].scores.push(result.score)
+      acc[level].times.push(result.duration)
+      acc[level].attempts++
+      return acc
+    }, {} as Record<number, { scores: number[], times: number[], attempts: number }>)
 
-  const memoryLevelStats = Object.entries(memoryLevelPerformance).map(([level, stats]) => ({
-    seviye: level,
-    ortalamaSkor: Math.round(stats.totalScore / stats.count),
-    ortalamaSure: Math.round(stats.totalTime / stats.count),
-    oyunSayisi: stats.count
-  }))
+    return Object.entries(levelPerformance).map(([level, data]) => ({
+      level: `Seviye ${level}`,
+      avgScore: Math.round(data.scores.reduce((a, b) => a + b, 0) / data.scores.length),
+      avgTime: Math.round(data.times.reduce((a, b) => a + b, 0) / data.times.length),
+      attempts: data.attempts,
+      maxLevel: parseInt(level)
+    })).sort((a, b) => a.maxLevel - b.maxLevel)
+  }
 
-  // Seviye bazlı performans - Londra Kulesi
-  const towerLevelPerformance = towerOfLondonResults.reduce((acc, result) => {
-    const level = result.details?.level_identifier || 'Bilinmiyor'
-    if (!acc[level]) {
-      acc[level] = { totalScore: 0, count: 0, totalTime: 0, totalEfficiency: 0 }
-    }
-    acc[level].totalScore += result.score
-    acc[level].totalTime += result.duration
-    acc[level].totalEfficiency += result.details?.efficiency_percentage || 0
-    acc[level].count += 1
-    return acc
-  }, {} as Record<string, { totalScore: number; count: number; totalTime: number; totalEfficiency: number }>)
-
-  const towerLevelStats = Object.entries(towerLevelPerformance).map(([level, stats]) => ({
-    seviye: level,
-    ortalamaSkor: Math.round(stats.totalScore / stats.count),
-    ortalamaSure: Math.round(stats.totalTime / stats.count),
-    ortalamaVerimlilik: Math.round(stats.totalEfficiency / stats.count),
-    oyunSayisi: stats.count
-  }))
+  const memoryAnalytics = prepareMemoryGameAnalytics()
+  const towerAnalytics = prepareTowerAnalytics()
+  const numberSequenceAnalytics = prepareSequenceAnalytics(numberSequenceResults, 'Sayı Dizisi Takibi')
+  const colorSequenceAnalytics = prepareSequenceAnalytics(colorSequenceResults, 'Renk Dizisi Takibi')
 
   const chartConfig = {
-    skor: {
-      label: "Skor",
-      color: "hsl(var(--primary))",
-    },
-    sure: {
-      label: "Süre (sn)",
-      color: "hsl(var(--chart-2))",
-    },
-    verimlilik: {
-      label: "Verimlilik (%)",
-      color: "hsl(var(--chart-3))",
-    },
+    skor: { label: "Skor", color: "hsl(var(--primary))" },
+    sure: { label: "Süre (sn)", color: "hsl(var(--chart-2))" },
+    verimlilik: { label: "Verimlilik (%)", color: "hsl(var(--chart-3))" },
+    hamle: { label: "Hamle", color: "hsl(var(--chart-4))" },
   }
 
   const stats = [
     {
       title: 'Toplam Egzersiz',
       value: totalExercises.toString(),
-      description: 'Tamamlanan egzersiz sayısı',
+      description: selectedExerciseFilter === 'all' ? 'Tamamlanan egzersiz sayısı' : `${selectedExerciseFilter} egzersizi`,
       icon: Target,
       color: 'text-blue-600 dark:text-blue-400',
       bgColor: 'bg-blue-50 dark:bg-blue-950/30'
@@ -153,7 +203,7 @@ const IstatistiklerSayfasi: React.FC = () => {
     {
       title: 'Ortalama Skor',
       value: averageScore,
-      description: 'Genel performans ortalaması',
+      description: 'Performans ortalaması',
       icon: TrendingUp,
       color: 'text-emerald-600 dark:text-emerald-400',
       bgColor: 'bg-emerald-50 dark:bg-emerald-950/30'
@@ -161,7 +211,7 @@ const IstatistiklerSayfasi: React.FC = () => {
     {
       title: 'En Yüksek Skor',
       value: highestScore.toString(),
-      description: 'Şimdiye kadarki en iyi performans',
+      description: 'En iyi performans',
       icon: Trophy,
       color: 'text-amber-600 dark:text-amber-400',
       bgColor: 'bg-amber-50 dark:bg-amber-950/30'
@@ -169,14 +219,13 @@ const IstatistiklerSayfasi: React.FC = () => {
     {
       title: 'Toplam Süre',
       value: formatTime(totalTime),
-      description: 'Egzersizlerde geçirilen toplam zaman',
+      description: 'Egzersizlerde geçirilen süre',
       icon: Clock,
       color: 'text-violet-600 dark:text-violet-400',
       bgColor: 'bg-violet-50 dark:bg-violet-950/30'
     }
   ]
 
-  // Egzersiz türlerine göre özet
   const exerciseTypeSummary = [
     {
       name: 'Hafıza Oyunu',
@@ -223,6 +272,58 @@ const IstatistiklerSayfasi: React.FC = () => {
         </p>
       </div>
 
+      {/* Filters */}
+      <div className="grid gap-4 md:grid-cols-2 mb-8">
+        <Card className="card-enhanced">
+          <CardHeader className="pb-3">
+            <CardTitle className="flex items-center gap-2 text-lg">
+              <Filter className="w-5 h-5" />
+              Egzersiz Türü
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <Select value={selectedExerciseFilter} onValueChange={setSelectedExerciseFilter}>
+              <SelectTrigger>
+                <SelectValue placeholder="Egzersiz türü seçin" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Tüm Egzersizler</SelectItem>
+                <SelectItem value="Hafıza Oyunu">Hafıza Oyunu</SelectItem>
+                <SelectItem value="Londra Kulesi Testi">Londra Kulesi Testi</SelectItem>
+                <SelectItem value="Resim-Kelime Eşleştirme">Resim-Kelime Eşleştirme</SelectItem>
+                <SelectItem value="Kelime-Resim Eşleştirme">Kelime-Resim Eşleştirme</SelectItem>
+                <SelectItem value="Sayı Dizisi Takibi">Sayı Dizisi Takibi</SelectItem>
+                <SelectItem value="Renk Dizisi Takibi">Renk Dizisi Takibi</SelectItem>
+                <SelectItem value="Kelime Çemberi Bulmacası">Kelime Çemberi Bulmacası</SelectItem>
+                <SelectItem value="Mantık Dizileri">Mantık Dizileri</SelectItem>
+              </SelectContent>
+            </Select>
+          </CardContent>
+        </Card>
+
+        <Card className="card-enhanced">
+          <CardHeader className="pb-3">
+            <CardTitle className="flex items-center gap-2 text-lg">
+              <Calendar className="w-5 h-5" />
+              Zaman Aralığı
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <Select value={selectedTimeRange} onValueChange={setSelectedTimeRange}>
+              <SelectTrigger>
+                <SelectValue placeholder="Zaman aralığı seçin" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Tüm Zamanlar</SelectItem>
+                <SelectItem value="7days">Son 7 Gün</SelectItem>
+                <SelectItem value="30days">Son 30 Gün</SelectItem>
+                <SelectItem value="90days">Son 90 Gün</SelectItem>
+              </SelectContent>
+            </Select>
+          </CardContent>
+        </Card>
+      </div>
+
       {/* Enhanced Stats Cards */}
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4 mb-12">
         {stats.map((stat, index) => {
@@ -259,48 +360,40 @@ const IstatistiklerSayfasi: React.FC = () => {
         })}
       </div>
 
-      {/* Egzersiz Türleri Özeti */}
-      <div className="grid gap-4 md:grid-cols-4 mb-12">
-        {exerciseTypeSummary.map((exercise, index) => {
-          const IconComponent = exercise.icon;
-          return (
-            <Card key={index} className="card-enhanced">
-              <CardContent className="p-4 text-center">
-                <div className={`w-12 h-12 ${exercise.bgColor} rounded-xl flex items-center justify-center mx-auto mb-3`}>
-                  <IconComponent className={`w-6 h-6 ${exercise.color}`} />
-                </div>
-                <div className="text-2xl font-bold">{exercise.count}</div>
-                <div className="text-sm text-muted-foreground">{exercise.name}</div>
-              </CardContent>
-            </Card>
-          )
-        })}
-      </div>
-
-      {exerciseResults.length === 0 ? (
+      {totalExercises === 0 ? (
         <Card className="card-enhanced">
           <CardContent className="text-center py-16">
             <div className="w-24 h-24 bg-muted/30 rounded-2xl flex items-center justify-center mx-auto mb-6">
               <Brain className="w-12 h-12 text-muted-foreground" />
             </div>
             <h3 className="text-2xl font-semibold mb-3">
-              Henüz egzersiz yapmadınız
+              {selectedExerciseFilter === 'all' 
+                ? 'Henüz egzersiz yapmadınız' 
+                : `${selectedExerciseFilter} egzersizi için veri bulunamadı`
+              }
             </h3>
             <p className="text-muted-foreground mb-6 max-w-md mx-auto">
-              İlk egzersiznizi tamamladığınızda performans istatistikleriniz burada görünecek
+              {selectedExerciseFilter === 'all'
+                ? 'İlk egzersiznizi tamamladığınızda performans istatistikleriniz burada görünecek'
+                : 'Bu egzersizi oynadığınızda detaylı analizler burada görünecek'
+              }
             </p>
             <Badge variant="outline" className="text-sm px-4 py-2">
               <Zap className="w-4 h-4 mr-2" />
-              Hafıza Oyunu ile başlayın
+              Egzersizlere başlayın
             </Badge>
           </CardContent>
         </Card>
       ) : (
         <Tabs defaultValue="overview" className="space-y-8">
-          <TabsList className="grid w-full grid-cols-3 p-1 bg-muted/50 h-12">
+          <TabsList className="grid w-full grid-cols-4 p-1 bg-muted/50 h-12">
             <TabsTrigger value="overview" className="font-semibold">
               <BarChart3 className="w-4 h-4 mr-2" />
               Genel Bakış
+            </TabsTrigger>
+            <TabsTrigger value="specific" className="font-semibold">
+              <Gauge className="w-4 h-4 mr-2" />
+              Özel Analizler
             </TabsTrigger>
             <TabsTrigger value="charts" className="font-semibold">
               <TrendingUp className="w-4 h-4 mr-2" />
@@ -313,78 +406,62 @@ const IstatistiklerSayfasi: React.FC = () => {
           </TabsList>
 
           <TabsContent value="overview" className="space-y-8">
-            {/* Hafıza Oyunu Seviye Performansı */}
-            {memoryLevelStats.length > 0 && (
+            {/* Exercise Distribution */}
+            {exerciseDistribution.length > 1 && selectedExerciseFilter === 'all' && (
               <Card className="card-enhanced">
                 <CardHeader>
                   <CardTitle className="flex items-center gap-3 text-2xl">
-                    <div className="p-2 bg-blue-500/10 rounded-lg">
-                      <Brain className="w-6 h-6 text-blue-600" />
+                    <div className="p-2 bg-primary/10 rounded-lg">
+                      <BarChart3 className="w-6 h-6 text-primary" />
                     </div>
-                    Hafıza Oyunu - Seviye Performansı
+                    Egzersiz Dağılımı
                   </CardTitle>
                   <CardDescription className="text-base">
-                    Her zorluk seviyesindeki ortalama performansınız
+                    Hangi egzersizleri ne sıklıkla oynadığınız
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-                    {memoryLevelStats.map((stat, index) => (
-                      <div key={index} className="p-6 bg-gradient-to-br from-blue-50/30 to-blue-50/10 dark:from-blue-950/20 dark:to-blue-950/10 rounded-xl border border-border/50 hover:shadow-md transition-all duration-300">
-                        <div className="flex items-center justify-between mb-4">
-                          <div className="font-semibold text-sm text-muted-foreground">{stat.seviye}</div>
-                          <Badge variant="outline" className="text-xs">
-                            {stat.oyunSayisi} oyun
-                          </Badge>
+                  <div className="grid md:grid-cols-2 gap-6">
+                    <ChartContainer config={chartConfig} className="h-[300px]">
+                      <ResponsiveContainer width="100%" height="100%">
+                        <PieChart>
+                          <Pie
+                            data={exerciseDistribution}
+                            cx="50%"
+                            cy="50%"
+                            innerRadius={60}
+                            outerRadius={120}
+                            paddingAngle={2}
+                            dataKey="count"
+                          >
+                            {exerciseDistribution.map((entry, index) => (
+                              <Cell key={`cell-${index}`} fill={entry.color} />
+                            ))}
+                          </Pie>
+                          <ChartTooltip content={<ChartTooltipContent />} />
+                        </PieChart>
+                      </ResponsiveContainer>
+                    </ChartContainer>
+                    <div className="space-y-3">
+                      {exerciseDistribution.map((item, index) => (
+                        <div key={index} className="flex items-center justify-between p-3 bg-muted/20 rounded-lg">
+                          <div className="flex items-center gap-3">
+                            <div 
+                              className="w-4 h-4 rounded-full" 
+                              style={{ backgroundColor: item.color }}
+                            />
+                            <span className="font-medium">{item.name}</span>
+                          </div>
+                          <Badge variant="outline">{item.count} oyun</Badge>
                         </div>
-                        <div className="text-3xl font-bold text-blue-600 mb-2">{stat.ortalamaSkor}</div>
-                        <div className="text-sm text-muted-foreground">
-                          Ortalama süre: <span className="font-medium">{stat.ortalamaSure}sn</span>
-                        </div>
-                      </div>
-                    ))}
+                      ))}
+                    </div>
                   </div>
                 </CardContent>
               </Card>
             )}
 
-            {/* Londra Kulesi Seviye Performansı */}
-            {towerLevelStats.length > 0 && (
-              <Card className="card-enhanced">
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-3 text-2xl">
-                    <div className="p-2 bg-purple-500/10 rounded-lg">
-                      <Layers className="w-6 h-6 text-purple-600" />
-                    </div>
-                    Londra Kulesi - Seviye Performansı
-                  </CardTitle>
-                  <CardDescription className="text-base">
-                    Her seviyedeki problem çözme performansınız
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-                    {towerLevelStats.map((stat, index) => (
-                      <div key={index} className="p-6 bg-gradient-to-br from-purple-50/30 to-purple-50/10 dark:from-purple-950/20 dark:to-purple-950/10 rounded-xl border border-border/50 hover:shadow-md transition-all duration-300">
-                        <div className="flex items-center justify-between mb-4">
-                          <div className="font-semibold text-sm text-muted-foreground">{stat.seviye}</div>
-                          <Badge variant="outline" className="text-xs">
-                            {stat.oyunSayisi} oyun
-                          </Badge>
-                        </div>
-                        <div className="text-3xl font-bold text-purple-600 mb-2">{stat.ortalamaSkor}</div>
-                        <div className="text-sm text-muted-foreground space-y-1">
-                          <div>Süre: <span className="font-medium">{stat.ortalamaSure}sn</span></div>
-                          <div>Verimlilik: <span className="font-medium text-purple-600">{stat.ortalamaVerimlilik}%</span></div>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </CardContent>
-              </Card>
-            )}
-
-            {/* Son Egzersizler */}
+            {/* Recent Exercises */}
             <Card className="card-enhanced">
               <CardHeader>
                 <CardTitle className="flex items-center gap-3 text-2xl">
@@ -399,13 +476,16 @@ const IstatistiklerSayfasi: React.FC = () => {
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
-                  {exerciseResults.slice(-5).reverse().map((result, index) => (
+                  {filteredResults.slice(-5).reverse().map((result, index) => (
                     <div key={index} className="flex justify-between items-center p-4 bg-gradient-to-r from-muted/20 to-muted/10 rounded-xl border border-border/30 hover:shadow-sm transition-all duration-300">
                       <div className="flex items-center gap-4">
                         <div className="p-2 bg-primary/10 rounded-lg">
                           {result.exerciseName === 'Hafıza Oyunu' && <Brain className="w-5 h-5 text-blue-600" />}
                           {result.exerciseName === 'Londra Kulesi Testi' && <Layers className="w-5 h-5 text-purple-600" />}
                           {result.exerciseName.includes('Eşleştirme') && <Target className="w-5 h-5 text-emerald-600" />}
+                          {result.exerciseName.includes('Dizisi') && <TrendingUp className="w-5 h-5 text-orange-600" />}
+                          {result.exerciseName.includes('Çemberi') && <Award className="w-5 h-5 text-lime-600" />}
+                          {result.exerciseName.includes('Mantık') && <Gauge className="w-5 h-5 text-red-600" />}
                         </div>
                         <div>
                           <div className="font-semibold text-base">{result.exerciseName}</div>
@@ -429,106 +509,202 @@ const IstatistiklerSayfasi: React.FC = () => {
             </Card>
           </TabsContent>
 
-          <TabsContent value="charts" className="space-y-8">
-            {/* Hafıza Oyunu Grafikleri */}
-            {memoryGameResults.length > 0 && (
-              <>
-                <Card className="card-enhanced">
-                  <CardHeader>
-                    <CardTitle className="flex items-center gap-3 text-2xl">
+          <TabsContent value="specific" className="space-y-8">
+            {/* Memory Game Specific Analytics */}
+            {memoryAnalytics && (selectedExerciseFilter === 'all' || selectedExerciseFilter === 'Hafıza Oyunu') && (
+              <Card className="card-enhanced">
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-3 text-2xl">
+                    <div className="p-2 bg-blue-500/10 rounded-lg">
                       <Brain className="w-6 h-6 text-blue-600" />
-                      Hafıza Oyunu - Skor Gelişimi
-                    </CardTitle>
-                    <CardDescription className="text-base">
-                      Hafıza oyunundaki performansınızın zamanla gelişimi
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <ChartContainer config={chartConfig} className="h-[400px]">
-                      <ResponsiveContainer width="100%" height="100%">
-                        <AreaChart data={memoryChartData}>
-                          <defs>
-                            <linearGradient id="memorySkorGradient" x1="0" y1="0" x2="0" y2="1">
-                              <stop offset="5%" stopColor="hsl(220, 91%, 60%)" stopOpacity={0.3}/>
-                              <stop offset="95%" stopColor="hsl(220, 91%, 60%)" stopOpacity={0.05}/>
-                            </linearGradient>
-                          </defs>
-                          <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
-                          <XAxis dataKey="oyun" stroke="hsl(var(--muted-foreground))" fontSize={12} />
-                          <YAxis stroke="hsl(var(--muted-foreground))" fontSize={12} />
-                          <ChartTooltip content={<ChartTooltipContent />} />
-                          <Area 
-                            type="monotone" 
-                            dataKey="skor" 
-                            stroke="hsl(220, 91%, 60%)" 
-                            fill="url(#memorySkorGradient)"
-                            strokeWidth={3}
-                          />
-                        </AreaChart>
-                      </ResponsiveContainer>
-                    </ChartContainer>
-                  </CardContent>
-                </Card>
-              </>
+                    </div>
+                    Hafıza Oyunu - Detaylı Analiz
+                  </CardTitle>
+                  <CardDescription className="text-base">
+                    Seviye bazında performans ve hamle analizi
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <ChartContainer config={chartConfig} className="h-[400px] mb-6">
+                    <ResponsiveContainer width="100%" height="100%">
+                      <BarChart data={memoryAnalytics}>
+                        <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+                        <XAxis dataKey="level" stroke="hsl(var(--muted-foreground))" fontSize={12} />
+                        <YAxis stroke="hsl(var(--muted-foreground))" fontSize={12} />
+                        <ChartTooltip content={<ChartTooltipContent />} />
+                        <Legend />
+                        <Bar dataKey="avgScore" fill="#3B82F6" name="Ortalama Skor" />
+                        <Bar dataKey="avgMoves" fill="#10B981" name="Ortalama Hamle" />
+                      </BarChart>
+                    </ResponsiveContainer>
+                  </ChartContainer>
+                  <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+                    {memoryAnalytics.map((level, index) => (
+                      <div key={index} className="p-4 bg-blue-50/30 dark:bg-blue-950/20 rounded-xl border border-border/50">
+                        <div className="font-semibold text-blue-700 dark:text-blue-300 mb-2">{level.level}</div>
+                        <div className="space-y-2 text-sm">
+                          <div>Ortalama Skor: <span className="font-bold">{level.avgScore}</span></div>
+                          <div>Ortalama Süre: <span className="font-bold">{level.avgTime}s</span></div>
+                          <div>Ortalama Hamle: <span className="font-bold">{level.avgMoves}</span></div>
+                          <div>Hata Oranı: <span className="font-bold">{level.avgIncorrectMoves}</span></div>
+                          <Badge variant="outline" className="text-xs">{level.playCount} oyun</Badge>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
             )}
 
-            {/* Londra Kulesi Grafikleri */}
-            {towerOfLondonResults.length > 0 && (
-              <>
-                <Card className="card-enhanced">
-                  <CardHeader>
-                    <CardTitle className="flex items-center gap-3 text-2xl">
+            {/* Tower of London Specific Analytics */}
+            {towerAnalytics && (selectedExerciseFilter === 'all' || selectedExerciseFilter === 'Londra Kulesi Testi') && (
+              <Card className="card-enhanced">
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-3 text-2xl">
+                    <div className="p-2 bg-purple-500/10 rounded-lg">
                       <Layers className="w-6 h-6 text-purple-600" />
-                      Londra Kulesi - Skor ve Verimlilik Gelişimi
-                    </CardTitle>
-                    <CardDescription className="text-base">
-                      Problem çözme performansınızın gelişimi
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <ChartContainer config={chartConfig} className="h-[400px]">
-                      <ResponsiveContainer width="100%" height="100%">
-                        <LineChart data={towerChartData}>
-                          <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
-                          <XAxis dataKey="oyun" stroke="hsl(var(--muted-foreground))" fontSize={12} />
-                          <YAxis stroke="hsl(var(--muted-foreground))" fontSize={12} />
-                          <ChartTooltip content={<ChartTooltipContent />} />
-                          <Legend />
-                          <Line 
-                            type="monotone" 
-                            dataKey="skor" 
-                            stroke="hsl(262, 83%, 58%)" 
-                            strokeWidth={3}
-                            name="Skor"
-                            dot={{ fill: "hsl(262, 83%, 58%)", strokeWidth: 2, r: 4 }}
-                          />
-                          <Line 
-                            type="monotone" 
-                            dataKey="verimlilik" 
-                            stroke="hsl(142, 76%, 36%)" 
-                            strokeWidth={3}
-                            name="Verimlilik (%)"
-                            dot={{ fill: "hsl(142, 76%, 36%)", strokeWidth: 2, r: 4 }}
-                          />
-                        </LineChart>
-                      </ResponsiveContainer>
-                    </ChartContainer>
-                  </CardContent>
-                </Card>
-              </>
+                    </div>
+                    Londra Kulesi - Detaylı Analiz
+                  </CardTitle>
+                  <CardDescription className="text-base">
+                    Seviye bazında verimlilik ve optimal çözüm analizi
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <ChartContainer config={chartConfig} className="h-[400px] mb-6">
+                    <ResponsiveContainer width="100%" height="100%">
+                      <BarChart data={towerAnalytics}>
+                        <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+                        <XAxis dataKey="level" stroke="hsl(var(--muted-foreground))" fontSize={12} />
+                        <YAxis stroke="hsl(var(--muted-foreground))" fontSize={12} />
+                        <ChartTooltip content={<ChartTooltipContent />} />
+                        <Legend />
+                        <Bar dataKey="avgEfficiency" fill="#8B5CF6" name="Ortalama Verimlilik %" />
+                        <Bar dataKey="optimalRate" fill="#10B981" name="Optimal Çözüm %" />
+                      </BarChart>
+                    </ResponsiveContainer>
+                  </ChartContainer>
+                  <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+                    {towerAnalytics.map((level, index) => (
+                      <div key={index} className="p-4 bg-purple-50/30 dark:bg-purple-950/20 rounded-xl border border-border/50">
+                        <div className="font-semibold text-purple-700 dark:text-purple-300 mb-2">{level.level}</div>
+                        <div className="space-y-2 text-sm">
+                          <div>Ortalama Skor: <span className="font-bold">{level.avgScore}</span></div>
+                          <div>Ortalama Süre: <span className="font-bold">{level.avgTime}s</span></div>
+                          <div>Verimlilik: <span className="font-bold text-purple-600">{level.avgEfficiency}%</span></div>
+                          <div>Optimal Çözüm: <span className="font-bold text-green-600">{level.optimalRate}%</span></div>
+                          <Badge variant="outline" className="text-xs">{level.playCount} oyun</Badge>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+
+            {/* Sequence Exercises Analytics */}
+            {numberSequenceAnalytics && (selectedExerciseFilter === 'all' || selectedExerciseFilter === 'Sayı Dizisi Takibi') && (
+              <Card className="card-enhanced">
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-3 text-2xl">
+                    <div className="p-2 bg-orange-500/10 rounded-lg">
+                      <TrendingUp className="w-6 h-6 text-orange-600" />
+                    </div>
+                    Sayı Dizisi Takibi - İlerleme Analizi
+                  </CardTitle>
+                  <CardDescription className="text-base">
+                    Ulaşılan maksimum seviyeler ve performans trendi
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <ChartContainer config={chartConfig} className="h-[300px]">
+                    <ResponsiveContainer width="100%" height="100%">
+                      <LineChart data={numberSequenceAnalytics}>
+                        <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+                        <XAxis dataKey="level" stroke="hsl(var(--muted-foreground))" fontSize={12} />
+                        <YAxis stroke="hsl(var(--muted-foreground))" fontSize={12} />
+                        <ChartTooltip content={<ChartTooltipContent />} />
+                        <Line type="monotone" dataKey="avgScore" stroke="#F97316" strokeWidth={3} name="Ortalama Skor" />
+                      </LineChart>
+                    </ResponsiveContainer>
+                  </ChartContainer>
+                </CardContent>
+              </Card>
+            )}
+
+            {colorSequenceAnalytics && (selectedExerciseFilter === 'all' || selectedExerciseFilter === 'Renk Dizisi Takibi') && (
+              <Card className="card-enhanced">
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-3 text-2xl">
+                    <div className="p-2 bg-cyan-500/10 rounded-lg">
+                      <TrendingUp className="w-6 h-6 text-cyan-600" />
+                    </div>
+                    Renk Dizisi Takibi - İlerleme Analizi
+                  </CardTitle>
+                  <CardDescription className="text-base">
+                    Renk hafızası gelişimi ve seviye başarısı
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <ChartContainer config={chartConfig} className="h-[300px]">
+                    <ResponsiveContainer width="100%" height="100%">
+                      <AreaChart data={colorSequenceAnalytics}>
+                        <defs>
+                          <linearGradient id="colorSequenceGradient" x1="0" y1="0" x2="0" y2="1">
+                            <stop offset="5%" stopColor="#06B6D4" stopOpacity={0.3}/>
+                            <stop offset="95%" stopColor="#06B6D4" stopOpacity={0.05}/>
+                          </linearGradient>
+                        </defs>
+                        <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+                        <XAxis dataKey="level" stroke="hsl(var(--muted-foreground))" fontSize={12} />
+                        <YAxis stroke="hsl(var(--muted-foreground))" fontSize={12} />
+                        <ChartTooltip content={<ChartTooltipContent />} />
+                        <Area type="monotone" dataKey="avgScore" stroke="#06B6D4" fill="url(#colorSequenceGradient)" strokeWidth={3} />
+                      </AreaChart>
+                    </ResponsiveContainer>
+                  </ChartContainer>
+                </CardContent>
+              </Card>
             )}
           </TabsContent>
 
+          <TabsContent value="charts" className="space-y-8">
+            <Card className="card-enhanced">
+              <CardHeader>
+                <CardTitle className="text-2xl">Performans Trendi</CardTitle>
+                <CardDescription className="text-base">
+                  Zaman içindeki genel performans gelişimi
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <ChartContainer config={chartConfig} className="h-[400px]">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <LineChart data={filteredResults.map((result, index) => ({
+                      index: index + 1,
+                      skor: result.score,
+                      tarih: new Date(result.date).toLocaleDateString('tr-TR')
+                    }))}>
+                      <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+                      <XAxis dataKey="index" stroke="hsl(var(--muted-foreground))" fontSize={12} />
+                      <YAxis stroke="hsl(var(--muted-foreground))" fontSize={12} />
+                      <ChartTooltip content={<ChartTooltipContent />} />
+                      <Line type="monotone" dataKey="skor" stroke="hsl(var(--primary))" strokeWidth={3} />
+                    </LineChart>
+                  </ResponsiveContainer>
+                </ChartContainer>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
           <TabsContent value="details" className="space-y-8">
-            {/* Detaylı Oyun Tablosu */}
             <Card className="card-enhanced">
               <CardHeader>
                 <CardTitle className="flex items-center gap-3 text-2xl">
                   <Target className="w-6 h-6 text-primary" />
-                  Tüm Egzersiz Sonuçları
+                  Filtrelenmiş Egzersiz Sonuçları
                 </CardTitle>
                 <CardDescription className="text-base">
-                  Tamamladığınız tüm egzersizlerin detaylı analizi
+                  Seçilen kriterlere göre filtrelenmiş egzersiz detayları
                 </CardDescription>
               </CardHeader>
               <CardContent>
@@ -545,7 +721,7 @@ const IstatistiklerSayfasi: React.FC = () => {
                       </TableRow>
                     </TableHeader>
                     <TableBody>
-                      {exerciseResults.slice().reverse().map((result, index) => (
+                      {filteredResults.slice().reverse().map((result, index) => (
                         <TableRow key={index} className="hover:bg-muted/20 transition-colors">
                           <TableCell className="text-sm font-medium">
                             {new Date(result.date).toLocaleDateString('tr-TR')}
@@ -574,6 +750,9 @@ const IstatistiklerSayfasi: React.FC = () => {
                             {result.exerciseName.includes('Eşleştirme') && (
                               <span>Doğru: {result.details?.correct_answers || '-'}/{result.details?.total_questions || '-'}</span>
                             )}
+                            {result.exerciseName.includes('Dizisi') && (
+                              <span>Max Seviye: {result.details?.max_sequence_length || result.details?.level || '-'}</span>
+                            )}
                           </TableCell>
                         </TableRow>
                       ))}
@@ -586,7 +765,6 @@ const IstatistiklerSayfasi: React.FC = () => {
         </Tabs>
       )}
 
-      {/* Professional Info */}
       {professional && (
         <Card className="mt-8 bg-gradient-to-r from-blue-50/50 to-indigo-50/50 dark:from-blue-950/20 dark:to-indigo-950/20 border-blue-200/60 dark:border-blue-800/60">
           <CardHeader>
@@ -629,8 +807,7 @@ const IstatistiklerSayfasi: React.FC = () => {
         </Card>
       )}
 
-      {/* Enhanced Data Management */}
-      {exerciseResults.length > 0 && (
+      {filteredResults.length > 0 && (
         <Card className="mt-8 border-amber-200/60 dark:border-amber-800/60 bg-gradient-to-r from-amber-50/30 to-orange-50/30 dark:from-amber-950/20 dark:to-orange-950/20">
           <CardHeader>
             <CardTitle className="flex items-center gap-3">
