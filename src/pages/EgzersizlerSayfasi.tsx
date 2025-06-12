@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Progress } from '@/components/ui/progress'
 import { LocalStorageManager, MEMORY_GAME_LEVELS } from '../utils/localStorage'
-import { Brain, Target, Puzzle, Settings, Play, Clock, Trophy, CheckCircle, Star, Award, Zap, ArrowRightLeft, Eye, Layers, Hash, Palette, BookOpen } from 'lucide-react'
+import { Brain, Target, Play, Clock, Trophy, CheckCircle, Star, ArrowRightLeft, Eye, Layers, Hash, Palette, BookOpen, Calculator } from 'lucide-react'
 
 interface EgzersizlerSayfasiProps {
   onMemoryGameStart: () => void
@@ -15,6 +15,7 @@ interface EgzersizlerSayfasiProps {
   onNumberSequenceStart: () => void
   onColorSequenceStart: () => void
   onWordCirclePuzzleStart: () => void
+  onLogicSequencesStart: () => void
 }
 
 const EgzersizlerSayfasi: React.FC<EgzersizlerSayfasiProps> = ({ 
@@ -24,7 +25,8 @@ const EgzersizlerSayfasi: React.FC<EgzersizlerSayfasiProps> = ({
   onTowerOfLondonStart,
   onNumberSequenceStart,
   onColorSequenceStart,
-  onWordCirclePuzzleStart
+  onWordCirclePuzzleStart,
+  onLogicSequencesStart
 }) => {
   const currentLevel = LocalStorageManager.getCurrentMemoryGameLevel()
   const currentLevelData = MEMORY_GAME_LEVELS[currentLevel - 1] || MEMORY_GAME_LEVELS[0]
@@ -38,7 +40,7 @@ const EgzersizlerSayfasi: React.FC<EgzersizlerSayfasiProps> = ({
       iconColor: 'text-blue-600 dark:text-blue-400',
       bgGradient: 'bg-gradient-to-br from-blue-50 via-blue-50 to-indigo-100 dark:from-blue-950/40 dark:via-blue-900/30 dark:to-indigo-900/40',
       borderColor: 'border-blue-200/60 dark:border-blue-800/60',
-      exercises: ['Kart Eşleştirme', 'Sayı Dizisi', 'Görsel Hafıza'],
+      exercises: ['Kart Eşleştirme', 'Görsel Hafıza', 'Sıralı Hafıza'],
       available: true,
       onStart: onMemoryGameStart,
       currentProgress: `Seviye ${currentLevel}: ${currentLevelData.name}`,
@@ -128,46 +130,23 @@ const EgzersizlerSayfasi: React.FC<EgzersizlerSayfasiProps> = ({
       highlights: ['WOW Tarzı Oyun', 'Bonus Sistem', 'Akıcı Animasyonlar']
     },
     {
-      title: 'Dikkat Egzersizleri',
-      description: 'Odaklanma ve dikkat sürenizi artırın',
-      icon: Target,
-      iconColor: 'text-violet-600 dark:text-violet-400',
-      bgGradient: 'bg-gradient-to-br from-violet-50 via-purple-50 to-fuchsia-100 dark:from-violet-950/40 dark:via-purple-900/30 dark:to-fuchsia-900/40',
-      borderColor: 'border-violet-200/60 dark:border-violet-800/60',
-      exercises: ['Stroop Testi', 'Görsel Arama', 'Sürekli Performans'],
-      available: false,
-      comingSoon: true,
-      highlights: ['Reaksiyon Zamanı', 'Görsel Odak', 'Konsantrasyon']
-    },
-    {
-      title: 'Problem Çözme',
-      description: 'Mantıksal düşünme ve problem çözme becerilerinizi geliştirin',
-      icon: Puzzle,
+      title: 'Mantık Dizileri',
+      description: 'Sayısal örüntüleri bulun ve dizileri tamamlayın',
+      icon: Calculator,
       iconColor: 'text-amber-600 dark:text-amber-400',
       bgGradient: 'bg-gradient-to-br from-amber-50 via-orange-50 to-yellow-100 dark:from-amber-950/40 dark:via-orange-900/30 dark:to-yellow-900/40',
       borderColor: 'border-amber-200/60 dark:border-amber-800/60',
-      exercises: ['Matematik Problemleri', 'Mantık Bulmacaları', 'Planlama Görevleri'],
-      available: false,
-      comingSoon: true,
-      highlights: ['Analitik Düşünme', 'Stratejik Planlama', 'Yaratıcılık']
-    },
-    {
-      title: 'Yürütücü Fonksiyonlar',
-      description: 'Planlama, organizasyon ve karar verme becerilerinizi güçlendirin',
-      icon: Settings,
-      iconColor: 'text-orange-600 dark:text-orange-400',
-      bgGradient: 'bg-gradient-to-br from-orange-50 via-red-50 to-pink-100 dark:from-orange-950/40 dark:via-red-900/30 dark:to-pink-900/40',
-      borderColor: 'border-orange-200/60 dark:border-orange-800/60',
-      exercises: ['Görev Değiştirme', 'Çalışma Hafızası', 'İnhibisyon Kontrolü'],
-      available: false,
-      comingSoon: true,
-      highlights: ['Karar Verme', 'Çoklu Görev', 'Impulse Kontrolü']
+      exercises: ['Aritmetik Diziler', 'Geometrik Diziler', 'Fibonacci'],
+      available: true,
+      onStart: onLogicSequencesStart,
+      currentProgress: 'Sonsuz Soru - 15 Farklı Örüntü',
+      highlights: ['Sayısal Akıl Yürütme', 'Örüntü Tanıma', 'Problem Çözme']
     }
   ]
 
   return (
     <div className="container mx-auto section-padding pb-28 max-w-7xl">
-      {/* Enhanced Hero Section */}
+      {/* Hero Section */}
       <div className="text-center mb-16 slide-up">
         <div className="relative inline-flex items-center justify-center mb-8">
           <div className="absolute inset-0 bg-primary/10 rounded-full blur-xl scale-150 animate-pulse" />
@@ -189,11 +168,11 @@ const EgzersizlerSayfasi: React.FC<EgzersizlerSayfasiProps> = ({
         <div className="flex items-center justify-center gap-8 mt-8 text-sm">
           <div className="flex items-center gap-2 text-muted-foreground">
             <CheckCircle className="w-4 h-4 text-success" />
-            <span>7 Aktif Egzersiz</span>
+            <span>8 Aktif Egzersiz</span>
           </div>
           <div className="flex items-center gap-2 text-muted-foreground">
             <Clock className="w-4 h-4 text-warning" />
-            <span>3 Yakında</span>
+            <span>Tablet Uyumlu</span>
           </div>
           <div className="flex items-center gap-2 text-muted-foreground">
             <Star className="w-4 h-4 text-primary" />
@@ -202,8 +181,8 @@ const EgzersizlerSayfasi: React.FC<EgzersizlerSayfasiProps> = ({
         </div>
       </div>
 
-      {/* Enhanced Exercise Categories Grid */}
-      <div className="grid gap-8 lg:grid-cols-2 content-spacing mb-12">
+      {/* Egzersiz Kartları Grid */}
+      <div className="grid gap-6 lg:grid-cols-2 content-spacing mb-12">
         {exerciseCategories.map((category, index) => {
           const IconComponent = category.icon;
           
@@ -217,17 +196,10 @@ const EgzersizlerSayfasi: React.FC<EgzersizlerSayfasiProps> = ({
             >
               {/* Status Badge */}
               <div className="absolute top-6 right-6 z-10">
-                {category.available ? (
-                  <Badge className="bg-success/15 text-success border-success/30 font-semibold px-3 py-1.5 shadow-sm">
-                    <CheckCircle className="w-3.5 h-3.5 mr-1.5" />
-                    Aktif
-                  </Badge>
-                ) : (
-                  <Badge variant="secondary" className="font-semibold px-3 py-1.5 bg-muted/60 backdrop-blur-sm">
-                    <Clock className="w-3.5 h-3.5 mr-1.5" />
-                    Yakında
-                  </Badge>
-                )}
+                <Badge className="bg-success/15 text-success border-success/30 font-semibold px-3 py-1.5 shadow-sm">
+                  <CheckCircle className="w-3.5 h-3.5 mr-1.5" />
+                  Aktif
+                </Badge>
               </div>
 
               <CardHeader className="pb-6 relative">
@@ -250,8 +222,8 @@ const EgzersizlerSayfasi: React.FC<EgzersizlerSayfasiProps> = ({
                   </div>
                 </div>
                 
-                {/* Progress Section for Active Exercises */}
-                {category.available && category.stats && (
+                {/* Progress Section for Memory Game */}
+                {category.stats && (
                   <div className="bg-background/70 backdrop-blur-sm rounded-xl p-5 border border-border/30 shadow-sm">
                     <div className="flex items-center justify-between mb-3">
                       <span className="text-sm font-semibold text-muted-foreground flex items-center gap-2">
@@ -280,8 +252,8 @@ const EgzersizlerSayfasi: React.FC<EgzersizlerSayfasiProps> = ({
                   </div>
                 )}
 
-                {/* Progress Section for Other Active Exercises */}
-                {category.available && !category.stats && (
+                {/* Progress Section for Other Exercises */}
+                {!category.stats && (
                   <div className="bg-background/70 backdrop-blur-sm rounded-xl p-5 border border-border/30 shadow-sm">
                     <div className="flex items-center justify-between mb-3">
                       <span className="text-sm font-semibold text-muted-foreground flex items-center gap-2">
@@ -289,7 +261,8 @@ const EgzersizlerSayfasi: React.FC<EgzersizlerSayfasiProps> = ({
                         Egzersiz Bilgileri
                       </span>
                       <Badge variant="outline" className="text-primary border-primary/30 bg-primary/10">
-                        {category.title === 'Kelime Çemberi Bulmacası' ? 'Yeni!' :
+                        {category.title === 'Mantık Dizileri' ? 'Yeni!' :
+                         category.title === 'Kelime Çemberi Bulmacası' ? 'Güncel!' : 
                          ['Sayı Dizisi Takibi', 'Renk Dizisi Takibi'].includes(category.title) ? 'Güncel' : 
                          category.title === 'Londra Kulesi Testi' ? 'Güncel!' : 'Aktif'}
                       </Badge>
@@ -321,7 +294,7 @@ const EgzersizlerSayfasi: React.FC<EgzersizlerSayfasiProps> = ({
                 {/* Exercise Types */}
                 <div>
                   <h4 className="text-sm font-semibold text-muted-foreground mb-3 flex items-center gap-2">
-                    <Zap className="w-4 h-4" />
+                    <Target className="w-4 h-4" />
                     Egzersiz Türleri
                   </h4>
                   <div className="flex flex-wrap gap-2">
@@ -339,26 +312,12 @@ const EgzersizlerSayfasi: React.FC<EgzersizlerSayfasiProps> = ({
                 
                 {/* Action Button */}
                 <Button 
-                  className={`w-full font-semibold text-base py-6 transition-all duration-300 ${
-                    category.available 
-                      ? 'bg-primary hover:bg-primary/90 text-primary-foreground shadow-md hover:shadow-lg hover:scale-[1.02] focus:scale-[1.02]' 
-                      : 'opacity-60 cursor-not-allowed bg-muted hover:bg-muted text-muted-foreground'
-                  }`}
-                  disabled={!category.available}
+                  className="w-full font-semibold text-base py-6 transition-all duration-300 bg-primary hover:bg-primary/90 text-primary-foreground shadow-md hover:shadow-lg hover:scale-[1.02] focus:scale-[1.02]"
                   onClick={category.onStart}
-                  aria-label={category.available ? `${category.title} egzersizine başla` : `${category.title} yakında geliyor`}
+                  aria-label={`${category.title} egzersizine başla`}
                 >
-                  {category.available ? (
-                    <>
-                      <Play className="w-5 h-5 mr-3" />
-                      Egzersize Başla
-                    </>
-                  ) : (
-                    <>
-                      <Clock className="w-5 h-5 mr-3" />
-                      Yakında Geliyor
-                    </>
-                  )}
+                  <Play className="w-5 h-5 mr-3" />
+                  Egzersize Başla
                 </Button>
               </CardContent>
 
@@ -372,26 +331,26 @@ const EgzersizlerSayfasi: React.FC<EgzersizlerSayfasiProps> = ({
         })}
       </div>
 
-      {/* Enhanced Feature Highlight - Yeni Kelime Oyunu */}
-      <Card className="card-enhanced bg-gradient-to-r from-indigo-5 via-indigo/8 to-purple/5 border-indigo/20 mb-12 overflow-hidden relative">
-        <div className="absolute inset-0 bg-gradient-to-r from-transparent via-indigo/5 to-transparent opacity-50" />
+      {/* Feature Highlight - Yeni Mantık Dizileri */}
+      <Card className="card-enhanced bg-gradient-to-r from-amber-5 via-amber/8 to-orange/5 border-amber/20 mb-12 overflow-hidden relative">
+        <div className="absolute inset-0 bg-gradient-to-r from-transparent via-amber/5 to-transparent opacity-50" />
         
         <CardHeader className="relative">
           <div className="flex items-start gap-4 mb-4">
-            <div className="p-3 bg-indigo-500/10 rounded-xl shadow-sm">
-              <BookOpen className="w-8 h-8 text-indigo-600" />
+            <div className="p-3 bg-amber-500/10 rounded-xl shadow-sm">
+              <Calculator className="w-8 h-8 text-amber-600" />
             </div>
             <div className="flex-1">
-              <CardTitle className="text-2xl text-indigo-600 mb-2 flex items-center gap-3">
-                📝 Yeni Kelime Çemberi Bulmacası
-                <Badge className="bg-indigo-500/10 text-indigo-600 border-indigo-500/20 text-sm px-3 py-1">
-                  <Award className="w-3 h-3 mr-1" />
+              <CardTitle className="text-2xl text-amber-600 mb-2 flex items-center gap-3">
+                🧮 Yeni Mantık Dizileri Egzersizi
+                <Badge className="bg-amber-500/10 text-amber-600 border-amber-500/20 text-sm px-3 py-1">
+                  <Star className="w-3 h-3 mr-1" />
                   Yeni!
                 </Badge>
               </CardTitle>
               <CardDescription className="text-base leading-relaxed">
-                Words of Wonders tarzında kelime bulmaca oyunu eklendi! 
-                Dairesel harf düzeninden kelimeleri bulun ve bonus puanlar kazanın.
+                Sayısal akıl yürütme ve örüntü tanıma becerilerinizi geliştiren yeni egzersiz! 
+                15 farklı dizi türüyle mantıksal düşünme gücünüzü test edin.
               </CardDescription>
             </div>
           </div>
@@ -400,16 +359,16 @@ const EgzersizlerSayfasi: React.FC<EgzersizlerSayfasiProps> = ({
         <CardContent className="relative">
           <div className="grid md:grid-cols-2 gap-8">
             <div>
-              <h4 className="font-bold mb-4 text-indigo-600 flex items-center gap-2">
-                <BookOpen className="w-5 h-5" />
-                Oyun Özellikleri
+              <h4 className="font-bold mb-4 text-amber-600 flex items-center gap-2">
+                <Calculator className="w-5 h-5" />
+                Dizi Türleri
               </h4>
               <div className="space-y-3">
                 {[
-                  'Dairesel harf düzeni ile sezgisel oynama',
-                  'Çapraz bulmaca grid sistemi',
-                  'Akıcı animasyonlar ve geçişler',
-                  'Tablet uyumlu dokunmatik kontroller'
+                  'Aritmetik diziler (2, 4, 6, 8...)',
+                  'Geometrik diziler (2, 4, 8, 16...)',
+                  'Fibonacci dizileri (1, 1, 2, 3, 5...)',
+                  'Kare ve küp sayılar (1, 4, 9, 16...)'
                 ].map((feature, index) => (
                   <div key={index} className="flex items-center gap-3 text-sm">
                     <CheckCircle className="w-5 h-5 text-success flex-shrink-0" />
@@ -420,19 +379,19 @@ const EgzersizlerSayfasi: React.FC<EgzersizlerSayfasiProps> = ({
             </div>
             
             <div>
-              <h4 className="font-bold mb-4 text-purple-600 flex items-center gap-2">
+              <h4 className="font-bold mb-4 text-orange-600 flex items-center gap-2">
                 <Star className="w-5 h-5" />
-                Özel Özellikler
+                Özellikler
               </h4>
               <div className="space-y-3">
                 {[
-                  'Ana kelimeler ve bonus kelime sistemi',
-                  'Harfleri karıştırma özelliği',
-                  'Seviye bazlı ilerleme takibi',
-                  'Kelime dağarcığı geliştirme'
+                  'Sonsuz soru havuzu',
+                  '3 zorluk seviyesi (Kolay, Orta, Zor)',
+                  'Gerçek zamanlı puan sistemi',
+                  'Anlık açıklama ve geri bildirim'
                 ].map((benefit, index) => (
                   <div key={index} className="flex items-center gap-3 text-sm">
-                    <Star className="w-5 h-5 text-purple-600 flex-shrink-0" />
+                    <Star className="w-5 h-5 text-orange-600 flex-shrink-0" />
                     <span>{benefit}</span>
                   </div>
                 ))}
@@ -442,25 +401,29 @@ const EgzersizlerSayfasi: React.FC<EgzersizlerSayfasiProps> = ({
         </CardContent>
       </Card>
 
-      {/* Enhanced Development Notice */}
+      {/* Development Notice */}
       <Card className="card-enhanced bg-muted/30 border-border/50 text-center">
         <CardContent className="py-12">
           <div className="inline-flex items-center justify-center w-16 h-16 bg-muted/50 rounded-2xl mb-6">
             <Brain className="w-8 h-8 text-muted-foreground" />
           </div>
-          <h3 className="text-xl font-bold mb-3">Diğer Egzersizler Geliştiriliyor</h3>
+          <h3 className="text-xl font-bold mb-3">8 Aktif Egzersiz Hazır!</h3>
           <p className="text-muted-foreground leading-relaxed max-w-2xl mx-auto mb-6">
-            Bilimsel araştırmalara dayalı daha fazla egzersiz yakında eklenecek.
-            Her yeni egzersiz, farklı bilişsel becerileri hedefleyecek şekilde özenle tasarlanmaktadır.
+            Bilişsel egzersiz platformumuz artık 8 farklı egzersiz türüyle komplet hale geldi.
+            Her egzersiz, farklı bilişsel becerileri hedefleyecek şekilde özenle tasarlanmıştır.
           </p>
           <div className="flex justify-center gap-6 text-sm text-muted-foreground">
             <div className="flex items-center gap-2">
-              <Clock className="w-4 h-4" />
-              <span>3 Egzersiz Geliştiriliyor</span>
+              <CheckCircle className="w-4 h-4 text-success" />
+              <span>8 Aktif Egzersiz</span>
             </div>
             <div className="flex items-center gap-2">
               <Star className="w-4 h-4" />
               <span>Bilimsel Temelli</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <Trophy className="w-4 h-4" />
+              <span>İlerleme Takibi</span>
             </div>
           </div>
         </CardContent>

@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import EgzersizlerSayfasi from "./EgzersizlerSayfasi";
 import IstatistiklerSayfasi from "./IstatistiklerSayfasi";
@@ -11,6 +10,7 @@ import LondraKulesiSayfasi from "./LondraKulesiSayfasi";
 import SayiDizisiTakibiSayfasi from "./SayiDizisiTakibiSayfasi";
 import RenkDizisiTakibiSayfasi from "./RenkDizisiTakibiSayfasi";
 import KelimeCemberiBulmacasiSayfasi from "./KelimeCemberiBulmacasiSayfasi";
+import MantikDizileriSayfasi from "./MantikDizileriSayfasi";
 import BottomNavigation from "../components/BottomNavigation";
 import ClientModeHandler from "../components/ClientModeHandler";
 import SkipNavigation from "../components/SkipNavigation";
@@ -27,6 +27,7 @@ const Index = () => {
   const [isNumberSequenceActive, setIsNumberSequenceActive] = useState(false);
   const [isColorSequenceActive, setIsColorSequenceActive] = useState(false);
   const [isWordCirclePuzzleActive, setIsWordCirclePuzzleActive] = useState(false);
+  const [isLogicSequencesActive, setIsLogicSequencesActive] = useState(false);
   const { isClientMode, exitClientMode } = useClientMode();
   const { user, professional, loading: authLoading } = useAuth();
 
@@ -109,6 +110,14 @@ const Index = () => {
 
   const handleWordCirclePuzzleEnd = () => {
     setIsWordCirclePuzzleActive(false);
+  };
+
+  const handleLogicSequencesStart = () => {
+    setIsLogicSequencesActive(true);
+  };
+
+  const handleLogicSequencesEnd = () => {
+    setIsLogicSequencesActive(false);
   };
 
   const handlePageChange = (page: string) => {
@@ -218,6 +227,20 @@ const Index = () => {
     );
   }
 
+  // Render Logic Sequences game
+  if (isLogicSequencesActive) {
+    return (
+      <>
+        <SkipNavigation />
+        <MantikDizileriSayfasi onBack={handleLogicSequencesEnd} />
+        <ClientModeHandler 
+          isClientMode={isClientMode}
+          onExitClientMode={exitClientMode}
+        />
+      </>
+    );
+  }
+
   const renderActivePage = () => {
     switch (activePage) {
       case "egzersizler":
@@ -230,6 +253,7 @@ const Index = () => {
             onNumberSequenceStart={handleNumberSequenceStart}
             onColorSequenceStart={handleColorSequenceStart}
             onWordCirclePuzzleStart={handleWordCirclePuzzleStart}
+            onLogicSequencesStart={handleLogicSequencesStart}
           />
         );
       case "istatistikler":
@@ -248,6 +272,7 @@ const Index = () => {
             onNumberSequenceStart={handleNumberSequenceStart}
             onColorSequenceStart={handleColorSequenceStart}
             onWordCirclePuzzleStart={handleWordCirclePuzzleStart}
+            onLogicSequencesStart={handleLogicSequencesStart}
           />
         );
     }
