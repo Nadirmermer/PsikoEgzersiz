@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
@@ -81,7 +80,7 @@ const ClientDetail: React.FC<ClientDetailProps> = ({
           level_identifier: session.exercise_data?.details?.level_identifier || 'Bilinmiyor',
           moves_count: session.exercise_data?.details?.moves_count || 0,
           incorrect_moves_count: session.exercise_data?.details?.incorrect_moves_count || 0,
-          session_type: session.is_client_mode_session ? 'Danışan Modu' : 'Anonim Bağlantı'
+          session_type: session.is_client_mode_session ? 'Danışan Modu' as const : 'Anonim Bağlantı' as const
         })) || []
 
         setPerformanceData(chartData.reverse()) // Chronological order for chart
