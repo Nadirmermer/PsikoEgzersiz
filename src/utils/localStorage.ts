@@ -1,3 +1,4 @@
+
 export interface ExerciseResult {
   exerciseName: string
   score: number
@@ -17,6 +18,19 @@ export interface MemoryGameDetails {
   score: number
   first_match_time_seconds?: number
   card_flips_total: number
+}
+
+export interface TowerOfLondonDetails {
+  level_identifier: string
+  level_number: number
+  initial_config: any
+  target_config: any
+  min_moves_required: number
+  user_moves_taken: number
+  time_seconds: number
+  score: number
+  completed_optimally: boolean
+  efficiency_percentage: number
 }
 
 export interface MemoryGameLevel {

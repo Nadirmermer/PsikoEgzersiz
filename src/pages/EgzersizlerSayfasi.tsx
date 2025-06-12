@@ -5,18 +5,20 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Progress } from '@/components/ui/progress'
 import { LocalStorageManager, MEMORY_GAME_LEVELS } from '../utils/localStorage'
-import { Brain, Target, Puzzle, Settings, Play, Clock, Trophy, CheckCircle, Star, Award, Zap, ArrowRightLeft, Eye } from 'lucide-react'
+import { Brain, Target, Puzzle, Settings, Play, Clock, Trophy, CheckCircle, Star, Award, Zap, ArrowRightLeft, Eye, Layers } from 'lucide-react'
 
 interface EgzersizlerSayfasiProps {
   onMemoryGameStart: () => void
   onImageWordMatchingStart: () => void
   onWordImageMatchingStart: () => void
+  onTowerOfLondonStart: () => void
 }
 
 const EgzersizlerSayfasi: React.FC<EgzersizlerSayfasiProps> = ({ 
   onMemoryGameStart, 
   onImageWordMatchingStart,
-  onWordImageMatchingStart 
+  onWordImageMatchingStart,
+  onTowerOfLondonStart
 }) => {
   const currentLevel = LocalStorageManager.getCurrentMemoryGameLevel()
   const currentLevelData = MEMORY_GAME_LEVELS[currentLevel - 1] || MEMORY_GAME_LEVELS[0]
@@ -66,6 +68,19 @@ const EgzersizlerSayfasi: React.FC<EgzersizlerSayfasiProps> = ({
       onStart: onWordImageMatchingStart,
       currentProgress: '15 Soru - Karışık Kategoriler',
       highlights: ['Görsel İfade', 'Kelime Dağarcığı', 'Anlık Geri Bildirim']
+    },
+    {
+      title: 'Londra Kulesi Testi',
+      description: 'Planlama ve problem çözme becerilerinizi geliştirin',
+      icon: Layers,
+      iconColor: 'text-purple-600 dark:text-purple-400',
+      bgGradient: 'bg-gradient-to-br from-purple-50 via-indigo-50 to-violet-100 dark:from-purple-950/40 dark:via-indigo-900/30 dark:to-violet-900/40',
+      borderColor: 'border-purple-200/60 dark:border-purple-800/60',
+      exercises: ['Strateji Planlama', 'Problem Çözme', 'Mantıksal Düşünme'],
+      available: true,
+      onStart: onTowerOfLondonStart,
+      currentProgress: '15 Seviye - Artan Zorluk',
+      highlights: ['15 Zorluk Seviyesi', 'Optimal Çözüm Analizi', 'Strateji Geliştirme']
     },
     {
       title: 'Dikkat Egzersizleri',
@@ -129,7 +144,7 @@ const EgzersizlerSayfasi: React.FC<EgzersizlerSayfasiProps> = ({
         <div className="flex items-center justify-center gap-8 mt-8 text-sm">
           <div className="flex items-center gap-2 text-muted-foreground">
             <CheckCircle className="w-4 h-4 text-success" />
-            <span>3 Aktif Egzersiz</span>
+            <span>4 Aktif Egzersiz</span>
           </div>
           <div className="flex items-center gap-2 text-muted-foreground">
             <Clock className="w-4 h-4 text-warning" />
@@ -220,7 +235,7 @@ const EgzersizlerSayfasi: React.FC<EgzersizlerSayfasiProps> = ({
                   </div>
                 )}
 
-                {/* Progress Section for New Matching Exercises */}
+                {/* Progress Section for Other Active Exercises */}
                 {category.available && !category.stats && (
                   <div className="bg-background/70 backdrop-blur-sm rounded-xl p-5 border border-border/30 shadow-sm">
                     <div className="flex items-center justify-between mb-3">
@@ -229,7 +244,7 @@ const EgzersizlerSayfasi: React.FC<EgzersizlerSayfasiProps> = ({
                         Egzersiz Bilgileri
                       </span>
                       <Badge variant="outline" className="text-primary border-primary/30 bg-primary/10">
-                        Yeni!
+                        {category.title === 'Londra Kulesi Testi' ? 'Yeni!' : 'Aktif'}
                       </Badge>
                     </div>
                     
@@ -310,26 +325,26 @@ const EgzersizlerSayfasi: React.FC<EgzersizlerSayfasiProps> = ({
         })}
       </div>
 
-      {/* Enhanced Feature Highlight */}
-      <Card className="card-enhanced bg-gradient-to-r from-primary/5 via-primary/8 to-primary/5 border-primary/20 mb-12 overflow-hidden relative">
-        <div className="absolute inset-0 bg-gradient-to-r from-transparent via-primary/5 to-transparent opacity-50" />
+      {/* Enhanced Feature Highlight - Londra Kulesi Tanıtımı */}
+      <Card className="card-enhanced bg-gradient-to-r from-purple-5 via-purple/8 to-purple/5 border-purple/20 mb-12 overflow-hidden relative">
+        <div className="absolute inset-0 bg-gradient-to-r from-transparent via-purple/5 to-transparent opacity-50" />
         
         <CardHeader className="relative">
           <div className="flex items-start gap-4 mb-4">
-            <div className="p-3 bg-primary/10 rounded-xl shadow-sm">
-              <ArrowRightLeft className="w-8 h-8 text-primary" />
+            <div className="p-3 bg-purple-500/10 rounded-xl shadow-sm">
+              <Layers className="w-8 h-8 text-purple-600" />
             </div>
             <div className="flex-1">
-              <CardTitle className="text-2xl text-primary mb-2 flex items-center gap-3">
-                🎯 Yeni Eşleştirme Egzersizleri
-                <Badge className="bg-primary/10 text-primary border-primary/20 text-sm px-3 py-1">
+              <CardTitle className="text-2xl text-purple-600 mb-2 flex items-center gap-3">
+                🧠 Londra Kulesi Testi
+                <Badge className="bg-purple-500/10 text-purple-600 border-purple-500/20 text-sm px-3 py-1">
                   <Award className="w-3 h-3 mr-1" />
-                  Yeni
+                  Yeni!
                 </Badge>
               </CardTitle>
               <CardDescription className="text-base leading-relaxed">
-                Resim-Kelime ve Kelime-Resim eşleştirme egzersizleri artık mevcut! 
-                10 farklı kategoriden kelime ve emojilerle bilişsel becerilerinizi geliştirin.
+                Planlama ve problem çözme becerilerinizi test eden klasik nöropsikolojik test artık mevcut! 
+                15 farklı zorluk seviyesi ile stratejik düşünme becerinizi geliştirin.
               </CardDescription>
             </div>
           </div>
@@ -338,16 +353,16 @@ const EgzersizlerSayfasi: React.FC<EgzersizlerSayfasiProps> = ({
         <CardContent className="relative">
           <div className="grid md:grid-cols-2 gap-8">
             <div>
-              <h4 className="font-bold mb-4 text-primary flex items-center gap-2">
-                <Eye className="w-5 h-5" />
-                Egzersiz Özellikleri
+              <h4 className="font-bold mb-4 text-purple-600 flex items-center gap-2">
+                <Layers className="w-5 h-5" />
+                Test Özellikleri
               </h4>
               <div className="space-y-3">
                 {[
-                  'Her seansta 15 rastgele soru',
-                  '10 farklı kategori (Hayvanlar, Yiyecekler, Renkler...)',
-                  'Akıllı çeldirici sistem (kategoriler karışmaz)',
-                  'Detaylı performans analizi ve istatistikler'
+                  '15 kademeli zorluk seviyesi',
+                  '3 çubuk, 3 renkli top sistemi',
+                  'Minimum hamle analizi',
+                  'Gerçek zamanlı performans takibi'
                 ].map((feature, index) => (
                   <div key={index} className="flex items-center gap-3 text-sm">
                     <CheckCircle className="w-5 h-5 text-success flex-shrink-0" />
@@ -358,19 +373,19 @@ const EgzersizlerSayfasi: React.FC<EgzersizlerSayfasiProps> = ({
             </div>
             
             <div>
-              <h4 className="font-bold mb-4 text-primary flex items-center gap-2">
-                <Zap className="w-5 h-5" />
+              <h4 className="font-bold mb-4 text-purple-600 flex items-center gap-2">
+                <Brain className="w-5 h-5" />
                 Bilişsel Faydalar
               </h4>
               <div className="space-y-3">
                 {[
-                  'Görsel-dilsel bağlantı kurma',
-                  'Kelime dağarcığı geliştirme',
-                  'Hızlı karar verme becerisi',
-                  'Kategori tanıma ve sınıflandırma'
+                  'Stratejik planlama becerisi',
+                  'Problem çözme kapasitesi',
+                  'Mantıksal düşünme geliştirme',
+                  'Yürütücü fonksiyon güçlendirme'
                 ].map((benefit, index) => (
                   <div key={index} className="flex items-center gap-3 text-sm">
-                    <Star className="w-5 h-5 text-primary flex-shrink-0" />
+                    <Star className="w-5 h-5 text-purple-600 flex-shrink-0" />
                     <span>{benefit}</span>
                   </div>
                 ))}

@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import EgzersizlerSayfasi from "./EgzersizlerSayfasi";
 import IstatistiklerSayfasi from "./IstatistiklerSayfasi";
@@ -6,6 +7,7 @@ import UzmanDashboardSayfasi from "./UzmanDashboardSayfasi";
 import HafizaOyunuSayfasi from "./HafizaOyunuSayfasi";
 import ResimKelimeEslestirmeSayfasi from "./ResimKelimeEslestirmeSayfasi";
 import KelimeResimEslestirmeSayfasi from "./KelimeResimEslestirmeSayfasi";
+import LondraKulesiSayfasi from "./LondraKulesiSayfasi";
 import BottomNavigation from "../components/BottomNavigation";
 import ClientModeHandler from "../components/ClientModeHandler";
 import SkipNavigation from "../components/SkipNavigation";
@@ -18,6 +20,7 @@ const Index = () => {
   const [isMemoryGameActive, setIsMemoryGameActive] = useState(false);
   const [isImageWordMatchingActive, setIsImageWordMatchingActive] = useState(false);
   const [isWordImageMatchingActive, setIsWordImageMatchingActive] = useState(false);
+  const [isTowerOfLondonActive, setIsTowerOfLondonActive] = useState(false);
   const { isClientMode, exitClientMode } = useClientMode();
   const { user, professional, loading: authLoading } = useAuth();
 
@@ -68,6 +71,14 @@ const Index = () => {
 
   const handleWordImageMatchingEnd = () => {
     setIsWordImageMatchingActive(false);
+  };
+
+  const handleTowerOfLondonStart = () => {
+    setIsTowerOfLondonActive(true);
+  };
+
+  const handleTowerOfLondonEnd = () => {
+    setIsTowerOfLondonActive(false);
   };
 
   const handlePageChange = (page: string) => {
@@ -121,6 +132,20 @@ const Index = () => {
     );
   }
 
+  // Render Tower of London game
+  if (isTowerOfLondonActive) {
+    return (
+      <>
+        <SkipNavigation />
+        <LondraKulesiSayfasi onBack={handleTowerOfLondonEnd} />
+        <ClientModeHandler 
+          isClientMode={isClientMode}
+          onExitClientMode={exitClientMode}
+        />
+      </>
+    );
+  }
+
   const renderActivePage = () => {
     switch (activePage) {
       case "egzersizler":
@@ -129,6 +154,7 @@ const Index = () => {
             onMemoryGameStart={handleMemoryGameStart}
             onImageWordMatchingStart={handleImageWordMatchingStart}
             onWordImageMatchingStart={handleWordImageMatchingStart}
+            onTowerOfLondonStart={handleTowerOfLondonStart}
           />
         );
       case "istatistikler":
@@ -143,6 +169,7 @@ const Index = () => {
             onMemoryGameStart={handleMemoryGameStart}
             onImageWordMatchingStart={handleImageWordMatchingStart}
             onWordImageMatchingStart={handleWordImageMatchingStart}
+            onTowerOfLondonStart={handleTowerOfLondonStart}
           />
         );
     }
