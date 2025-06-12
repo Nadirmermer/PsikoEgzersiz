@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import EgzersizlerSayfasi from "./EgzersizlerSayfasi";
 import IstatistiklerSayfasi from "./IstatistiklerSayfasi";
@@ -15,26 +16,52 @@ const Index = () => {
   const [activePage, setActivePage] = useState("egzersizler");
   const [isMemoryGameActive, setIsMemoryGameActive] = useState(false);
   const { isClientMode, exitClientMode } = useClientMode();
-  const { user, professional } = useAuth();
+  const { user, professional, loading: authLoading } = useAuth();
+
+  // Handle URL parameters for navigation
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const pageParam = urlParams.get('page');
+    if (pageParam === 'uzman-dashboard' && professional) {
+      setActivePage('uzman-dashboard');
+      // Clean URL
+      window.history.replaceState({}, '', '/');
+    }
+  }, [professional]);
 
   // Sync pending data on load
   useEffect(() => {
+    console.log('Index - Syncing pending data on app load')
     syncPendingData();
   }, []);
 
   // Client mode restrictions
   useEffect(() => {
     if (isClientMode && activePage !== "egzersizler") {
+      console.log('Index - Client mode active, redirecting to exercises')
       setActivePage("egzersizler");
     }
   }, [isClientMode]);
 
   // If professional is logged in and not in client mode, default to dashboard
   useEffect(() => {
-    if (professional && !isClientMode && activePage === "egzersizler") {
+    if (professional && !isClientMode && !authLoading && activePage === "egzersizler") {
+      console.log('Index - Professional logged in, setting dashboard as active page')
       setActivePage("uzman-dashboard");
     }
-  }, [professional, isClientMode]);
+  }, [professional, isClientMode, authLoading]);
+
+  // Enhanced client mode exit handler
+  const handleClientModeExit = () => {
+    console.log('Index - Handling client mode exit')
+    exitClientMode();
+    
+    // If professional is available, navigate to dashboard
+    if (professional) {
+      console.log('Index - Professional found, navigating to dashboard')
+      setActivePage("uzman-dashboard");
+    }
+  };
 
   // Announce page changes to screen readers
   useEffect(() => {
@@ -121,7 +148,7 @@ const Index = () => {
 
       <ClientModeHandler 
         isClientMode={isClientMode} 
-        onExitClientMode={exitClientMode}
+        onExitClientMode={handleClientModeExit}
       />
       
       <main 

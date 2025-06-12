@@ -22,43 +22,50 @@ const ClientModeHandler: React.FC<ClientModeHandlerProps> = ({
   const { professional } = useAuth()
 
   const handlePasswordSubmit = async () => {
-    if (password === '1923') {
-      setIsExiting(true)
-      
-      try {
-        // Client mode'dan çık
-        localStorage.removeItem('clientMode')
-        localStorage.removeItem('clientModeData')
-        
-        // Dialog'u kapat
-        setShowExitDialog(false)
-        setPassword('')
-        
-        // onExitClientMode callback'ini çağır
-        onExitClientMode()
-        
-        toast.success('Danışan modundan çıkıldı')
-        
-        // Uzman dashboard'una yönlendir - kısa bir delay ile
-        setTimeout(() => {
-          if (professional) {
-            // Mevcut sayfayı yeniden yükle yerine state'i güncelleyerek dashboard'a git
-            window.history.pushState(null, '', '/')
-            window.location.reload()
-          } else {
-            window.location.href = '/'
-          }
-        }, 500)
-        
-      } catch (error) {
-        console.error('Client mode exit error:', error)
-        toast.error('Çıkış sırasında hata oluştu')
-      } finally {
-        setIsExiting(false)
-      }
-    } else {
+    if (password !== '1923') {
       toast.error('Hatalı şifre!')
       setPassword('')
+      return
+    }
+
+    console.log('ClientModeHandler - Starting exit process')
+    setIsExiting(true)
+    
+    try {
+      // Clear client mode data
+      localStorage.removeItem('clientMode')
+      localStorage.removeItem('clientModeData')
+      console.log('ClientModeHandler - Client mode data cleared from localStorage')
+      
+      // Close dialog and reset form
+      setShowExitDialog(false)
+      setPassword('')
+      
+      // Call the exit callback to update parent state
+      onExitClientMode()
+      console.log('ClientModeHandler - Exit callback called')
+      
+      toast.success('Danışan modundan çıkıldı')
+      
+      // Force refresh professional data and navigate to dashboard
+      setTimeout(async () => {
+        try {
+          console.log('ClientModeHandler - Refreshing session and navigating to dashboard')
+          
+          // Force page reload to ensure clean state
+          window.location.href = '/?page=uzman-dashboard'
+        } catch (error) {
+          console.error('ClientModeHandler - Error during session refresh:', error)
+          // Fallback to simple reload
+          window.location.reload()
+        }
+      }, 500)
+      
+    } catch (error) {
+      console.error('ClientModeHandler - Exit error:', error)
+      toast.error('Çıkış sırasında hata oluştu')
+    } finally {
+      setIsExiting(false)
     }
   }
 

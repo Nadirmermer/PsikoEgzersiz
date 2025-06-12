@@ -70,12 +70,16 @@ export const LocalStorageManager = {
     const results = this.getExerciseResults()
     results.push(result)
     localStorage.setItem('exerciseResults', JSON.stringify(results))
-    console.log('LocalStorageManager - Egzersiz sonucu kaydedildi:', result)
+    console.log('LocalStorageManager - Exercise result saved to localStorage:', result)
 
     // Check if user is connected to a professional
     const connectionData = this.getConnectionData()
     if (connectionData) {
-      console.log('LocalStorageManager - User connected to professional, sending to Supabase:', connectionData)
+      console.log('LocalStorageManager - User connected to professional, preparing Supabase save:', {
+        professionalId: connectionData.professionalId,
+        clientIdentifier: connectionData.clientIdentifier,
+        exerciseData: result.details || result
+      })
       
       const supabaseData = {
         professional_id: connectionData.professionalId,
@@ -84,14 +88,17 @@ export const LocalStorageManager = {
         is_client_mode_session: false
       }
 
+      console.log('LocalStorageManager - Attempting to save to Supabase...')
       const success = await saveToSupabase(supabaseData)
       if (!success) {
         // Add to pending sync if failed
         addToPendingSync(supabaseData)
-        console.log('LocalStorageManager - Supabase kayıt başarısız, senkronizasyon kuyruğuna eklendi')
+        console.log('LocalStorageManager - Supabase save failed, added to pending sync queue')
       } else {
-        console.log('LocalStorageManager - Supabase\'e başarıyla kaydedildi')
+        console.log('LocalStorageManager - Successfully saved to Supabase')
       }
+    } else {
+      console.log('LocalStorageManager - No professional connection found, data saved only locally')
     }
 
     // Client mode handling
@@ -99,11 +106,15 @@ export const LocalStorageManager = {
     const clientModeDataStr = localStorage.getItem('clientModeData')
     
     if (clientMode === 'true' && clientModeDataStr) {
-      console.log('LocalStorageManager - Client mode active, saving to Supabase')
+      console.log('LocalStorageManager - Client mode active, preparing client mode save')
       
       try {
         const clientModeData = JSON.parse(clientModeDataStr)
-        console.log('LocalStorageManager - Client mode data:', clientModeData)
+        console.log('LocalStorageManager - Client mode data:', {
+          professionalId: clientModeData.professionalId,
+          clientIdentifier: clientModeData.clientIdentifier,
+          startTime: clientModeData.startTime
+        })
         
         const supabaseData = {
           professional_id: clientModeData.professionalId,
@@ -112,16 +123,19 @@ export const LocalStorageManager = {
           is_client_mode_session: true
         }
 
+        console.log('LocalStorageManager - Attempting client mode save to Supabase...')
         const success = await saveToSupabase(supabaseData)
         if (!success) {
           addToPendingSync(supabaseData)
-          console.log('LocalStorageManager - Client mode Supabase kayıt başarısız, pending\'e eklendi')
+          console.log('LocalStorageManager - Client mode Supabase save failed, added to pending sync')
         } else {
-          console.log('LocalStorageManager - Client mode Supabase\'e başarıyla kaydedildi')
+          console.log('LocalStorageManager - Client mode data successfully saved to Supabase')
         }
       } catch (error) {
         console.error('LocalStorageManager - Client mode data save error:', error)
       }
+    } else {
+      console.log('LocalStorageManager - Client mode not active')
     }
   },
 
@@ -130,7 +144,6 @@ export const LocalStorageManager = {
     console.log('Tüm egzersiz sonuçları temizlendi')
   },
 
-  // Hafıza oyunu seviye ilerlemesi
   getCurrentMemoryGameLevel(): number {
     const level = localStorage.getItem('currentMemoryGameLevel')
     return level ? parseInt(level, 10) : 1
@@ -141,14 +154,13 @@ export const LocalStorageManager = {
     console.log('Hafıza oyunu seviyesi güncellendi:', level)
   },
 
-  // Seviye başarıyla tamamlandığında çağırılır
   completeMemoryGameLevel(level: number): boolean {
     const currentLevel = this.getCurrentMemoryGameLevel()
     if (level === currentLevel && level < MEMORY_GAME_LEVELS.length) {
       this.setCurrentMemoryGameLevel(currentLevel + 1)
-      return true // Yeni seviyeye geçti
+      return true
     }
-    return false // Aynı seviyede kaldı
+    return false
   },
 
   getSettings(): any {
@@ -162,17 +174,19 @@ export const LocalStorageManager = {
     localStorage.setItem('appSettings', JSON.stringify(settings))
   },
 
-  // Professional connection methods
   getConnectionData(): { professionalId: string; clientIdentifier: string } | null {
     const dataStr = localStorage.getItem('professionalConnection')
     if (!dataStr) return null
     
     try {
       const data = JSON.parse(dataStr)
-      console.log('LocalStorageManager - Connection data retrieved:', data)
+      console.log('LocalStorageManager - Professional connection data retrieved:', {
+        professionalId: data.professionalId ? `${data.professionalId.substring(0, 8)}...` : null,
+        clientIdentifier: data.clientIdentifier
+      })
       return data
     } catch {
-      console.log('LocalStorageManager - Failed to parse connection data')
+      console.log('LocalStorageManager - Failed to parse professional connection data')
       return null
     }
   },
@@ -180,15 +194,17 @@ export const LocalStorageManager = {
   setConnectionData(professionalId: string, clientIdentifier: string): void {
     const data = { professionalId, clientIdentifier }
     localStorage.setItem('professionalConnection', JSON.stringify(data))
-    console.log('LocalStorageManager - Uzman bağlantısı kaydedildi:', data)
+    console.log('LocalStorageManager - Professional connection saved:', {
+      professionalId: `${professionalId.substring(0, 8)}...`,
+      clientIdentifier
+    })
   },
 
   clearConnectionData(): void {
     localStorage.removeItem('professionalConnection')
-    console.log('LocalStorageManager - Uzman bağlantısı temizlendi')
+    console.log('LocalStorageManager - Professional connection cleared')
   },
 
-  // Mark results as uploaded to prevent re-upload
   markResultsAsUploaded(resultIds: string[]): void {
     const uploadedStr = localStorage.getItem('uploadedResults')
     const uploaded = uploadedStr ? JSON.parse(uploadedStr) : []

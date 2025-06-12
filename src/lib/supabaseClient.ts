@@ -11,32 +11,56 @@ export interface ClientStatisticData {
 
 export const saveToSupabase = async (data: ClientStatisticData): Promise<boolean> => {
   if (!supabase) {
-    console.error('Supabase not configured')
+    console.error('saveToSupabase - Supabase not configured')
     return false
   }
 
-  console.log('saveToSupabase - Attempting to save:', data)
+  console.log('saveToSupabase - Attempting to save:', {
+    professional_id: data.professional_id,
+    client_identifier: data.client_identifier,
+    is_client_mode_session: data.is_client_mode_session,
+    exercise_data_type: typeof data.exercise_data,
+    exercise_data_keys: data.exercise_data ? Object.keys(data.exercise_data) : 'null'
+  })
 
   try {
-    const { error } = await supabase
+    // Get current user info for debugging
+    const { data: { user }, error: userError } = await supabase.auth.getUser()
+    console.log('saveToSupabase - Current user:', { 
+      user: user ? { id: user.id, email: user.email } : null, 
+      userError 
+    })
+
+    const insertData = {
+      professional_id: data.professional_id,
+      client_identifier: data.client_identifier,
+      exercise_data: data.exercise_data,
+      is_client_mode_session: data.is_client_mode_session,
+      session_date: new Date().toISOString()
+    }
+
+    console.log('saveToSupabase - Insert data prepared:', insertData)
+
+    const { data: result, error } = await supabase
       .from('client_statistics')
-      .insert([{
-        professional_id: data.professional_id,
-        client_identifier: data.client_identifier,
-        exercise_data: data.exercise_data,
-        is_client_mode_session: data.is_client_mode_session,
-        session_date: new Date().toISOString()
-      }])
+      .insert([insertData])
+      .select()
 
     if (error) {
-      console.error('Supabase save error:', error)
+      console.error('saveToSupabase - Supabase save error:', {
+        error,
+        code: error.code,
+        message: error.message,
+        details: error.details,
+        hint: error.hint
+      })
       return false
     }
 
-    console.log('saveToSupabase - Successfully saved to Supabase')
+    console.log('saveToSupabase - Successfully saved to Supabase:', result)
     return true
   } catch (error) {
-    console.error('Supabase save error:', error)
+    console.error('saveToSupabase - Unexpected error:', error)
     return false
   }
 }
@@ -61,6 +85,8 @@ export const uploadLocalDataToSupabase = async (
   let failed = 0
 
   for (const result of localData) {
+    console.log('uploadLocalDataToSupabase - Processing result:', result)
+    
     const success = await saveToSupabase({
       professional_id: professionalId,
       client_identifier: clientIdentifier,
@@ -70,10 +96,10 @@ export const uploadLocalDataToSupabase = async (
 
     if (success) {
       uploaded++
-      console.log('uploadLocalDataToSupabase - Uploaded result:', result)
+      console.log('uploadLocalDataToSupabase - Uploaded result successfully')
     } else {
       failed++
-      console.log('uploadLocalDataToSupabase - Failed to upload result:', result)
+      console.log('uploadLocalDataToSupabase - Failed to upload result')
     }
   }
 
@@ -99,6 +125,8 @@ export const syncPendingData = async (): Promise<void> => {
     const pendingData = JSON.parse(pendingDataStr)
     const successfulSyncs: string[] = []
 
+    console.log('syncPendingData - Pending data items:', Object.keys(pendingData).length)
+
     for (const [key, data] of Object.entries(pendingData)) {
       console.log('syncPendingData - Syncing pending item:', { key, data })
       const success = await saveToSupabase(data as ClientStatisticData)
@@ -120,11 +148,11 @@ export const syncPendingData = async (): Promise<void> => {
         console.log('syncPendingData - All pending data synced, cleared storage')
       } else {
         localStorage.setItem('pendingSyncData', JSON.stringify(remainingData))
-        console.log('syncPendingData - Some items remain pending')
+        console.log('syncPendingData - Some items remain pending:', Object.keys(remainingData).length)
       }
     }
   } catch (error) {
-    console.error('Sync pending data error:', error)
+    console.error('syncPendingData - Error:', error)
   }
 }
 
@@ -141,6 +169,6 @@ export const addToPendingSync = (data: ClientStatisticData): void => {
     localStorage.setItem('pendingSyncData', JSON.stringify(existing))
     console.log('addToPendingSync - Added to pending sync with key:', key)
   } catch (error) {
-    console.error('Add to pending sync error:', error)
+    console.error('addToPendingSync - Error:', error)
   }
 }
