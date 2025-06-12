@@ -3,7 +3,6 @@
 CREATE TABLE IF NOT EXISTS professionals (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     email TEXT UNIQUE NOT NULL,
-    hashed_password TEXT NOT NULL,
     display_name TEXT,
     created_at TIMESTAMPTZ DEFAULT now()
 );
