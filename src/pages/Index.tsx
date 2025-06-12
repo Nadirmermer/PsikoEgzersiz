@@ -62,14 +62,16 @@ const Index = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/20">
       <ClientModeHandler 
         isClientMode={isClientMode} 
         onExitClientMode={exitClientMode}
       />
       
-      <main className={isClientMode ? "pt-12" : ""}>
-        {renderPage()}
+      <main className={`transition-all duration-300 ${isClientMode ? "pt-12" : ""}`}>
+        <div className="fade-in">
+          {renderPage()}
+        </div>
       </main>
       
       {!isClientMode && (
