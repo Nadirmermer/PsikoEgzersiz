@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import EgzersizlerSayfasi from "./EgzersizlerSayfasi";
 import IstatistiklerSayfasi from "./IstatistiklerSayfasi";
@@ -16,7 +15,7 @@ const Index = () => {
   const [activePage, setActivePage] = useState("egzersizler");
   const [isMemoryGameActive, setIsMemoryGameActive] = useState(false);
   const { isClientMode, exitClientMode } = useClientMode();
-  const { user } = useAuth();
+  const { user, professional } = useAuth();
 
   // Sync pending data on load
   useEffect(() => {
@@ -29,6 +28,13 @@ const Index = () => {
       setActivePage("egzersizler");
     }
   }, [isClientMode]);
+
+  // If professional is logged in and not in client mode, default to dashboard
+  useEffect(() => {
+    if (professional && !isClientMode && activePage === "egzersizler") {
+      setActivePage("uzman-dashboard");
+    }
+  }, [professional, isClientMode]);
 
   // Announce page changes to screen readers
   useEffect(() => {

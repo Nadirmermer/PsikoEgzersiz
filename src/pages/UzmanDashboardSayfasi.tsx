@@ -24,7 +24,7 @@ interface ClientInfo {
 }
 
 const UzmanDashboardSayfasi: React.FC = () => {
-  const { professional } = useAuth()
+  const { professional, loading: authLoading } = useAuth()
   const [clientName, setClientName] = useState('')
   const [isStartingClientMode, setIsStartingClientMode] = useState(false)
   const [clients, setClients] = useState<ClientInfo[]>([])
@@ -32,19 +32,41 @@ const UzmanDashboardSayfasi: React.FC = () => {
   const [loading, setLoading] = useState(true)
   const [dialogOpen, setDialogOpen] = useState(false)
 
+  // Debug: Auth state'i logla
+  useEffect(() => {
+    console.log('UzmanDashboard - Auth state:', { professional, authLoading })
+  }, [professional, authLoading])
+
   useEffect(() => {
     const fetchClients = async () => {
-      if (!supabase || !professional?.id) return
+      if (!supabase || !professional?.id) {
+        console.log('UzmanDashboard - Skipping fetch:', { supabase: !!supabase, professionalId: professional?.id })
+        setLoading(false)
+        return
+      }
 
       setLoading(true)
+      console.log('UzmanDashboard - Fetching clients for professional:', professional.id)
+      
       try {
         const { data, error } = await supabase
           .from('client_statistics')
           .select('client_identifier, session_date, is_client_mode_session, exercise_data')
           .eq('professional_id', professional.id)
+          .order('session_date', { ascending: false })
+
+        console.log('UzmanDashboard - Supabase query result:', { data, error })
 
         if (error) {
           console.error('Clients fetch error:', error)
+          toast.error(`Danışan verileri yüklenirken hata: ${error.message}`)
+          return
+        }
+
+        if (!data || data.length === 0) {
+          console.log('UzmanDashboard - No client data found')
+          setClients([])
+          setLoading(false)
           return
         }
 
@@ -58,10 +80,17 @@ const UzmanDashboardSayfasi: React.FC = () => {
           scores: number[]
         }>()
         
-        data?.forEach(record => {
+        data.forEach(record => {
           const clientId = record.client_identifier
           const existing = clientMap.get(clientId)
-          const score = record.exercise_data?.score || 0
+          const score = record.exercise_data?.score || record.exercise_data?.details?.score || 0
+          
+          console.log('UzmanDashboard - Processing record:', { 
+            clientId, 
+            score, 
+            exercise_data: record.exercise_data,
+            is_client_mode_session: record.is_client_mode_session 
+          })
           
           if (!existing) {
             clientMap.set(clientId, {
@@ -90,13 +119,14 @@ const UzmanDashboardSayfasi: React.FC = () => {
           client_identifier: client.client_identifier,
           last_activity: client.last_activity,
           total_exercises: client.total_exercises,
-          is_client_mode: client.client_mode_sessions > 0, // Eğer herhangi bir danışan modu varsa true
+          is_client_mode: client.client_mode_sessions > 0,
           client_mode_sessions: client.client_mode_sessions,
           anonymous_sessions: client.anonymous_sessions,
-          average_score: Math.round(client.scores.reduce((a, b) => a + b, 0) / client.scores.length),
-          best_score: Math.max(...client.scores)
+          average_score: client.scores.length > 0 ? Math.round(client.scores.reduce((a, b) => a + b, 0) / client.scores.length) : 0,
+          best_score: client.scores.length > 0 ? Math.max(...client.scores) : 0
         })).sort((a, b) => new Date(b.last_activity).getTime() - new Date(a.last_activity).getTime())
 
+        console.log('UzmanDashboard - Processed clients:', clientsList)
         setClients(clientsList)
         
         // Auto-select first client if exists and no client is currently selected
@@ -111,8 +141,11 @@ const UzmanDashboardSayfasi: React.FC = () => {
       }
     }
 
-    fetchClients()
-  }, [professional?.id])
+    // Only fetch if auth is not loading and we have professional
+    if (!authLoading) {
+      fetchClients()
+    }
+  }, [professional?.id, authLoading])
 
   const handleStartClientMode = () => {
     if (!clientName.trim()) {
@@ -130,6 +163,12 @@ const UzmanDashboardSayfasi: React.FC = () => {
       startTime: new Date().toISOString()
     }))
 
+    console.log('Starting client mode with data:', {
+      professionalId: professional?.id,
+      clientIdentifier: clientName.trim(),
+      startTime: new Date().toISOString()
+    })
+
     toast.success(`Danışan modu başlatıldı: ${clientName}`)
     
     // Dialog'u kapat ve form'u temizle
@@ -145,6 +184,25 @@ const UzmanDashboardSayfasi: React.FC = () => {
 
   const handleClientSelect = (clientId: string) => {
     setSelectedClient(clientId)
+  }
+
+  // Auth yükleniyor durumu
+  if (authLoading) {
+    return (
+      <div className="container mx-auto px-4 py-6 pb-24 max-w-4xl">
+        <Card className="card-enhanced">
+          <CardContent className="text-center py-16">
+            <div className="w-24 h-24 bg-muted/30 rounded-2xl flex items-center justify-center mx-auto mb-6 animate-pulse">
+              <Settings className="w-12 h-12 text-muted-foreground" />
+            </div>
+            <h1 className="text-2xl font-bold mb-4">Hesap bilgileri yükleniyor...</h1>
+            <p className="text-muted-foreground">
+              Lütfen bekleyin...
+            </p>
+          </CardContent>
+        </Card>
+      </div>
+    )
   }
 
   if (!professional) {

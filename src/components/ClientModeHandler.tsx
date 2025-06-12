@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { toast } from 'sonner'
+import { useAuth } from '../contexts/AuthContext'
 
 interface ClientModeHandlerProps {
   isClientMode: boolean
@@ -17,17 +18,44 @@ const ClientModeHandler: React.FC<ClientModeHandlerProps> = ({
 }) => {
   const [password, setPassword] = useState('')
   const [showExitDialog, setShowExitDialog] = useState(false)
+  const [isExiting, setIsExiting] = useState(false)
+  const { professional } = useAuth()
 
-  const handlePasswordSubmit = () => {
+  const handlePasswordSubmit = async () => {
     if (password === '1923') {
-      // Client mode'dan çık
-      localStorage.removeItem('clientMode')
-      localStorage.removeItem('clientModeData')
-      onExitClientMode()
-      setShowExitDialog(false)
-      setPassword('')
-      toast.success('Danışan modundan çıkıldı')
-      window.location.href = '/'
+      setIsExiting(true)
+      
+      try {
+        // Client mode'dan çık
+        localStorage.removeItem('clientMode')
+        localStorage.removeItem('clientModeData')
+        
+        // Dialog'u kapat
+        setShowExitDialog(false)
+        setPassword('')
+        
+        // onExitClientMode callback'ini çağır
+        onExitClientMode()
+        
+        toast.success('Danışan modundan çıkıldı')
+        
+        // Uzman dashboard'una yönlendir - kısa bir delay ile
+        setTimeout(() => {
+          if (professional) {
+            // Mevcut sayfayı yeniden yükle yerine state'i güncelleyerek dashboard'a git
+            window.history.pushState(null, '', '/')
+            window.location.reload()
+          } else {
+            window.location.href = '/'
+          }
+        }, 500)
+        
+      } catch (error) {
+        console.error('Client mode exit error:', error)
+        toast.error('Çıkış sırasında hata oluştu')
+      } finally {
+        setIsExiting(false)
+      }
     } else {
       toast.error('Hatalı şifre!')
       setPassword('')
@@ -48,8 +76,9 @@ const ClientModeHandler: React.FC<ClientModeHandlerProps> = ({
             variant="secondary" 
             size="sm"
             onClick={() => setShowExitDialog(true)}
+            disabled={isExiting}
           >
-            Modu Sonlandır
+            {isExiting ? 'Çıkılıyor...' : 'Modu Sonlandır'}
           </Button>
         </div>
       </div>
@@ -72,24 +101,28 @@ const ClientModeHandler: React.FC<ClientModeHandlerProps> = ({
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="Şifrenizi girin"
-                onKeyPress={(e) => e.key === 'Enter' && handlePasswordSubmit()}
+                onKeyPress={(e) => e.key === 'Enter' && !isExiting && handlePasswordSubmit()}
+                disabled={isExiting}
               />
             </div>
             <div className="flex gap-2">
               <Button 
                 onClick={handlePasswordSubmit}
-                disabled={!password}
+                disabled={!password || isExiting}
                 className="flex-1"
               >
-                Çıkış Yap
+                {isExiting ? 'Çıkılıyor...' : 'Çıkış Yap'}
               </Button>
               <Button 
                 variant="outline" 
                 onClick={() => {
-                  setShowExitDialog(false)
-                  setPassword('')
+                  if (!isExiting) {
+                    setShowExitDialog(false)
+                    setPassword('')
+                  }
                 }}
                 className="flex-1"
+                disabled={isExiting}
               >
                 İptal
               </Button>

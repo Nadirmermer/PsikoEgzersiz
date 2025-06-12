@@ -1,4 +1,3 @@
-
 export interface ExerciseResult {
   exerciseName: string
   score: number
@@ -71,11 +70,13 @@ export const LocalStorageManager = {
     const results = this.getExerciseResults()
     results.push(result)
     localStorage.setItem('exerciseResults', JSON.stringify(results))
-    console.log('Egzersiz sonucu kaydedildi:', result)
+    console.log('LocalStorageManager - Egzersiz sonucu kaydedildi:', result)
 
     // Check if user is connected to a professional
     const connectionData = this.getConnectionData()
     if (connectionData) {
+      console.log('LocalStorageManager - User connected to professional, sending to Supabase:', connectionData)
+      
       const supabaseData = {
         professional_id: connectionData.professionalId,
         client_identifier: connectionData.clientIdentifier,
@@ -87,9 +88,9 @@ export const LocalStorageManager = {
       if (!success) {
         // Add to pending sync if failed
         addToPendingSync(supabaseData)
-        console.log('Supabase kayıt başarısız, senkronizasyon kuyruğuna eklendi')
+        console.log('LocalStorageManager - Supabase kayıt başarısız, senkronizasyon kuyruğuna eklendi')
       } else {
-        console.log('Supabase\'e başarıyla kaydedildi')
+        console.log('LocalStorageManager - Supabase\'e başarıyla kaydedildi')
       }
     }
 
@@ -98,8 +99,12 @@ export const LocalStorageManager = {
     const clientModeDataStr = localStorage.getItem('clientModeData')
     
     if (clientMode === 'true' && clientModeDataStr) {
+      console.log('LocalStorageManager - Client mode active, saving to Supabase')
+      
       try {
         const clientModeData = JSON.parse(clientModeDataStr)
+        console.log('LocalStorageManager - Client mode data:', clientModeData)
+        
         const supabaseData = {
           professional_id: clientModeData.professionalId,
           client_identifier: clientModeData.clientIdentifier,
@@ -110,9 +115,12 @@ export const LocalStorageManager = {
         const success = await saveToSupabase(supabaseData)
         if (!success) {
           addToPendingSync(supabaseData)
+          console.log('LocalStorageManager - Client mode Supabase kayıt başarısız, pending\'e eklendi')
+        } else {
+          console.log('LocalStorageManager - Client mode Supabase\'e başarıyla kaydedildi')
         }
       } catch (error) {
-        console.error('Client mode data save error:', error)
+        console.error('LocalStorageManager - Client mode data save error:', error)
       }
     }
   },
@@ -160,8 +168,11 @@ export const LocalStorageManager = {
     if (!dataStr) return null
     
     try {
-      return JSON.parse(dataStr)
+      const data = JSON.parse(dataStr)
+      console.log('LocalStorageManager - Connection data retrieved:', data)
+      return data
     } catch {
+      console.log('LocalStorageManager - Failed to parse connection data')
       return null
     }
   },
@@ -169,12 +180,12 @@ export const LocalStorageManager = {
   setConnectionData(professionalId: string, clientIdentifier: string): void {
     const data = { professionalId, clientIdentifier }
     localStorage.setItem('professionalConnection', JSON.stringify(data))
-    console.log('Uzman bağlantısı kaydedildi:', data)
+    console.log('LocalStorageManager - Uzman bağlantısı kaydedildi:', data)
   },
 
   clearConnectionData(): void {
     localStorage.removeItem('professionalConnection')
-    console.log('Uzman bağlantısı temizlendi')
+    console.log('LocalStorageManager - Uzman bağlantısı temizlendi')
   },
 
   // Mark results as uploaded to prevent re-upload

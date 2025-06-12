@@ -15,6 +15,8 @@ export const saveToSupabase = async (data: ClientStatisticData): Promise<boolean
     return false
   }
 
+  console.log('saveToSupabase - Attempting to save:', data)
+
   try {
     const { error } = await supabase
       .from('client_statistics')
@@ -31,6 +33,7 @@ export const saveToSupabase = async (data: ClientStatisticData): Promise<boolean
       return false
     }
 
+    console.log('saveToSupabase - Successfully saved to Supabase')
     return true
   } catch (error) {
     console.error('Supabase save error:', error)
@@ -44,8 +47,15 @@ export const uploadLocalDataToSupabase = async (
   localData: ExerciseResult[]
 ): Promise<{ success: boolean; uploaded: number; failed: number }> => {
   if (!supabase) {
+    console.log('uploadLocalDataToSupabase - Supabase not configured')
     return { success: false, uploaded: 0, failed: 0 }
   }
+
+  console.log('uploadLocalDataToSupabase - Starting upload:', { 
+    professionalId, 
+    clientIdentifier, 
+    localDataCount: localData.length 
+  })
 
   let uploaded = 0
   let failed = 0
@@ -60,28 +70,43 @@ export const uploadLocalDataToSupabase = async (
 
     if (success) {
       uploaded++
+      console.log('uploadLocalDataToSupabase - Uploaded result:', result)
     } else {
       failed++
+      console.log('uploadLocalDataToSupabase - Failed to upload result:', result)
     }
   }
 
+  console.log('uploadLocalDataToSupabase - Upload completed:', { uploaded, failed })
   return { success: failed === 0, uploaded, failed }
 }
 
 export const syncPendingData = async (): Promise<void> => {
-  if (!supabase) return
+  if (!supabase) {
+    console.log('syncPendingData - Supabase not configured')
+    return
+  }
 
   const pendingDataStr = localStorage.getItem('pendingSyncData')
-  if (!pendingDataStr) return
+  if (!pendingDataStr) {
+    console.log('syncPendingData - No pending data to sync')
+    return
+  }
+
+  console.log('syncPendingData - Found pending data to sync')
 
   try {
     const pendingData = JSON.parse(pendingDataStr)
     const successfulSyncs: string[] = []
 
     for (const [key, data] of Object.entries(pendingData)) {
+      console.log('syncPendingData - Syncing pending item:', { key, data })
       const success = await saveToSupabase(data as ClientStatisticData)
       if (success) {
         successfulSyncs.push(key)
+        console.log('syncPendingData - Successfully synced:', key)
+      } else {
+        console.log('syncPendingData - Failed to sync:', key)
       }
     }
 
@@ -92,8 +117,10 @@ export const syncPendingData = async (): Promise<void> => {
       
       if (Object.keys(remainingData).length === 0) {
         localStorage.removeItem('pendingSyncData')
+        console.log('syncPendingData - All pending data synced, cleared storage')
       } else {
         localStorage.setItem('pendingSyncData', JSON.stringify(remainingData))
+        console.log('syncPendingData - Some items remain pending')
       }
     }
   } catch (error) {
@@ -102,6 +129,8 @@ export const syncPendingData = async (): Promise<void> => {
 }
 
 export const addToPendingSync = (data: ClientStatisticData): void => {
+  console.log('addToPendingSync - Adding to pending sync:', data)
+  
   try {
     const existingStr = localStorage.getItem('pendingSyncData')
     const existing = existingStr ? JSON.parse(existingStr) : {}
@@ -110,6 +139,7 @@ export const addToPendingSync = (data: ClientStatisticData): void => {
     existing[key] = data
     
     localStorage.setItem('pendingSyncData', JSON.stringify(existing))
+    console.log('addToPendingSync - Added to pending sync with key:', key)
   } catch (error) {
     console.error('Add to pending sync error:', error)
   }
