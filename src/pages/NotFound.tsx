@@ -12,13 +12,43 @@ const NotFound = () => {
   }, [location.pathname]);
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 dark:from-blue-950/40 dark:via-indigo-900/30 dark:to-purple-900/40">
-      <div className="text-center p-8 rounded-2xl shadow-lg bg-white/80 dark:bg-gray-900/80 border border-primary/20">
-        <img src="/logo.png" alt="Maskot Beyin" className="mx-auto w-28 h-28 mb-4 animate-bounce" />
-        <h1 className="text-5xl font-extrabold text-primary mb-2">404</h1>
-        <p className="text-2xl font-semibold text-gray-700 dark:text-gray-200 mb-2">Sayfa Bulunamadı!</p>
-        <p className="text-md text-gray-500 dark:text-gray-400 mb-6">Üzgünüz, aradığınız sayfa burada yok.<br/>Ama maskotumuz seni ana sayfaya götürebilir! 😊</p>
-        <a href="/" className="inline-block px-6 py-3 rounded-lg bg-primary text-white font-bold shadow hover:bg-primary/90 transition">Ana Sayfaya Dön</a>
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/30 to-indigo-50/50 dark:from-slate-950 dark:via-blue-950/30 dark:to-indigo-950/50 flex items-center justify-center">
+      {/* Background Pattern */}
+      <div className="absolute inset-0 bg-grid-pattern opacity-5" />
+      
+      <div className="relative text-center p-8 rounded-3xl bg-white/60 dark:bg-gray-900/60 backdrop-blur-sm border border-border/50 shadow-xl max-w-md mx-4">
+        {/* Animated Mascot */}
+        <div className="relative inline-flex items-center justify-center mb-6">
+          <div className="absolute inset-0 w-32 h-32 bg-gradient-to-r from-primary/20 to-purple-500/20 rounded-full blur-xl animate-pulse" />
+          <div className="relative w-24 h-24 bg-gradient-to-br from-white to-blue-50 dark:from-gray-800 dark:to-blue-900/20 rounded-full shadow-lg border-2 border-primary/20 flex items-center justify-center animate-bounce">
+            <img src="/logo.png" alt="Maskot Beyin" className="w-16 h-16 object-contain drop-shadow-sm" />
+          </div>
+        </div>
+        
+        {/* Error Content */}
+        <div className="space-y-4">
+          <h1 className="text-6xl font-bold bg-gradient-to-r from-primary via-purple-600 to-pink-600 bg-clip-text text-transparent">
+            404
+          </h1>
+          <h2 className="text-2xl font-bold text-foreground">
+            Sayfa Bulunamadı!
+          </h2>
+          <p className="text-muted-foreground leading-relaxed">
+            Üzgünüz, aradığınız sayfa burada yok.<br/>
+            Ama maskotumuz sizi ana sayfaya götürebilir! 🧠✨
+          </p>
+          
+          {/* Action Button */}
+          <div className="pt-4">
+            <a 
+              href="/" 
+              className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-gradient-to-r from-primary to-purple-600 text-white font-semibold shadow-lg hover:shadow-xl hover:scale-105 transition-all duration-200"
+            >
+              <span>Ana Sayfaya Dön</span>
+              <span className="text-lg">🏠</span>
+            </a>
+          </div>
+        </div>
       </div>
     </div>
   );

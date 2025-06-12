@@ -66,17 +66,20 @@ const BottomNavigation: React.FC<BottomNavigationProps> = ({
 
   return (
     <nav 
-      className="fixed bottom-0 left-0 right-0 bg-background/95 backdrop-blur-md border-t border-border/50 z-40 shadow-lg"
+      className="fixed bottom-0 left-0 right-0 bg-white/80 dark:bg-gray-950/80 backdrop-blur-xl border-t border-border/30 z-40 shadow-2xl"
       role="navigation"
       aria-label="Ana navigasyon menüsü"
     >
-      <div className="max-w-4xl mx-auto px-2">
+      {/* Gradient overlay */}
+      <div className="absolute inset-0 bg-gradient-to-t from-background/5 to-transparent pointer-events-none" />
+      
+      <div className="relative max-w-md mx-auto px-4 py-2">
         <div 
-          className="nav-tablet"
+          className="flex items-center justify-around gap-1"
           role="tablist"
           aria-orientation="horizontal"
         >
-          {navigationItems.map((item) => {
+          {navigationItems.map((item, index) => {
             const IconComponent = item.icon;
             const isActive = activePage === item.id;
             
@@ -85,12 +88,15 @@ const BottomNavigation: React.FC<BottomNavigationProps> = ({
                 key={item.id}
                 onClick={() => handleNavigation(item.id, item.label)}
                 className={cn(
-                  "touch-target flex flex-col items-center px-3 py-3 rounded-xl transition-all duration-300 min-w-0 flex-1 mx-0.5 relative group focus-enhanced",
-                  "hover:bg-accent/50 active:scale-95",
+                  "relative flex flex-col items-center px-3 py-2.5 rounded-2xl transition-all duration-300 min-w-0 group focus-enhanced",
+                  "hover:bg-primary/5 active:scale-95 touch-target",
                   isActive
-                    ? "bg-primary/10 text-primary shadow-sm scale-105"
+                    ? "bg-primary text-white shadow-lg shadow-primary/25 scale-105"
                     : "text-muted-foreground hover:text-foreground"
                 )}
+                style={{
+                  animationDelay: `${index * 100}ms`
+                }}
                 role="tab"
                 aria-selected={isActive}
                 aria-controls={`panel-${item.id}`}
@@ -98,28 +104,49 @@ const BottomNavigation: React.FC<BottomNavigationProps> = ({
                 tabIndex={isActive ? 0 : -1}
                 type="button"
               >
-                {/* Active indicator */}
+                {/* Active background glow */}
                 {isActive && (
                   <div 
-                    className="absolute -top-0.5 left-1/2 transform -translate-x-1/2 w-8 h-1 bg-primary rounded-full"
+                    className="absolute inset-0 bg-gradient-to-br from-primary via-primary to-primary/80 rounded-2xl animate-pulse"
                     aria-hidden="true"
                   />
                 )}
                 
-                <IconComponent 
-                  className={cn(
-                    "w-6 h-6 mb-1 transition-all duration-300",
-                    isActive ? "scale-110" : "scale-100 group-hover:scale-105"
-                  )}
-                  aria-hidden="true"
-                />
+                {/* Icon container */}
+                <div className={cn(
+                  "relative z-10 p-2 rounded-xl transition-all duration-300",
+                  isActive 
+                    ? "bg-white/20 backdrop-blur-sm" 
+                    : "group-hover:bg-primary/10"
+                )}>
+                  <IconComponent 
+                    className={cn(
+                      "w-5 h-5 transition-all duration-300",
+                      isActive 
+                        ? "text-white drop-shadow-sm" 
+                        : "group-hover:scale-110"
+                    )}
+                    aria-hidden="true"
+                  />
+                </div>
                 
+                {/* Label */}
                 <span className={cn(
-                  "text-xs font-medium text-center leading-tight transition-all duration-300",
-                  isActive ? "font-semibold" : "font-normal"
+                  "relative z-10 text-xs font-medium text-center leading-tight transition-all duration-300 mt-1",
+                  isActive 
+                    ? "text-white font-semibold drop-shadow-sm" 
+                    : "group-hover:font-medium"
                 )}>
                   {item.label}
                 </span>
+                
+                {/* Active indicator dot */}
+                {isActive && (
+                  <div 
+                    className="absolute -top-1 left-1/2 transform -translate-x-1/2 w-1.5 h-1.5 bg-white rounded-full animate-pulse"
+                    aria-hidden="true"
+                  />
+                )}
                 
                 {/* Screen reader description */}
                 <span 
@@ -129,11 +156,11 @@ const BottomNavigation: React.FC<BottomNavigationProps> = ({
                   {item.description}
                 </span>
                 
-                {/* Hover effect */}
+                {/* Ripple effect on tap */}
                 <div 
                   className={cn(
-                    "absolute inset-0 rounded-xl transition-all duration-300 opacity-0 group-hover:opacity-100",
-                    "bg-gradient-to-br from-primary/5 to-primary/10"
+                    "absolute inset-0 rounded-2xl transition-all duration-300 opacity-0 group-active:opacity-100",
+                    "bg-gradient-to-br from-white/10 to-white/5"
                   )} 
                   aria-hidden="true"
                 />
@@ -142,6 +169,9 @@ const BottomNavigation: React.FC<BottomNavigationProps> = ({
           })}
         </div>
       </div>
+      
+      {/* Bottom safe area for mobile devices */}
+      <div className="h-safe-area-inset-bottom bg-transparent" />
       
       {/* Screen reader announcement area */}
       <div 

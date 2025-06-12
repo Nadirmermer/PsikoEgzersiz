@@ -5,6 +5,9 @@ export interface ExerciseResult {
   duration: number
   date: string
   details?: any
+  completed?: boolean
+  exitedEarly?: boolean
+  currentProgress?: any
 }
 
 export interface MemoryGameDetails {
@@ -86,6 +89,17 @@ export const LocalStorageManager = {
     localStorage.setItem('exerciseResults', JSON.stringify(results))
     console.log('LocalStorageManager - Exercise result saved to localStorage:', result)
 
+    // Enhanced logging for better statistics tracking
+    console.log('LocalStorageManager - Enhanced stats:', {
+      exerciseName: result.exerciseName,
+      completed: result.completed,
+      exitedEarly: result.exitedEarly,
+      score: result.score,
+      duration: result.duration,
+      hasDetails: !!result.details,
+      detailsKeys: result.details ? Object.keys(result.details) : []
+    })
+
     // Check if user is connected to a professional
     const connectionData = this.getConnectionData()
     if (connectionData) {
@@ -156,6 +170,30 @@ export const LocalStorageManager = {
   clearExerciseResults(): void {
     localStorage.removeItem('exerciseResults')
     console.log('Tüm egzersiz sonuçları temizlendi')
+  },
+
+  // Save partial progress when exiting early
+  savePartialProgress(exerciseName: string, currentProgress: any, duration: number): void {
+    const partialResult: ExerciseResult = {
+      exerciseName,
+      score: 0,
+      duration,
+      date: new Date().toISOString(),
+      completed: false,
+      exitedEarly: true,
+      currentProgress,
+      details: {
+        exercise_name: exerciseName,
+        session_duration_seconds: duration,
+        completed: false,
+        exited_early: true,
+        partial_data: currentProgress,
+        timestamp: new Date().toISOString()
+      }
+    }
+
+    this.saveExerciseResult(partialResult)
+    console.log('LocalStorageManager - Partial progress saved:', partialResult)
   },
 
   getCurrentMemoryGameLevel(): number {

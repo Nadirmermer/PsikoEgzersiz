@@ -189,57 +189,80 @@ const UzmanDashboardSayfasi: React.FC = () => {
   // Auth yükleniyor durumu
   if (authLoading) {
     return (
-      <div className="container mx-auto px-4 py-6 pb-24 max-w-4xl">
-        <Card className="card-enhanced">
-          <CardContent className="text-center py-16">
-            <div className="w-24 h-24 bg-muted/30 rounded-2xl flex items-center justify-center mx-auto mb-6 animate-pulse">
-              <Settings className="w-12 h-12 text-muted-foreground" />
-            </div>
-            <h1 className="text-2xl font-bold mb-4">Hesap bilgileri yükleniyor...</h1>
-            <p className="text-muted-foreground">
-              Lütfen bekleyin...
-            </p>
-          </CardContent>
-        </Card>
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/30 to-indigo-50/50 dark:from-slate-950 dark:via-blue-950/30 dark:to-indigo-950/50">
+        <div className="px-4 pt-8 pb-24 sm:px-6 lg:px-8">
+          <div className="max-w-4xl mx-auto">
+            <Card className="bg-white/60 dark:bg-gray-900/60 backdrop-blur-sm border border-border/50 rounded-2xl shadow-sm">
+              <CardContent className="text-center py-16">
+                <div className="w-24 h-24 bg-muted/30 rounded-2xl flex items-center justify-center mx-auto mb-6 animate-pulse">
+                  <Settings className="w-12 h-12 text-muted-foreground" />
+                </div>
+                <h1 className="text-2xl font-bold mb-4">Hesap bilgileri yükleniyor...</h1>
+                <p className="text-muted-foreground">
+                  Lütfen bekleyin...
+                </p>
+              </CardContent>
+            </Card>
+          </div>
+        </div>
       </div>
     )
   }
 
   if (!professional) {
     return (
-      <div className="container mx-auto px-4 py-6 pb-24 max-w-4xl">
-        <Card className="card-enhanced">
-          <CardContent className="text-center py-16">
-            <div className="w-24 h-24 bg-destructive/10 rounded-2xl flex items-center justify-center mx-auto mb-6">
-              <Settings className="w-12 h-12 text-destructive" />
-            </div>
-            <h1 className="text-2xl font-bold mb-4">Erişim Reddedildi</h1>
-            <p className="text-muted-foreground mb-6">
-              Bu sayfaya erişmek için uzman hesabınızla giriş yapmanız gerekmektedir.
-            </p>
-            <Button onClick={() => window.location.href = '/ayarlar'}>
-              Ayarlar Sayfasına Git
-            </Button>
-          </CardContent>
-        </Card>
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/30 to-indigo-50/50 dark:from-slate-950 dark:via-blue-950/30 dark:to-indigo-950/50">
+        <div className="px-4 pt-8 pb-24 sm:px-6 lg:px-8">
+          <div className="max-w-4xl mx-auto">
+            <Card className="bg-white/60 dark:bg-gray-900/60 backdrop-blur-sm border border-border/50 rounded-2xl shadow-sm">
+              <CardContent className="text-center py-16">
+                <div className="w-24 h-24 bg-destructive/10 rounded-2xl flex items-center justify-center mx-auto mb-6">
+                  <Settings className="w-12 h-12 text-destructive" />
+                </div>
+                <h1 className="text-2xl font-bold mb-4">Erişim Reddedildi</h1>
+                <p className="text-muted-foreground mb-6">
+                  Bu sayfaya erişmek için uzman hesabınızla giriş yapmanız gerekmektedir.
+                </p>
+                <Button onClick={() => window.location.href = '/ayarlar'}>
+                  Ayarlar Sayfasına Git
+                </Button>
+              </CardContent>
+            </Card>
+          </div>
+        </div>
       </div>
     )
   }
 
   return (
-    <div className="container mx-auto px-4 py-6 pb-24 max-w-7xl">
-      {/* Enhanced Header */}
-      <div className="mb-8 text-center">
-        <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-primary/10 to-primary/5 rounded-2xl mb-6">
-          <BarChart3 className="w-8 h-8 text-primary" />
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/30 to-indigo-50/50 dark:from-slate-950 dark:via-blue-950/30 dark:to-indigo-950/50">
+      {/* Modern Header */}
+      <div className="relative overflow-hidden">
+        <div className="absolute inset-0 bg-grid-pattern opacity-5" />
+        <div className="absolute top-0 left-0 w-full h-32 bg-gradient-to-b from-primary/5 to-transparent" />
+        
+        <div className="relative px-4 pt-8 pb-6 sm:px-6 lg:px-8">
+          <div className="text-center space-y-4 animate-fade-in">
+            <div className="relative inline-flex items-center justify-center mb-2">
+              <div className="relative w-12 h-12 sm:w-14 sm:h-14 bg-gradient-to-br from-primary/10 to-purple-500/10 rounded-full border border-primary/20 flex items-center justify-center">
+                <BarChart3 className="w-6 h-6 sm:w-8 sm:h-8 text-primary" />
+              </div>
+            </div>
+            
+            <div className="space-y-2">
+              <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold bg-gradient-to-r from-primary via-purple-600 to-pink-600 bg-clip-text text-transparent leading-tight px-4">
+                Uzman Dashboard
+              </h1>
+              <p className="text-sm sm:text-base text-muted-foreground px-6 leading-relaxed">
+                Hoş geldiniz, <span className="font-medium text-primary">{professional.display_name}</span>. Danışanlarınızın performansını analiz edin.
+              </p>
+            </div>
+          </div>
         </div>
-        <h1 className="text-4xl md:text-5xl font-bold text-foreground mb-4 bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent">
-          Uzman Dashboard
-        </h1>
-        <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-          Hoş geldiniz, <strong>{professional.display_name}</strong>. Danışanlarınızın performansını analiz edin.
-        </p>
       </div>
+
+      <div className="px-4 pb-24 sm:px-6 lg:px-8">
+        <div className="max-w-7xl mx-auto">
 
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
         {/* Sol Panel - Uzman Bilgileri ve Controls */}
@@ -428,6 +451,8 @@ const UzmanDashboardSayfasi: React.FC = () => {
           </p>
         </CardContent>
       </Card>
+        </div>
+      </div>
     </div>
   )
 }

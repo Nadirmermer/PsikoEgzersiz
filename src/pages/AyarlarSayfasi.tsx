@@ -93,16 +93,34 @@ const AyarlarSayfasi: React.FC = () => {
   }, [])
 
   return (
-    <div className="container mx-auto px-4 py-6 max-w-4xl space-y-6">
-      <div className="text-center mb-8">
-        <h1 className="text-3xl font-bold text-foreground mb-2 flex items-center justify-center gap-2">
-          <Settings className="w-8 h-8 text-primary" />
-          Ayarlar
-        </h1>
-        <p className="text-muted-foreground">
-          Uygulamanızı kişiselleştirin ve hesap ayarlarınızı yönetin
-        </p>
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/30 to-indigo-50/50 dark:from-slate-950 dark:via-blue-950/30 dark:to-indigo-950/50">
+      {/* Modern Header */}
+      <div className="relative overflow-hidden">
+        <div className="absolute inset-0 bg-grid-pattern opacity-5" />
+        <div className="absolute top-0 left-0 w-full h-32 bg-gradient-to-b from-primary/5 to-transparent" />
+        
+        <div className="relative px-4 pt-8 pb-6 sm:px-6 lg:px-8">
+          <div className="text-center space-y-4 animate-fade-in">
+            <div className="relative inline-flex items-center justify-center mb-2">
+              <div className="relative w-12 h-12 sm:w-14 sm:h-14 bg-gradient-to-br from-primary/10 to-purple-500/10 rounded-full border border-primary/20 flex items-center justify-center">
+                <Settings className="w-6 h-6 sm:w-8 sm:h-8 text-primary" />
+              </div>
+            </div>
+            
+            <div className="space-y-2">
+              <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold bg-gradient-to-r from-primary via-purple-600 to-pink-600 bg-clip-text text-transparent leading-tight px-4">
+                Ayarlar
+              </h1>
+              <p className="text-sm sm:text-base text-muted-foreground px-6 leading-relaxed">
+                Uygulamanızı kişiselleştirin ve <span className="font-medium text-primary">hesap ayarlarınızı yönetin</span>
+              </p>
+            </div>
+          </div>
+        </div>
       </div>
+
+      <div className="px-4 pb-24 sm:px-6 lg:px-8">
+        <div className="max-w-4xl mx-auto space-y-6">
 
       <div className="grid gap-6 md:grid-cols-2">
         {/* Tema Ayarları */}
@@ -326,6 +344,8 @@ const AyarlarSayfasi: React.FC = () => {
             </p>
           </CardContent>
         </Card>
+      </div>
+        </div>
       </div>
     </div>
   )

@@ -144,6 +144,29 @@
     text-rendering: optimizeLegibility;
   }
 
+  /* Grid pattern for background */
+  .bg-grid-pattern {
+    background-image: 
+      linear-gradient(rgba(0, 0, 0, 0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(0, 0, 0, 0.03) 1px, transparent 1px);
+    background-size: 20px 20px;
+  }
+
+  .dark .bg-grid-pattern {
+    background-image: 
+      linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+  }
+
+  /* Safe area support for mobile devices */
+  .h-safe-area-inset-bottom {
+    height: env(safe-area-inset-bottom);
+  }
+
+  .pb-safe-area {
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+
   /* Enhanced typography hierarchy with proper semantic structure */
   h1 {
     @apply text-3xl md:text-4xl lg:text-5xl font-bold tracking-tight;

@@ -9,7 +9,7 @@ import { useAuth } from '../contexts/AuthContext'
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar, Legend, AreaChart, Area, PieChart, Pie, Cell } from 'recharts'
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import { BarChart3, TrendingUp, Clock, Trophy, Target, Brain, User, Trash2, Download, Zap, Award, Star, Layers, Filter, Calendar, Gauge } from 'lucide-react'
+import { BarChart3, TrendingUp, Clock, Trophy, Target, Brain, User, Trash2, Download, Zap, Award, Star, Layers, Filter, Calendar, Gauge, CheckCircle, XCircle } from 'lucide-react'
 
 const IstatistiklerSayfasi: React.FC = () => {
   const [exerciseResults, setExerciseResults] = useState<ExerciseResult[]>([])
@@ -61,8 +61,13 @@ const IstatistiklerSayfasi: React.FC = () => {
   const colorSequenceResults = filteredResults.filter(result => result.exerciseName === 'Renk Dizisi Takibi')
   const wordCircleResults = filteredResults.filter(result => result.exerciseName === 'Kelime Çemberi Bulmacası')
   const logicSequenceResults = filteredResults.filter(result => result.exerciseName === 'Mantık Dizileri')
-  
+
   const totalExercises = filteredResults.length
+  
+  // Enhanced statistics
+  const completedExercises = filteredResults.filter(result => result.completed === true).length
+  const exitedEarlyCount = filteredResults.filter(result => result.exitedEarly === true).length
+  const completionRate = totalExercises > 0 ? Math.round((completedExercises / totalExercises) * 100) : 0
   const averageScore = totalExercises > 0 
     ? (filteredResults.reduce((sum, result) => sum + result.score, 0) / totalExercises).toFixed(1)
     : '0'
@@ -195,18 +200,26 @@ const IstatistiklerSayfasi: React.FC = () => {
     {
       title: 'Toplam Egzersiz',
       value: totalExercises.toString(),
-      description: selectedExerciseFilter === 'all' ? 'Tamamlanan egzersiz sayısı' : `${selectedExerciseFilter} egzersizi`,
+      description: selectedExerciseFilter === 'all' ? 'Başlatılan egzersiz sayısı' : `${selectedExerciseFilter} egzersizi`,
       icon: Target,
       color: 'text-blue-600 dark:text-blue-400',
       bgColor: 'bg-blue-50 dark:bg-blue-950/30'
+    },
+    {
+      title: 'Tamamlanan',
+      value: completedExercises.toString(),
+      description: `%${completionRate} tamamlanma oranı`,
+      icon: CheckCircle,
+      color: 'text-emerald-600 dark:text-emerald-400',
+      bgColor: 'bg-emerald-50 dark:bg-emerald-950/30'
     },
     {
       title: 'Ortalama Skor',
       value: averageScore,
       description: 'Performans ortalaması',
       icon: TrendingUp,
-      color: 'text-emerald-600 dark:text-emerald-400',
-      bgColor: 'bg-emerald-50 dark:bg-emerald-950/30'
+      color: 'text-purple-600 dark:text-purple-400',
+      bgColor: 'bg-purple-50 dark:bg-purple-950/30'
     },
     {
       title: 'En Yüksek Skor',
@@ -223,6 +236,14 @@ const IstatistiklerSayfasi: React.FC = () => {
       icon: Clock,
       color: 'text-violet-600 dark:text-violet-400',
       bgColor: 'bg-violet-50 dark:bg-violet-950/30'
+    },
+    {
+      title: 'Erken Çıkış',
+      value: exitedEarlyCount.toString(),
+      description: 'Yarıda bırakılan egzersizler',
+      icon: XCircle,
+      color: 'text-red-600 dark:text-red-400',
+      bgColor: 'bg-red-50 dark:bg-red-950/30'
     }
   ]
 
@@ -258,19 +279,34 @@ const IstatistiklerSayfasi: React.FC = () => {
   ]
 
   return (
-    <div className="container mx-auto px-4 py-6 pb-28 max-w-7xl">
-      {/* Enhanced Header */}
-      <div className="mb-12 text-center">
-        <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-primary/10 to-primary/5 rounded-2xl mb-6">
-          <BarChart3 className="w-8 h-8 text-primary" />
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/30 to-indigo-50/50 dark:from-slate-950 dark:via-blue-950/30 dark:to-indigo-950/50">
+      {/* Modern Header */}
+      <div className="relative overflow-hidden">
+        <div className="absolute inset-0 bg-grid-pattern opacity-5" />
+        <div className="absolute top-0 left-0 w-full h-32 bg-gradient-to-b from-primary/5 to-transparent" />
+        
+        <div className="relative px-4 pt-8 pb-6 sm:px-6 lg:px-8">
+          <div className="text-center space-y-4 animate-fade-in">
+            <div className="relative inline-flex items-center justify-center mb-2">
+              <div className="relative w-12 h-12 sm:w-14 sm:h-14 bg-gradient-to-br from-primary/10 to-purple-500/10 rounded-full border border-primary/20 flex items-center justify-center">
+                <BarChart3 className="w-6 h-6 sm:w-8 sm:h-8 text-primary" />
+              </div>
+            </div>
+            
+            <div className="space-y-2">
+              <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold bg-gradient-to-r from-primary via-purple-600 to-pink-600 bg-clip-text text-transparent leading-tight px-4">
+                İstatistikler
+              </h1>
+              <p className="text-sm sm:text-base text-muted-foreground px-6 leading-relaxed">
+                Egzersiz performansınızı analiz edin ve <span className="font-medium text-primary">gelişiminizi takip edin</span>
+              </p>
+            </div>
+          </div>
         </div>
-        <h1 className="text-4xl md:text-5xl font-bold text-foreground mb-4 bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent">
-          İstatistiklerim
-        </h1>
-        <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-          Bilişsel egzersiz performansınızı takip edin ve gelişiminizi analiz edin
-        </p>
       </div>
+
+      <div className="px-4 pb-24 sm:px-6 lg:px-8">
+        <div className="max-w-6xl mx-auto space-y-6">
 
       {/* Filters */}
       <div className="grid gap-4 md:grid-cols-2 mb-8">
@@ -482,10 +518,10 @@ const IstatistiklerSayfasi: React.FC = () => {
                         <div className="p-2 bg-primary/10 rounded-lg">
                           {result.exerciseName === 'Hafıza Oyunu' && <Brain className="w-5 h-5 text-blue-600" />}
                           {result.exerciseName === 'Londra Kulesi Testi' && <Layers className="w-5 h-5 text-purple-600" />}
-                          {result.exerciseName.includes('Eşleştirme') && <Target className="w-5 h-5 text-emerald-600" />}
-                          {result.exerciseName.includes('Dizisi') && <TrendingUp className="w-5 h-5 text-orange-600" />}
-                          {result.exerciseName.includes('Çemberi') && <Award className="w-5 h-5 text-lime-600" />}
-                          {result.exerciseName.includes('Mantık') && <Gauge className="w-5 h-5 text-red-600" />}
+                          {typeof result.exerciseName === 'string' && result.exerciseName.includes('Eşleştirme') && <Target className="w-5 h-5 text-emerald-600" />}
+                          {typeof result.exerciseName === 'string' && result.exerciseName.includes('Dizisi') && <TrendingUp className="w-5 h-5 text-orange-600" />}
+                          {typeof result.exerciseName === 'string' && result.exerciseName.includes('Çemberi') && <Award className="w-5 h-5 text-lime-600" />}
+                          {typeof result.exerciseName === 'string' && result.exerciseName.includes('Mantık') && <Gauge className="w-5 h-5 text-red-600" />}
                         </div>
                         <div>
                           <div className="font-semibold text-base">{result.exerciseName}</div>
@@ -747,10 +783,10 @@ const IstatistiklerSayfasi: React.FC = () => {
                                 {result.details?.completed_optimally && <Star className="w-3 h-3 inline ml-1 text-amber-500" />}
                               </span>
                             )}
-                            {result.exerciseName.includes('Eşleştirme') && (
+                            {typeof result.exerciseName === 'string' && result.exerciseName.includes('Eşleştirme') && (
                               <span>Doğru: {result.details?.correct_answers || '-'}/{result.details?.total_questions || '-'}</span>
                             )}
-                            {result.exerciseName.includes('Dizisi') && (
+                            {typeof result.exerciseName === 'string' && result.exerciseName.includes('Dizisi') && (
                               <span>Max Seviye: {result.details?.max_sequence_length || result.details?.level || '-'}</span>
                             )}
                           </TableCell>
@@ -845,6 +881,8 @@ const IstatistiklerSayfasi: React.FC = () => {
           </CardContent>
         </Card>
       )}
+        </div>
+      </div>
     </div>
   )
 }

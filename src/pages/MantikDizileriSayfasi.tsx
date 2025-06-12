@@ -1,476 +1,694 @@
-
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useCallback } from 'react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
 import { Progress } from '@/components/ui/progress'
-import { ArrowLeft, Brain, CheckCircle, X, Trophy, Clock, Target, Zap, Lightbulb, Star } from 'lucide-react'
+import { ArrowLeft, Brain, CheckCircle, X, Trophy, Clock, Target, Zap, Lightbulb, Star, Play, RotateCcw, Pause, PlayCircle } from 'lucide-react'
 import { LocalStorageManager } from '../utils/localStorage'
+import { toast } from '@/components/ui/sonner'
+import ExerciseHeader from '../components/ExerciseHeader'
 
-interface SequenceProblem {
-  id: number
-  sequence: number[]
-  correctAnswer: number
-  explanation: string
-  difficulty: 'Kolay' | 'Orta' | 'Zor'
-  patternType: string
-}
-
-interface SessionStats {
-  questionsAttempted: number
-  correctAnswers: number
-  incorrectAnswers: number
-  sessionStartTime: number
-  totalScore: number
-}
-
-interface MantikDizileriSayfasiProps {
+interface MantikDizileriProps {
   onBack: () => void
 }
 
-const MantikDizileriSayfasi: React.FC<MantikDizileriSayfasiProps> = ({ onBack }) => {
-  const [currentProblem, setCurrentProblem] = useState<SequenceProblem | null>(null)
-  const [userAnswer, setUserAnswer] = useState('')
-  const [showFeedback, setShowFeedback] = useState(false)
-  const [isCorrect, setIsCorrect] = useState(false)
-  const [sessionStats, setSessionStats] = useState<SessionStats>({
-    questionsAttempted: 0,
-    correctAnswers: 0,
-    incorrectAnswers: 0,
-    sessionStartTime: Date.now(),
-    totalScore: 0
-  })
-  const [questionStartTime, setQuestionStartTime] = useState(Date.now())
+interface GameState {
+  phase: 'ready' | 'playing' | 'completed' | 'paused'
+  currentLevel: number
+  sequence: number[]
+  userAnswer: number | null
+  correctAnswer: number
+  score: number
+  correctCount: number
+  incorrectCount: number
+  startTime: number
+  currentTime: number
+  totalQuestions: number
+  currentQuestion: number
+  pausedTime: number
+}
 
-  // Soru havuzu - 15 farklı sayı dizisi problemi
-  const sequenceProblems: SequenceProblem[] = [
-    {
-      id: 1,
-      sequence: [2, 4, 6, 8],
-      correctAnswer: 10,
-      explanation: "Çift sayılar dizisi (+2)",
-      difficulty: 'Kolay',
-      patternType: 'Aritmetik Dizi'
+const generateSequence = (level: number): { sequence: number[], answer: number } => {
+  const patterns = [
+    // Aritmetik diziler
+    () => {
+      const start = Math.floor(Math.random() * 10) + 1
+      const diff = Math.floor(Math.random() * 5) + 1
+      const sequence = [start, start + diff, start + 2*diff, start + 3*diff]
+      return { sequence, answer: start + 4*diff }
     },
-    {
-      id: 2,
-      sequence: [1, 3, 5, 7],
-      correctAnswer: 9,
-      explanation: "Tek sayılar dizisi (+2)",
-      difficulty: 'Kolay',
-      patternType: 'Aritmetik Dizi'
+    // Geometrik diziler
+    () => {
+      const start = Math.floor(Math.random() * 3) + 2
+      const ratio = 2
+      const sequence = [start, start * ratio, start * ratio * ratio, start * ratio * ratio * ratio]
+      return { sequence, answer: start * Math.pow(ratio, 4) }
     },
-    {
-      id: 3,
-      sequence: [5, 10, 15, 20],
-      correctAnswer: 25,
-      explanation: "5'in katları (+5)",
-      difficulty: 'Kolay',
-      patternType: 'Aritmetik Dizi'
+    // Fibonacci benzeri
+    () => {
+      const a = Math.floor(Math.random() * 3) + 1
+      const b = Math.floor(Math.random() * 3) + 1
+      const sequence = [a, b, a + b, a + 2*b]
+      return { sequence, answer: 2*a + 3*b }
     },
-    {
-      id: 4,
-      sequence: [1, 4, 7, 10],
-      correctAnswer: 13,
-      explanation: "3'er artarak (+3)",
-      difficulty: 'Kolay',
-      patternType: 'Aritmetik Dizi'
-    },
-    {
-      id: 5,
-      sequence: [2, 4, 8, 16],
-      correctAnswer: 32,
-      explanation: "2 ile çarpılarak (×2)",
-      difficulty: 'Orta',
-      patternType: 'Geometrik Dizi'
-    },
-    {
-      id: 6,
-      sequence: [1, 1, 2, 3, 5],
-      correctAnswer: 8,
-      explanation: "Fibonacci dizisi (önceki iki sayının toplamı)",
-      difficulty: 'Orta',
-      patternType: 'Fibonacci'
-    },
-    {
-      id: 7,
-      sequence: [1, 4, 9, 16],
-      correctAnswer: 25,
-      explanation: "Kare sayılar (1², 2², 3², 4²)",
-      difficulty: 'Orta',
-      patternType: 'Kare Sayılar'
-    },
-    {
-      id: 8,
-      sequence: [3, 6, 12, 24],
-      correctAnswer: 48,
-      explanation: "2 ile çarpılarak (×2)",
-      difficulty: 'Orta',
-      patternType: 'Geometrik Dizi'
-    },
-    {
-      id: 9,
-      sequence: [100, 90, 80, 70],
-      correctAnswer: 60,
-      explanation: "10'ar azalarak (-10)",
-      difficulty: 'Kolay',
-      patternType: 'Azalan Dizi'
-    },
-    {
-      id: 10,
-      sequence: [1, 8, 27, 64],
-      correctAnswer: 125,
-      explanation: "Küp sayılar (1³, 2³, 3³, 4³)",
-      difficulty: 'Zor',
-      patternType: 'Küp Sayılar'
-    },
-    {
-      id: 11,
-      sequence: [2, 6, 18, 54],
-      correctAnswer: 162,
-      explanation: "3 ile çarpılarak (×3)",
-      difficulty: 'Orta',
-      patternType: 'Geometrik Dizi'
-    },
-    {
-      id: 12,
-      sequence: [1, 2, 4, 7, 11],
-      correctAnswer: 16,
-      explanation: "Artan farklar (+1, +2, +3, +4)",
-      difficulty: 'Zor',
-      patternType: 'Artan Farklar'
-    },
-    {
-      id: 13,
-      sequence: [0, 1, 1, 2, 3, 5, 8],
-      correctAnswer: 13,
-      explanation: "Fibonacci dizisi (0'dan başlayarak)",
-      difficulty: 'Orta',
-      patternType: 'Fibonacci'
-    },
-    {
-      id: 14,
-      sequence: [2, 5, 10, 17, 26],
-      correctAnswer: 37,
-      explanation: "n² + 1 formülü (1²+1, 2²+1, 3²+1, 4²+1)",
-      difficulty: 'Zor',
-      patternType: 'Polinom'
-    },
-    {
-      id: 15,
-      sequence: [1, 3, 6, 10, 15],
-      correctAnswer: 21,
-      explanation: "Üçgen sayılar (1+2, 1+2+3, 1+2+3+4...)",
-      difficulty: 'Zor',
-      patternType: 'Üçgen Sayılar'
+    // Kare sayılar
+    () => {
+      const start = Math.floor(Math.random() * 3) + 1
+      const sequence = [start*start, (start+1)*(start+1), (start+2)*(start+2), (start+3)*(start+3)]
+      return { sequence, answer: (start+4)*(start+4) }
     }
   ]
 
-  // Yeni soru getir
-  const getNewProblem = () => {
-    const randomIndex = Math.floor(Math.random() * sequenceProblems.length)
-    setCurrentProblem(sequenceProblems[randomIndex])
-    setUserAnswer('')
-    setShowFeedback(false)
-    setQuestionStartTime(Date.now())
+  const patternIndex = Math.min(level - 1, patterns.length - 1)
+  return patterns[patternIndex]()
+}
+
+const MantikDizileriSayfasi: React.FC<MantikDizileriProps> = ({ onBack }) => {
+  const [gameState, setGameState] = useState<GameState>({
+    phase: 'ready',
+    currentLevel: 1,
+    sequence: [],
+    userAnswer: null,
+    correctAnswer: 0,
+    score: 0,
+    correctCount: 0,
+    incorrectCount: 0,
+    startTime: 0,
+    currentTime: 0,
+    totalQuestions: 10,
+    currentQuestion: 0,
+    pausedTime: 0
+  })
+
+  const [isGameActive, setIsGameActive] = useState(false)
+
+  // Zamanlayıcı
+  useEffect(() => {
+    if (!isGameActive) return
+
+    const interval = setInterval(() => {
+      setGameState(prev => ({
+        ...prev,
+        currentTime: Date.now() - prev.startTime
+      }))
+    }, 1000)
+
+    return () => clearInterval(interval)
+  }, [isGameActive])
+
+  const formatTime = (ms: number) => {
+    const seconds = Math.floor(ms / 1000)
+    const mins = Math.floor(seconds / 60)
+    const secs = seconds % 60
+    return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`
   }
 
-  // İlk soru yükle
-  useEffect(() => {
-    getNewProblem()
+  const generateNewQuestion = useCallback(() => {
+    const level = Math.min(Math.floor(gameState.currentQuestion / 3) + 1, 4)
+    const { sequence, answer } = generateSequence(level)
+    
+    setGameState(prev => ({
+      ...prev,
+      sequence,
+      correctAnswer: answer,
+      userAnswer: null,
+      currentLevel: level
+    }))
+  }, [gameState.currentQuestion])
+
+  const startGame = useCallback(() => {
+    setGameState(prev => ({
+      ...prev,
+      phase: 'playing',
+      startTime: Date.now(),
+      currentTime: 0,
+      currentQuestion: 1
+    }))
+    setIsGameActive(true)
+    
+    // İlk soruyu oluştur
+    setTimeout(() => {
+      const { sequence, answer } = generateSequence(1)
+      setGameState(prev => ({
+        ...prev,
+        sequence,
+        correctAnswer: answer,
+        userAnswer: null,
+        currentLevel: 1
+      }))
+    }, 100)
   }, [])
 
-  // Cevap kontrolü
-  const handleAnswerSubmit = () => {
-    if (!currentProblem || userAnswer.trim() === '') return
+  const resetGame = useCallback(() => {
+    setGameState({
+      phase: 'ready',
+      currentLevel: 1,
+      sequence: [],
+      userAnswer: null,
+      correctAnswer: 0,
+      score: 0,
+      correctCount: 0,
+      incorrectCount: 0,
+      startTime: 0,
+      currentTime: 0,
+      totalQuestions: 10,
+      currentQuestion: 0,
+      pausedTime: 0
+    })
+    setIsGameActive(false)
+  }, [])
 
-    const isAnswerCorrect = parseInt(userAnswer) === currentProblem.correctAnswer
-    setIsCorrect(isAnswerCorrect)
-    setShowFeedback(true)
-
-    const responseTime = (Date.now() - questionStartTime) / 1000
-    const scoreForQuestion = isAnswerCorrect ? Math.max(100 - Math.floor(responseTime), 10) : 0
-
-    setSessionStats(prev => ({
+  const handlePauseGame = useCallback(() => {
+    setGameState(prev => ({
       ...prev,
-      questionsAttempted: prev.questionsAttempted + 1,
-      correctAnswers: prev.correctAnswers + (isAnswerCorrect ? 1 : 0),
-      incorrectAnswers: prev.incorrectAnswers + (isAnswerCorrect ? 0 : 1),
-      totalScore: prev.totalScore + scoreForQuestion
+      phase: 'paused',
+      pausedTime: Date.now()
     }))
+    setIsGameActive(false)
+    toast.info('Oyun duraklatıldı')
+  }, [])
 
-    // 2.5 saniye sonra yeni soru
-    setTimeout(() => {
-      getNewProblem()
-    }, 2500)
-  }
+  const handleResumeGame = useCallback(() => {
+    const pauseDuration = Date.now() - gameState.pausedTime
+    setGameState(prev => ({
+      ...prev,
+      phase: 'playing',
+      startTime: prev.startTime + pauseDuration
+    }))
+    setIsGameActive(true)
+    toast.info('Oyun devam ediyor')
+  }, [gameState.pausedTime])
 
-  // Enter tuşu desteği
-  const handleKeyPress = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter' && !showFeedback) {
-      handleAnswerSubmit()
+  const handleAnswerSubmit = useCallback((answer: number) => {
+    setGameState(prev => ({ ...prev, userAnswer: answer }))
+
+    const isCorrect = answer === gameState.correctAnswer
+    const points = isCorrect ? gameState.currentLevel * 10 : 0
+
+    if (isCorrect) {
+      toast.success(`Doğru! +${points} puan`)
+      setGameState(prev => ({
+        ...prev,
+        score: prev.score + points,
+        correctCount: prev.correctCount + 1
+      }))
+    } else {
+      toast.error(`Yanlış! Doğru cevap: ${gameState.correctAnswer}`)
+      setGameState(prev => ({
+        ...prev,
+        incorrectCount: prev.incorrectCount + 1
+      }))
     }
-  }
 
-  // Seans bitir ve veriyi kaydet
-  const handleEndSession = () => {
-    if (sessionStats.questionsAttempted > 0) {
-      const sessionDuration = (Date.now() - sessionStats.sessionStartTime) / 1000
-      
-      const exerciseResult = {
-        exerciseName: 'Mantık Dizileri',
-        score: sessionStats.totalScore,
-        duration: Math.round(sessionDuration),
-        date: new Date().toISOString(),
-        details: {
+    setTimeout(() => {
+      if (gameState.currentQuestion >= gameState.totalQuestions) {
+        // Oyun bitti
+        finishGame()
+      } else {
+        // Sonraki soru
+        setGameState(prev => ({
+          ...prev,
+          currentQuestion: prev.currentQuestion + 1
+        }))
+        generateNewQuestion()
+      }
+    }, 2000)
+  }, [gameState])
+
+  const [inputValue, setInputValue] = useState('')
+
+  const handleInputSubmit = useCallback(() => {
+    const answer = parseInt(inputValue)
+    if (!isNaN(answer)) {
+      handleAnswerSubmit(answer)
+      setInputValue('')
+    } else {
+      toast.error('Lütfen geçerli bir sayı girin')
+    }
+  }, [inputValue, handleAnswerSubmit])
+
+  const handleKeyPress = useCallback((e: React.KeyboardEvent) => {
+    if (e.key === 'Enter') {
+      handleInputSubmit()
+    }
+  }, [handleInputSubmit])
+
+  const finishGame = useCallback(() => {
+    const duration = Math.floor(gameState.currentTime / 1000)
+    const accuracy = Math.round((gameState.correctCount / gameState.totalQuestions) * 100)
+
+    const exerciseData = {
           exercise_name: 'Mantık Dizileri',
-          questions_attempted: sessionStats.questionsAttempted,
-          correct_answers: sessionStats.correctAnswers,
-          incorrect_answers: sessionStats.incorrectAnswers,
-          session_duration_seconds: Math.round(sessionDuration),
-          score: sessionStats.totalScore,
+      questions_answered: gameState.totalQuestions,
+      correct_answers: gameState.correctCount,
+      accuracy_percentage: accuracy,
+      session_duration_seconds: duration,
+      final_score: gameState.score,
           timestamp: new Date().toISOString()
         }
-      }
 
-      LocalStorageManager.saveExerciseResult(exerciseResult)
-      console.log('Mantık Dizileri - Seans verileri kaydedildi:', exerciseResult)
+    LocalStorageManager.saveExerciseResult({
+      exerciseName: 'Mantık Dizileri',
+      score: gameState.score,
+      duration,
+      date: new Date().toISOString(),
+      details: exerciseData,
+      completed: true,
+      exitedEarly: false
+    })
+
+    setGameState(prev => ({ ...prev, phase: 'completed' }))
+    setIsGameActive(false)
+  }, [gameState])
+
+  const handleBackWithProgress = useCallback(() => {
+    if (gameState.phase === 'playing') {
+      const duration = Math.floor(gameState.currentTime / 1000)
+      const currentProgress = {
+        currentQuestion: gameState.currentQuestion,
+        totalQuestions: gameState.totalQuestions,
+        correctCount: gameState.correctCount,
+        incorrectCount: gameState.incorrectCount,
+        score: gameState.score,
+        currentLevel: gameState.currentLevel,
+        currentSequence: gameState.sequence,
+        userAnswer: gameState.userAnswer
+      }
+      LocalStorageManager.savePartialProgress('Mantık Dizileri', currentProgress, duration)
     }
     onBack()
-  }
+  }, [gameState, onBack])
 
-  const getDifficultyColor = (difficulty: string) => {
-    switch (difficulty) {
-      case 'Kolay': return 'text-success bg-success/10 border-success/20'
-      case 'Orta': return 'text-warning bg-warning/10 border-warning/20'
-      case 'Zor': return 'text-destructive bg-destructive/10 border-destructive/20'
-      default: return 'text-muted-foreground bg-muted/10 border-border'
+  const generateAnswerOptions = useCallback(() => {
+    const correct = gameState.correctAnswer
+    const options = [correct]
+    
+    // Yanlış seçenekler oluştur
+    while (options.length < 4) {
+      const variation = Math.floor(Math.random() * 20) - 10
+      const option = correct + variation
+      if (option > 0 && !options.includes(option)) {
+        options.push(option)
+      }
     }
-  }
+    
+    // Karıştır
+    return options.sort(() => Math.random() - 0.5)
+  }, [gameState.correctAnswer])
 
-  const getPatternIcon = (patternType: string) => {
-    if (patternType.includes('Fibonacci')) return '🌀'
-    if (patternType.includes('Geometrik')) return '📈'
-    if (patternType.includes('Aritmetik')) return '➕'
-    if (patternType.includes('Kare')) return '⬜'
-    if (patternType.includes('Küp')) return '🧊'
-    return '🔢'
-  }
-
-  const accuracyPercentage = sessionStats.questionsAttempted > 0 
-    ? Math.round((sessionStats.correctAnswers / sessionStats.questionsAttempted) * 100) 
-    : 0
-
-  if (!currentProblem) {
+  if (gameState.phase === 'ready') {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-amber-50 via-orange-50 to-yellow-50 dark:from-amber-950/20 dark:via-orange-950/20 dark:to-yellow-950/20 flex items-center justify-center">
-        <div className="text-center animate-fade-in">
-          <div className="w-16 h-16 mx-auto mb-6 bg-gradient-to-br from-amber-500 to-orange-500 rounded-2xl flex items-center justify-center shadow-lg">
-            <Brain className="w-8 h-8 text-white animate-pulse" />
-          </div>
-          <p className="text-lg font-medium text-foreground">Soru hazırlanıyor...</p>
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/30 to-indigo-50/50 dark:from-slate-950 dark:via-blue-950/30 dark:to-indigo-950/50">
+        <ExerciseHeader
+          title="Mantık Dizileri"
+          onBack={handleBackWithProgress}
+          showExitConfirmation={false}
+          stats={{
+            phase: 'Hazır',
+            score: 0,
+            progress: 0,
+            timeElapsed: 0
+          }}
+        />
+
+        {/* Content */}
+        <div className="container mx-auto px-4 py-8 pb-28 max-w-4xl">
+          <Card className="bg-white/60 dark:bg-gray-900/60 backdrop-blur-sm border-white/20 dark:border-gray-800/20 shadow-xl">
+            <CardHeader className="text-center pb-6">
+              <div className="w-20 h-20 bg-gradient-to-br from-primary to-primary/70 rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-lg">
+                <Zap className="w-10 h-10 text-white" />
+              </div>
+              <CardTitle className="text-2xl sm:text-3xl lg:text-4xl mb-4 bg-gradient-to-r from-primary via-purple-600 to-pink-600 bg-clip-text text-transparent">
+                Mantık Dizileri
+              </CardTitle>
+              <CardDescription className="text-base sm:text-lg text-gray-600 dark:text-gray-300 max-w-2xl mx-auto">
+                Sayı dizilerindeki mantığı bulun ve eksik sayıyı tamamlayın. Aritmetik, geometrik ve özel diziler.
+              </CardDescription>
+            </CardHeader>
+            
+            <CardContent className="space-y-8">
+              {/* Stats Grid */}
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <div className="bg-white/40 dark:bg-gray-800/40 backdrop-blur-sm rounded-xl p-4 text-center border border-white/20 dark:border-gray-700/20">
+                  <div className="w-12 h-12 bg-primary/10 rounded-xl flex items-center justify-center mx-auto mb-3">
+                    <Target className="w-6 h-6 text-primary" />
+                  </div>
+                  <h3 className="font-semibold text-gray-700 dark:text-gray-300 mb-1">Toplam Soru</h3>
+                  <p className="text-2xl font-bold text-primary">10</p>
+                </div>
+                <div className="bg-white/40 dark:bg-gray-800/40 backdrop-blur-sm rounded-xl p-4 text-center border border-white/20 dark:border-gray-700/20">
+                  <div className="w-12 h-12 bg-primary/10 rounded-xl flex items-center justify-center mx-auto mb-3">
+                    <Lightbulb className="w-6 h-6 text-primary" />
+                  </div>
+                  <h3 className="font-semibold text-gray-700 dark:text-gray-300 mb-1">Dizi Türleri</h3>
+                  <p className="text-2xl font-bold text-primary">4</p>
+                </div>
+                <div className="bg-white/40 dark:bg-gray-800/40 backdrop-blur-sm rounded-xl p-4 text-center border border-white/20 dark:border-gray-700/20">
+                  <div className="w-12 h-12 bg-primary/10 rounded-xl flex items-center justify-center mx-auto mb-3">
+                    <Trophy className="w-6 h-6 text-primary" />
+                  </div>
+                  <h3 className="font-semibold text-gray-700 dark:text-gray-300 mb-1">Zorluk</h3>
+                  <p className="text-2xl font-bold text-primary">Artan</p>
+                </div>
+              </div>
+
+              {/* Instructions */}
+              <div className="bg-gradient-to-r from-blue-50/50 to-indigo-50/50 dark:from-blue-950/20 dark:to-indigo-950/20 backdrop-blur-sm rounded-xl p-6 border border-blue-200/20 dark:border-blue-800/20">
+                <h4 className="font-bold mb-4 flex items-center gap-2 text-gray-800 dark:text-gray-200">
+                  <Brain className="w-5 h-5 text-primary" />
+                  Nasıl Oynanır?
+                </h4>
+                <ul className="space-y-3 text-sm text-gray-600 dark:text-gray-300">
+                  <li className="flex items-start gap-3">
+                    <span className="flex-shrink-0 w-6 h-6 bg-primary/10 rounded-full flex items-center justify-center text-primary font-semibold text-xs">1</span>
+                    <span>Verilen sayı dizisindeki mantığı bulun</span>
+                  </li>
+                  <li className="flex items-start gap-3">
+                    <span className="flex-shrink-0 w-6 h-6 bg-primary/10 rounded-full flex items-center justify-center text-primary font-semibold text-xs">2</span>
+                    <span>Eksik olan sayıyı hesaplayın</span>
+                  </li>
+                  <li className="flex items-start gap-3">
+                    <span className="flex-shrink-0 w-6 h-6 bg-primary/10 rounded-full flex items-center justify-center text-primary font-semibold text-xs">3</span>
+                    <span>Doğru seçeneği işaretleyin</span>
+                  </li>
+                  <li className="flex items-start gap-3">
+                    <span className="flex-shrink-0 w-6 h-6 bg-primary/10 rounded-full flex items-center justify-center text-primary font-semibold text-xs">4</span>
+                    <span>10 soruyu tamamlayarak egzersizi bitirin</span>
+                  </li>
+                </ul>
+              </div>
+
+              {/* Pattern Examples */}
+              <div className="bg-gradient-to-r from-green-50/50 to-emerald-50/50 dark:from-green-950/20 dark:to-emerald-950/20 backdrop-blur-sm rounded-xl p-6 border border-green-200/20 dark:border-green-800/20">
+                <h4 className="font-bold mb-4 flex items-center gap-2 text-gray-800 dark:text-gray-200">
+                  <Zap className="w-5 h-5 text-primary" />
+                  Dizi Türleri
+                </h4>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <div className="font-medium text-gray-700 dark:text-gray-300">Aritmetik Dizi:</div>
+                    <div className="text-sm text-gray-600 dark:text-gray-400">2, 5, 8, 11, ?</div>
+                    <div className="text-xs text-gray-500">Her sayı 3 artıyor</div>
+                  </div>
+                  <div className="space-y-2">
+                    <div className="font-medium text-gray-700 dark:text-gray-300">Geometrik Dizi:</div>
+                    <div className="text-sm text-gray-600 dark:text-gray-400">2, 4, 8, 16, ?</div>
+                    <div className="text-xs text-gray-500">Her sayı 2 ile çarpılıyor</div>
+                  </div>
+                  <div className="space-y-2">
+                    <div className="font-medium text-gray-700 dark:text-gray-300">Fibonacci Benzeri:</div>
+                    <div className="text-sm text-gray-600 dark:text-gray-400">1, 2, 3, 5, ?</div>
+                    <div className="text-xs text-gray-500">Önceki iki sayının toplamı</div>
+                  </div>
+                  <div className="space-y-2">
+                    <div className="font-medium text-gray-700 dark:text-gray-300">Kare Sayılar:</div>
+                    <div className="text-sm text-gray-600 dark:text-gray-400">1, 4, 9, 16, ?</div>
+                    <div className="text-xs text-gray-500">Sayıların kareleri</div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Start Button */}
+              <div className="text-center pt-4">
+                <Button 
+                  onClick={startGame}
+                  size="lg"
+                  className="bg-gradient-to-r from-primary to-purple-600 hover:from-primary/90 hover:to-purple-600/90 text-white px-8 py-3 rounded-xl shadow-lg hover:shadow-xl transition-all duration-200 text-base font-semibold"
+                >
+                  <Play className="w-5 h-5 mr-2" />
+                  Egzersizi Başlat
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
         </div>
       </div>
     )
   }
 
-  return (
-    <div className="min-h-screen bg-gradient-to-br from-amber-50 via-orange-50 to-yellow-50 dark:from-amber-950/20 dark:via-orange-950/20 dark:to-yellow-950/20">
-      {/* Header - Tutarlı tasarım */}
-      <div className="bg-background/90 backdrop-blur-sm border-b border-border/50 sticky top-0 z-10 shadow-sm">
-        <div className="container mx-auto px-4 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4">
-              <Button 
-                variant="ghost" 
-                onClick={handleEndSession}
-                className="gap-2 hover:bg-muted/80 transition-colors"
-              >
-                <ArrowLeft className="w-4 h-4" />
-                Geri Dön
-              </Button>
-              
-              <div className="hidden md:flex items-center gap-3">
-                <div className="w-10 h-10 bg-gradient-to-br from-amber-500 to-orange-500 rounded-xl flex items-center justify-center shadow-md">
-                  <Brain className="w-5 h-5 text-white" />
-                </div>
-                <div>
-                  <h1 className="text-lg font-semibold">Mantık Dizileri</h1>
-                  <p className="text-sm text-muted-foreground">Sayısal örüntü tanıma</p>
-                </div>
-              </div>
+  if (gameState.phase === 'playing') {
+    const answerOptions = generateAnswerOptions()
+    
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/30 to-indigo-50/50 dark:from-slate-950 dark:via-blue-950/30 dark:to-indigo-950/50">
+                 <ExerciseHeader
+           title="Mantık Dizileri"
+           onBack={handleBackWithProgress}
+           onPause={handlePauseGame}
+           onRestart={resetGame}
+           isPaused={false}
+           isPlaying={true}
+           stats={{
+             phase: 'Oynuyor',
+             score: gameState.score,
+             progress: Math.round((gameState.currentQuestion / gameState.totalQuestions) * 100),
+             timeElapsed: Math.floor(gameState.currentTime / 1000),
+             currentLevel: gameState.currentQuestion,
+             totalLevels: gameState.totalQuestions
+           }}
+           showExitConfirmation={true}
+         />
+
+        {/* Content */}
+        <div className="container mx-auto px-4 py-8 pb-28 max-w-4xl">
+          {/* Progress */}
+          <div className="mb-6">
+            <div className="flex justify-between items-center mb-2">
+              <span className="text-sm text-gray-600 dark:text-gray-300">İlerleme</span>
+              <span className="text-sm font-medium text-gray-800 dark:text-gray-200">
+                {gameState.currentQuestion}/{gameState.totalQuestions}
+              </span>
             </div>
-            
-            <div className="flex items-center gap-3">
-              <Badge variant="outline" className="gap-2 hidden sm:flex">
-                <Target className="w-3 h-3" />
-                {sessionStats.questionsAttempted} Soru
-              </Badge>
-              <Badge variant="outline" className="gap-2">
-                <Trophy className="w-3 h-3" />
-                {sessionStats.totalScore} Puan
-              </Badge>
+            <Progress 
+              value={(gameState.currentQuestion / gameState.totalQuestions) * 100} 
+              className="h-2 bg-white/40 dark:bg-gray-800/40 backdrop-blur-sm"
+            />
+          </div>
+
+          {/* Game Stats */}
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-6">
+            <div className="bg-white/40 dark:bg-gray-800/40 backdrop-blur-sm rounded-xl p-3 text-center border border-white/20 dark:border-gray-700/20">
+              <div className="text-sm text-gray-600 dark:text-gray-300">Seviye</div>
+              <div className="text-xl font-bold text-primary">{gameState.currentLevel}</div>
+            </div>
+            <div className="bg-white/40 dark:bg-gray-800/40 backdrop-blur-sm rounded-xl p-3 text-center border border-white/20 dark:border-gray-700/20">
+              <div className="text-sm text-gray-600 dark:text-gray-300">Doğru</div>
+              <div className="text-xl font-bold text-green-600">{gameState.correctCount}</div>
+            </div>
+            <div className="bg-white/40 dark:bg-gray-800/40 backdrop-blur-sm rounded-xl p-3 text-center border border-white/20 dark:border-gray-700/20">
+              <div className="text-sm text-gray-600 dark:text-gray-300">Yanlış</div>
+              <div className="text-xl font-bold text-red-600">{gameState.incorrectCount}</div>
+            </div>
+            <div className="bg-white/40 dark:bg-gray-800/40 backdrop-blur-sm rounded-xl p-3 text-center border border-white/20 dark:border-gray-700/20">
+              <div className="text-sm text-gray-600 dark:text-gray-300">Skor</div>
+              <div className="text-xl font-bold text-purple-600">{gameState.score}</div>
             </div>
           </div>
-        </div>
-      </div>
 
-      <div className="container mx-auto px-4 py-6 max-w-4xl">
-        {/* İstatistik Kartları - Kompakt ve tutarlı */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-          <Card className="bg-background/80 backdrop-blur-sm border-border/50 hover:bg-background/90 transition-colors">
-            <CardContent className="p-4 text-center">
-              <div className="text-xl font-bold text-success mb-1">{sessionStats.correctAnswers}</div>
-              <div className="text-xs text-muted-foreground">Doğru</div>
-            </CardContent>
-          </Card>
-          
-          <Card className="bg-background/80 backdrop-blur-sm border-border/50 hover:bg-background/90 transition-colors">
-            <CardContent className="p-4 text-center">
-              <div className="text-xl font-bold text-destructive mb-1">{sessionStats.incorrectAnswers}</div>
-              <div className="text-xs text-muted-foreground">Yanlış</div>
-            </CardContent>
-          </Card>
-          
-          <Card className="bg-background/80 backdrop-blur-sm border-border/50 hover:bg-background/90 transition-colors">
-            <CardContent className="p-4 text-center">
-              <div className="text-xl font-bold text-primary mb-1">{accuracyPercentage}%</div>
-              <div className="text-xs text-muted-foreground">Başarı</div>
-            </CardContent>
-          </Card>
-
-          <Card className="bg-background/80 backdrop-blur-sm border-border/50 hover:bg-background/90 transition-colors">
-            <CardContent className="p-4 text-center">
-              <div className="text-xl font-bold text-amber-600 mb-1">{sessionStats.totalScore}</div>
-              <div className="text-xs text-muted-foreground">Toplam</div>
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* Ana Oyun Kartı - Cilalı tasarım */}
-        <Card className="mx-auto max-w-2xl shadow-xl bg-background/95 backdrop-blur-sm border-border/50">
-          <CardHeader className="text-center pb-4">
-            <div className="flex items-center justify-center gap-4 mb-4">
-              <div className="text-2xl">{getPatternIcon(currentProblem.patternType)}</div>
-              <div>
-                <CardTitle className="text-xl">Dizinin Devamını Bulun</CardTitle>
-                <CardDescription>Örüntüyü keşfedin ve tamamlayın</CardDescription>
-              </div>
-            </div>
-
-            <div className="flex items-center justify-center gap-3 flex-wrap">
-              <Badge className={`${getDifficultyColor(currentProblem.difficulty)} font-medium px-3 py-1`}>
-                {currentProblem.difficulty}
-              </Badge>
-              <Badge variant="outline" className="px-3 py-1">
-                {currentProblem.patternType}
-              </Badge>
-            </div>
-          </CardHeader>
-
-          <CardContent className="space-y-6">
-            {/* Dizi Gösterimi - Geliştirilmiş animasyonlar */}
-            <div className="text-center">
-              <div className="text-sm text-muted-foreground mb-4 flex items-center justify-center gap-2">
-                <Lightbulb className="w-4 h-4" />
-                <span>Dizinin mantığını bulun:</span>
-              </div>
-              <div className="flex items-center justify-center gap-3 mb-6 flex-wrap">
-                {currentProblem.sequence.map((num, index) => (
-                  <div
-                    key={index}
-                    className="w-14 h-14 bg-gradient-to-br from-primary/20 to-primary/10 border-2 border-primary/30 rounded-xl flex items-center justify-center text-lg font-bold text-primary shadow-sm transition-all duration-300 hover:scale-105 animate-scale-in"
-                    style={{ animationDelay: `${index * 100}ms` }}
-                  >
-                    {num}
-                  </div>
-                ))}
-                <div className="w-14 h-14 bg-gradient-to-br from-muted to-muted/50 border-2 border-dashed border-muted-foreground/40 rounded-xl flex items-center justify-center text-xl font-bold text-muted-foreground animate-pulse">
-                  ?
-                </div>
-              </div>
-            </div>
-
-            {/* Cevap Girişi - Tutarlı kontroller */}
-            {!showFeedback && (
-              <div className="space-y-4 animate-fade-in">
-                <div className="text-center">
-                  <label className="text-sm font-medium text-muted-foreground mb-3 block flex items-center justify-center gap-2">
-                    <Target className="w-4 h-4" />
-                    Cevabınızı girin:
-                  </label>
-                  <Input
-                    type="number"
-                    value={userAnswer}
-                    onChange={(e) => setUserAnswer(e.target.value)}
-                    onKeyPress={handleKeyPress}
-                    placeholder="Sayı girin..."
-                    className="w-40 h-12 text-center text-xl font-bold mx-auto border-2 focus:border-primary transition-colors"
-                    autoFocus
-                  />
-                </div>
+          {/* Question */}
+          <Card className="bg-white/60 dark:bg-gray-900/60 backdrop-blur-sm border-white/20 dark:border-gray-800/20 shadow-xl">
+            <CardContent className="p-8">
+              <div className="text-center">
+                <h2 className="text-2xl font-bold mb-6 text-gray-800 dark:text-gray-200">
+                  Soru {gameState.currentQuestion}
+                </h2>
+                <p className="text-lg text-gray-600 dark:text-gray-300 mb-8">
+                  Aşağıdaki dizide eksik olan sayıyı bulun:
+                </p>
                 
-                <div className="text-center">
-                  <Button 
-                    onClick={handleAnswerSubmit}
-                    disabled={userAnswer.trim() === ''}
-                    className="px-8 py-3 text-base font-semibold bg-gradient-to-r from-primary to-primary/90 hover:from-primary/90 hover:to-primary/80 shadow-md hover:shadow-lg transition-all duration-200 hover:scale-[1.02]"
-                  >
-                    <CheckCircle className="w-5 h-5 mr-2" />
-                    Kontrol Et
-                  </Button>
+                {/* Sequence Display */}
+                <div className="flex justify-center items-center gap-4 mb-8">
+                  {gameState.sequence.map((number, index) => (
+                    <div
+                      key={index}
+                      className="w-16 h-16 bg-primary/10 border-2 border-primary rounded-xl flex items-center justify-center text-xl font-bold text-primary"
+                    >
+                      {number}
+                    </div>
+                  ))}
+                  <div className="w-16 h-16 bg-gray-200 dark:bg-gray-700 border-2 border-dashed border-gray-400 dark:border-gray-500 rounded-xl flex items-center justify-center text-xl font-bold text-gray-400 dark:text-gray-500">
+                    ?
+                  </div>
                 </div>
-              </div>
-            )}
 
-            {/* Geri Bildirim - Geliştirilmiş görsel feedback */}
-            {showFeedback && (
-              <div className={`text-center p-6 rounded-xl border-2 transition-all duration-500 animate-scale-in ${
-                isCorrect 
-                  ? 'bg-success/10 border-success/30 text-success' 
-                  : 'bg-destructive/10 border-destructive/30 text-destructive'
-              }`}>
-                <div className="flex items-center justify-center gap-3 mb-4">
-                  {isCorrect ? (
-                    <CheckCircle className="w-8 h-8 text-success animate-bounce" />
-                  ) : (
-                    <X className="w-8 h-8 text-destructive animate-pulse" />
-                  )}
-                  <div className="text-xl font-bold">
-                    {isCorrect ? '🎉 Harika!' : '😔 Yanlış!'}
-                  </div>
-                </div>
-                
-                <div className="space-y-3">
-                  <div className="text-lg font-semibold">
-                    Doğru cevap: <span className="text-primary">{currentProblem.correctAnswer}</span>
-                  </div>
-                  <div className="text-sm text-muted-foreground bg-background/50 p-3 rounded-lg">
-                    <strong>Açıklama:</strong> {currentProblem.explanation}
+                {/* Answer Input */}
+                <div className="max-w-md mx-auto space-y-4">
+                  <div className="flex gap-3">
+                    <Input
+                      type="number"
+                      placeholder="Cevabınızı girin..."
+                      value={inputValue}
+                      onChange={(e) => setInputValue(e.target.value)}
+                      onKeyPress={handleKeyPress}
+                      disabled={gameState.userAnswer !== null}
+                      className="text-xl font-bold text-center h-16 bg-white/60 dark:bg-gray-800/60 backdrop-blur-sm border-white/20 dark:border-gray-700/20"
+                    />
+                    <Button
+                      onClick={handleInputSubmit}
+                      disabled={gameState.userAnswer !== null || !inputValue.trim()}
+                      size="lg"
+                      className="h-16 px-8 bg-gradient-to-r from-primary to-purple-600 hover:from-primary/90 hover:to-purple-600/90"
+                    >
+                      <CheckCircle className="w-5 h-5 mr-2" />
+                      Gönder
+                    </Button>
                   </div>
                   
-                  {isCorrect && (
-                    <div className="flex items-center justify-center gap-2 text-sm text-amber-600">
-                      <Star className="w-4 h-4" />
-                      <span>+{Math.max(100 - Math.floor((Date.now() - questionStartTime) / 1000), 10)} puan!</span>
+                  {gameState.userAnswer !== null && (
+                    <div className={`text-center p-4 rounded-xl ${
+                      gameState.userAnswer === gameState.correctAnswer
+                        ? 'bg-green-100 dark:bg-green-900/20 text-green-700 dark:text-green-300'
+                        : 'bg-red-100 dark:bg-red-900/20 text-red-700 dark:text-red-300'
+                    }`}>
+                      {gameState.userAnswer === gameState.correctAnswer ? (
+                        <div className="flex items-center justify-center gap-2">
+                          <CheckCircle className="w-5 h-5" />
+                          <span className="font-semibold">Doğru! Cevabınız: {gameState.userAnswer}</span>
+                        </div>
+                      ) : (
+                        <div className="flex items-center justify-center gap-2">
+                          <X className="w-5 h-5" />
+                          <span className="font-semibold">Yanlış! Doğru cevap: {gameState.correctAnswer}</span>
+                        </div>
+                      )}
                     </div>
                   )}
                 </div>
               </div>
-            )}
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+    )
+  }
+
+  if (gameState.phase === 'paused') {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/30 to-indigo-50/50 dark:from-slate-950 dark:via-blue-950/30 dark:to-indigo-950/50">
+        <ExerciseHeader
+          title="Mantık Dizileri"
+          onBack={handleBackWithProgress}
+          showExitConfirmation={true}
+          onPause={handleResumeGame}
+          onRestart={resetGame}
+          isPaused={true}
+          isPlaying={false}
+          stats={{
+            phase: 'Duraklatıldı',
+            score: gameState.score,
+            progress: Math.round((gameState.currentQuestion / gameState.totalQuestions) * 100),
+            timeElapsed: Math.floor(gameState.currentTime / 1000),
+            currentLevel: gameState.currentQuestion,
+            totalLevels: gameState.totalQuestions
+          }}
+        />
+
+        <div className="container mx-auto px-4 py-8 pb-28 max-w-4xl flex items-center justify-center min-h-[calc(100vh-200px)]">
+          <Card className="bg-white/90 dark:bg-gray-900/90 backdrop-blur-sm border-white/20 dark:border-gray-800/20 shadow-2xl max-w-md mx-4">
+            <CardContent className="p-8 text-center">
+              <div className="w-16 h-16 bg-orange-100 dark:bg-orange-900/20 rounded-2xl flex items-center justify-center mx-auto mb-4">
+                <Pause className="w-8 h-8 text-orange-600 dark:text-orange-400" />
+              </div>
+              <h3 className="text-xl font-bold text-gray-800 dark:text-gray-200 mb-2">Oyun Duraklatıldı</h3>
+              <p className="text-gray-600 dark:text-gray-300 mb-6">Devam etmek için üstteki butonu kullanın</p>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+    )
+  }
+
+  // Completed state
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/30 to-indigo-50/50 dark:from-slate-950 dark:via-blue-950/30 dark:to-indigo-950/50">
+      <ExerciseHeader
+        title="Mantık Dizileri"
+        onBack={onBack}
+        showExitConfirmation={false}
+        stats={{
+          phase: 'Tamamlandı',
+          score: gameState.score,
+          progress: 100,
+          timeElapsed: Math.floor(gameState.currentTime / 1000)
+        }}
+      />
+
+      {/* Content */}
+      <div className="container mx-auto px-4 py-8 pb-28 max-w-4xl">
+        <Card className="bg-white/60 dark:bg-gray-900/60 backdrop-blur-sm border-white/20 dark:border-gray-800/20 shadow-xl">
+          <CardHeader className="text-center pb-6">
+            <div className="w-20 h-20 bg-gradient-to-br from-green-500 to-emerald-600 rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-lg">
+              <Trophy className="w-10 h-10 text-white" />
+            </div>
+            <CardTitle className="text-2xl sm:text-3xl lg:text-4xl mb-4 bg-gradient-to-r from-green-600 via-emerald-600 to-teal-600 bg-clip-text text-transparent">
+              Tebrikler!
+            </CardTitle>
+            <CardDescription className="text-base sm:text-lg text-gray-600 dark:text-gray-300">
+              Mantık Dizileri egzersizini tamamladınız
+            </CardDescription>
+          </CardHeader>
+
+          <CardContent className="space-y-8">
+            {/* Results Grid */}
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+              <div className="bg-white/40 dark:bg-gray-800/40 backdrop-blur-sm rounded-xl p-4 text-center border border-white/20 dark:border-gray-700/20">
+                <div className="w-12 h-12 bg-green-100 dark:bg-green-900/20 rounded-xl flex items-center justify-center mx-auto mb-3">
+                  <Target className="w-6 h-6 text-green-600 dark:text-green-400" />
+                </div>
+                <h3 className="font-semibold text-gray-700 dark:text-gray-300 mb-1">Doğru Cevap</h3>
+                <p className="text-2xl font-bold text-green-600 dark:text-green-400">{gameState.correctCount}/{gameState.totalQuestions}</p>
+              </div>
+              <div className="bg-white/40 dark:bg-gray-800/40 backdrop-blur-sm rounded-xl p-4 text-center border border-white/20 dark:border-gray-700/20">
+                <div className="w-12 h-12 bg-blue-100 dark:bg-blue-900/20 rounded-xl flex items-center justify-center mx-auto mb-3">
+                  <Clock className="w-6 h-6 text-blue-600 dark:text-blue-400" />
+                </div>
+                <h3 className="font-semibold text-gray-700 dark:text-gray-300 mb-1">Süre</h3>
+                <p className="text-2xl font-bold text-blue-600 dark:text-blue-400">{formatTime(gameState.currentTime)}</p>
+                  </div>
+              <div className="bg-white/40 dark:bg-gray-800/40 backdrop-blur-sm rounded-xl p-4 text-center border border-white/20 dark:border-gray-700/20">
+                <div className="w-12 h-12 bg-purple-100 dark:bg-purple-900/20 rounded-xl flex items-center justify-center mx-auto mb-3">
+                  <Star className="w-6 h-6 text-purple-600 dark:text-purple-400" />
+                </div>
+                <h3 className="font-semibold text-gray-700 dark:text-gray-300 mb-1">Skor</h3>
+                <p className="text-2xl font-bold text-purple-600 dark:text-purple-400">{gameState.score}</p>
+              </div>
+            </div>
+
+            {/* Accuracy */}
+            <div className="bg-white/40 dark:bg-gray-800/40 backdrop-blur-sm rounded-xl p-6 text-center border border-white/20 dark:border-gray-700/20">
+              <h3 className="font-semibold text-gray-700 dark:text-gray-300 mb-2">Başarı Oranı</h3>
+              <div className="text-4xl font-bold text-primary mb-2">
+                {Math.round((gameState.correctCount / gameState.totalQuestions) * 100)}%
+              </div>
+              <Progress 
+                value={(gameState.correctCount / gameState.totalQuestions) * 100} 
+                className="h-3 bg-white/40 dark:bg-gray-800/40 backdrop-blur-sm"
+                  />
+                </div>
+                
+            {/* Action Buttons */}
+            <div className="flex flex-col sm:flex-row gap-4 justify-center pt-4">
+              <Button 
+                onClick={resetGame}
+                variant="outline"
+                size="lg"
+                className="bg-white/40 dark:bg-gray-800/40 backdrop-blur-sm border-white/20 dark:border-gray-700/20 hover:bg-white/60 dark:hover:bg-gray-800/60"
+              >
+                <RotateCcw className="w-5 h-5 mr-2" />
+                Tekrar Oyna
+              </Button>
+                  <Button 
+                onClick={onBack}
+                size="lg"
+                className="bg-gradient-to-r from-primary to-purple-600 hover:from-primary/90 hover:to-purple-600/90 text-white shadow-lg hover:shadow-xl transition-all duration-200"
+              >
+                <ArrowLeft className="w-5 h-5 mr-2" />
+                Egzersizlere Dön
+                  </Button>
+                </div>
           </CardContent>
         </Card>
-
-        {/* Sonraki Soru Bilgisi - Tutarlı bilgilendirme */}
-        {showFeedback && (
-          <div className="text-center mt-6 animate-fade-in">
-            <div className="flex items-center justify-center gap-2 text-muted-foreground bg-background/60 backdrop-blur-sm px-4 py-2 rounded-full border border-border/50">
-              <Clock className="w-4 h-4 animate-pulse" />
-              <span className="text-sm">Yeni soru 2.5 saniye içinde gelecek...</span>
-            </div>
-          </div>
-        )}
       </div>
     </div>
   )

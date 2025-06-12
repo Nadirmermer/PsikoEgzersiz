@@ -3,16 +3,17 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Progress } from '@/components/ui/progress'
-import { ArrowLeft, Play, RotateCcw, Palette, Clock, Target, Eye } from 'lucide-react'
+import { ArrowLeft, Play, RotateCcw, Palette, Clock, Target, Eye, Trophy, Star, Brain, Pause, PlayCircle } from 'lucide-react'
 import { LocalStorageManager } from '../utils/localStorage'
 import { toast } from '@/components/ui/sonner'
+import ExerciseHeader from '../components/ExerciseHeader'
 
 interface RenkDizisiTakibiProps {
   onBack: () => void
 }
 
 interface GameState {
-  phase: 'ready' | 'showing' | 'input' | 'feedback' | 'completed'
+  phase: 'ready' | 'showing' | 'input' | 'feedback' | 'completed' | 'paused'
   currentLevel: number
   sequence: number[]
   userInput: number[]
@@ -22,6 +23,7 @@ interface GameState {
   incorrectCount: number
   startTime: number
   currentTime: number
+  pausedTime: number
 }
 
 const colors = [
@@ -42,7 +44,8 @@ const RenkDizisiTakibiSayfasi: React.FC<RenkDizisiTakibiProps> = ({ onBack }) =>
     correctCount: 0,
     incorrectCount: 0,
     startTime: 0,
-    currentTime: 0
+    currentTime: 0,
+    pausedTime: 0
   })
 
   const [isGameActive, setIsGameActive] = useState(false)
@@ -61,6 +64,13 @@ const RenkDizisiTakibiSayfasi: React.FC<RenkDizisiTakibiProps> = ({ onBack }) =>
 
     return () => clearInterval(interval)
   }, [isGameActive])
+
+  const formatTime = (ms: number) => {
+    const seconds = Math.floor(ms / 1000)
+    const mins = Math.floor(seconds / 60)
+    const secs = seconds % 60
+    return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`
+  }
 
   const generateSequence = useCallback((length: number): number[] => {
     return Array.from({ length }, () => Math.floor(Math.random() * 4))
@@ -90,11 +100,33 @@ const RenkDizisiTakibiSayfasi: React.FC<RenkDizisiTakibiProps> = ({ onBack }) =>
       correctCount: 0,
       incorrectCount: 0,
       startTime: 0,
-      currentTime: 0
+      currentTime: 0,
+      pausedTime: 0
     })
     setIsGameActive(false)
     setHighlightedColor(null)
   }, [])
+
+  const handlePauseGame = useCallback(() => {
+    setGameState(prev => ({
+      ...prev,
+      phase: 'paused',
+      pausedTime: Date.now()
+    }))
+    setIsGameActive(false)
+    toast.info('Oyun duraklatıldı')
+  }, [])
+
+  const handleResumeGame = useCallback(() => {
+    const pauseDuration = Date.now() - gameState.pausedTime
+    setGameState(prev => ({
+      ...prev,
+      phase: 'input',
+      startTime: prev.startTime + pauseDuration
+    }))
+    setIsGameActive(true)
+    toast.info('Oyun devam ediyor')
+  }, [gameState.pausedTime])
 
   // Dizi gösterimi
   useEffect(() => {
@@ -157,7 +189,7 @@ const RenkDizisiTakibiSayfasi: React.FC<RenkDizisiTakibiProps> = ({ onBack }) =>
           showingIndex: 0
         }))
         setHighlightedColor(null)
-      }, 2000)
+      }, 3000)
       return
     }
 
@@ -185,7 +217,7 @@ const RenkDizisiTakibiSayfasi: React.FC<RenkDizisiTakibiProps> = ({ onBack }) =>
           showingIndex: 0
         }))
         setHighlightedColor(null)
-      }, 2000)
+      }, 3000)
     } else {
       setGameState(prev => ({
         ...prev,
@@ -213,164 +245,254 @@ const RenkDizisiTakibiSayfasi: React.FC<RenkDizisiTakibiProps> = ({ onBack }) =>
       score: gameState.score,
       duration,
       date: new Date().toISOString(),
-      details: exerciseData
+      details: exerciseData,
+      completed: true,
+      exitedEarly: false
     })
 
     toast.success(`Oyun bitti! En yüksek seviye: ${maxLevel}`)
     setIsGameActive(false)
   }, [gameState])
 
-  const formatTime = (ms: number) => {
-    const seconds = Math.floor(ms / 1000)
-    const minutes = Math.floor(seconds / 60)
-    return `${minutes.toString().padStart(2, '0')}:${(seconds % 60).toString().padStart(2, '0')}`
+  const handleBackWithProgress = useCallback(() => {
+    if (gameState.phase === 'showing' || gameState.phase === 'input') {
+      const duration = Math.floor(gameState.currentTime / 1000)
+      const currentProgress = {
+        currentLevel: gameState.currentLevel,
+        sequence: gameState.sequence,
+        userInput: gameState.userInput,
+        correctCount: gameState.correctCount,
+        incorrectCount: gameState.incorrectCount,
+        score: gameState.score,
+        phase: gameState.phase,
+        showingIndex: gameState.showingIndex
+      }
+      LocalStorageManager.savePartialProgress('Renk Dizisi Takibi', currentProgress, duration)
+    }
+    onBack()
+  }, [gameState, onBack])
+
+  if (gameState.phase === 'ready') {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/30 to-indigo-50/50 dark:from-slate-950 dark:via-blue-950/30 dark:to-indigo-950/50">
+        <ExerciseHeader
+          title="Renk Dizisi Takibi"
+          onBack={handleBackWithProgress}
+          showExitConfirmation={false}
+        />
+
+        {/* Content */}
+        <div className="container mx-auto px-4 py-8 pb-28 max-w-4xl">
+          <Card className="bg-white/60 dark:bg-gray-900/60 backdrop-blur-sm border-white/20 dark:border-gray-800/20 shadow-xl">
+            <CardHeader className="text-center pb-6">
+              <div className="w-20 h-20 bg-gradient-to-br from-primary to-primary/70 rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-lg">
+                <Palette className="w-10 h-10 text-white" />
+              </div>
+              <CardTitle className="text-2xl sm:text-3xl lg:text-4xl mb-4 bg-gradient-to-r from-primary via-purple-600 to-pink-600 bg-clip-text text-transparent">
+                Renk Dizisi Takibi
+              </CardTitle>
+              <CardDescription className="text-base sm:text-lg text-gray-600 dark:text-gray-300 max-w-2xl mx-auto">
+                Gösterilen renk dizisini hatırlayın ve aynı sırayla tekrarlayın. Her seviyede dizi uzunluğu artar.
+              </CardDescription>
+            </CardHeader>
+            
+            <CardContent className="space-y-8">
+              {/* Stats Grid */}
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <div className="bg-white/40 dark:bg-gray-800/40 backdrop-blur-sm rounded-xl p-4 text-center border border-white/20 dark:border-gray-700/20">
+                  <div className="w-12 h-12 bg-primary/10 rounded-xl flex items-center justify-center mx-auto mb-3">
+                    <Target className="w-6 h-6 text-primary" />
+                  </div>
+                  <h3 className="font-semibold text-gray-700 dark:text-gray-300 mb-1">Başlangıç Seviyesi</h3>
+                  <p className="text-2xl font-bold text-primary">1</p>
+                </div>
+                <div className="bg-white/40 dark:bg-gray-800/40 backdrop-blur-sm rounded-xl p-4 text-center border border-white/20 dark:border-gray-700/20">
+                  <div className="w-12 h-12 bg-primary/10 rounded-xl flex items-center justify-center mx-auto mb-3">
+                    <Eye className="w-6 h-6 text-primary" />
+                  </div>
+                  <h3 className="font-semibold text-gray-700 dark:text-gray-300 mb-1">Gösterim Süresi</h3>
+                  <p className="text-2xl font-bold text-primary">0.75s/renk</p>
+                </div>
+                <div className="bg-white/40 dark:bg-gray-800/40 backdrop-blur-sm rounded-xl p-4 text-center border border-white/20 dark:border-gray-700/20">
+                  <div className="w-12 h-12 bg-primary/10 rounded-xl flex items-center justify-center mx-auto mb-3">
+                    <Trophy className="w-6 h-6 text-primary" />
+                  </div>
+                  <h3 className="font-semibold text-gray-700 dark:text-gray-300 mb-1">Zorluk</h3>
+                  <p className="text-2xl font-bold text-primary">Artan</p>
+                </div>
+              </div>
+
+              {/* Color Preview */}
+              <div className="bg-gradient-to-r from-blue-50/50 to-indigo-50/50 dark:from-blue-950/20 dark:to-indigo-950/20 backdrop-blur-sm rounded-xl p-6 border border-blue-200/20 dark:border-blue-800/20">
+                <h4 className="font-bold mb-4 flex items-center gap-2 text-gray-800 dark:text-gray-200">
+                  <Palette className="w-5 h-5 text-primary" />
+                  Renkler
+                </h4>
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+                  {colors.map((color) => (
+                    <div key={color.id} className="text-center">
+                      <div className={`w-16 h-16 ${color.bg} rounded-xl mx-auto mb-2 shadow-lg`} />
+                      <span className="text-sm text-gray-600 dark:text-gray-300">{color.name}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Instructions */}
+              <div className="bg-gradient-to-r from-green-50/50 to-emerald-50/50 dark:from-green-950/20 dark:to-emerald-950/20 backdrop-blur-sm rounded-xl p-6 border border-green-200/20 dark:border-green-800/20">
+                <h4 className="font-bold mb-4 flex items-center gap-2 text-gray-800 dark:text-gray-200">
+                  <Brain className="w-5 h-5 text-primary" />
+                  Nasıl Oynanır?
+                </h4>
+                <ul className="space-y-3 text-sm text-gray-600 dark:text-gray-300">
+                  <li className="flex items-start gap-3">
+                    <span className="flex-shrink-0 w-6 h-6 bg-primary/10 rounded-full flex items-center justify-center text-primary font-semibold text-xs">1</span>
+                    <span>Ekranda renkler sırayla yanıp sönecek</span>
+                  </li>
+                  <li className="flex items-start gap-3">
+                    <span className="flex-shrink-0 w-6 h-6 bg-primary/10 rounded-full flex items-center justify-center text-primary font-semibold text-xs">2</span>
+                    <span>Renkleri hatırlayın ve aynı sırayla tıklayın</span>
+                  </li>
+                  <li className="flex items-start gap-3">
+                    <span className="flex-shrink-0 w-6 h-6 bg-primary/10 rounded-full flex items-center justify-center text-primary font-semibold text-xs">3</span>
+                    <span>Her seviyede dizi uzunluğu artar</span>
+                  </li>
+                  <li className="flex items-start gap-3">
+                    <span className="flex-shrink-0 w-6 h-6 bg-primary/10 rounded-full flex items-center justify-center text-primary font-semibold text-xs">4</span>
+                    <span>Hata yaparsanız aynı seviyeyi tekrar denersiniz</span>
+                  </li>
+                </ul>
+              </div>
+
+              {/* Start Button */}
+              <div className="text-center pt-4">
+                <Button 
+                  onClick={startGame}
+                  size="lg"
+                  className="bg-gradient-to-r from-primary to-purple-600 hover:from-primary/90 hover:to-purple-600/90 text-white px-8 py-3 rounded-xl shadow-lg hover:shadow-xl transition-all duration-200 text-base font-semibold"
+                >
+                  <Play className="w-5 h-5 mr-2" />
+                  Egzersizi Başlat
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+    )
   }
 
-  return (
-    <div className="min-h-screen bg-background p-4">
-      <div className="container mx-auto max-w-4xl">
-        {/* Header */}
-        <div className="flex items-center justify-between mb-6">
-          <Button 
-            variant="ghost" 
-            size="sm" 
-            onClick={onBack}
-            className="text-muted-foreground hover:text-foreground"
-          >
-            <ArrowLeft className="w-4 h-4 mr-2" />
-            Geri
-          </Button>
-          
-          <div className="text-center">
-            <h1 className="text-2xl font-bold text-primary">Renk Dizisi Takibi</h1>
-            <p className="text-sm text-muted-foreground">Renk dizilerini hatırlayın ve tekrar edin</p>
-          </div>
-          
-          <div className="w-20" />
-        </div>
+  if (gameState.phase === 'showing') {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/30 to-indigo-50/50 dark:from-slate-950 dark:via-blue-950/30 dark:to-indigo-950/50">
+                 <ExerciseHeader
+           title="Renk Dizisi Takibi"
+           onBack={handleBackWithProgress}
+           onPause={handlePauseGame}
+           onRestart={resetGame}
+           isPaused={false}
+           isPlaying={true}
+           stats={{
+             time: formatTime(gameState.currentTime),
+             level: gameState.currentLevel,
+             score: gameState.score,
+             progress: `Gösteriliyor...`
+           }}
+           showExitConfirmation={true}
+         />
 
-        {/* Ana Oyun Kartı */}
-        <Card className="card-enhanced mb-6">
-          <CardHeader>
-            <div className="flex items-center justify-between">
-              <div>
-                <CardTitle className="text-xl">
-                  Seviye {gameState.currentLevel} - Dizi Uzunluğu: {1 + gameState.currentLevel}
-                </CardTitle>
-                <CardDescription className="flex items-center gap-4 text-sm mt-2">
-                  <span className="flex items-center gap-1">
-                    <Target className="w-3 h-3" />
-                    Skor: {gameState.score}
-                  </span>
-                  <span className="flex items-center gap-1">
-                    <Clock className="w-3 h-3" />
-                    Süre: {formatTime(gameState.currentTime)}
-                  </span>
-                  <span className="flex items-center gap-1">
-                    <Palette className="w-3 h-3" />
-                    Doğru: {gameState.correctCount}
-                  </span>
-                </CardDescription>
-              </div>
-              
-              {gameState.phase !== 'ready' && (
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={resetGame}
-                  className="ml-4"
-                >
-                  <RotateCcw className="w-4 h-4 mr-2" />
-                  Yeniden Başla
-                </Button>
-              )}
-            </div>
-          </CardHeader>
-
-          <CardContent className="space-y-6">
-            {/* Oyun Alanı */}
-            <div className="text-center space-y-6">
-              {gameState.phase === 'ready' && (
-                <div className="space-y-4">
-                  <div className="p-8 border-2 border-dashed border-border rounded-lg">
-                    <Palette className="w-16 h-16 mx-auto mb-4 text-primary" />
-                    <h3 className="text-lg font-semibold mb-2">Başlamaya Hazır</h3>
-                    <p className="text-muted-foreground mb-4">
-                      Ekranda yanıp sönen renk dizisini hatırlayın ve aynı sırada tıklayın
-                    </p>
-                    <Button onClick={startGame} size="lg" className="font-semibold">
-                      <Play className="w-5 h-5 mr-2" />
-                      Oyunu Başlat
-                    </Button>
-                  </div>
-                </div>
-              )}
-
-              {gameState.phase === 'showing' && (
-                <div className="space-y-4">
-                  <Badge variant="secondary" className="text-lg px-4 py-2">
-                    Diziyi İzleyin ({gameState.showingIndex + 1}/{gameState.sequence.length})
-                  </Badge>
-                  <Progress 
-                    value={((gameState.showingIndex + 1) / gameState.sequence.length) * 100} 
-                    className="w-64 mx-auto"
-                  />
-                </div>
-              )}
-
-              {gameState.phase === 'input' && (
-                <div className="space-y-4">
-                  <Badge variant="secondary" className="text-lg px-4 py-2">
-                    Diziyi Tekrarlayın ({gameState.userInput.length}/{gameState.sequence.length})
-                  </Badge>
-                  
-                  {/* Kullanıcı girişi gösterimi */}
-                  <div className="flex justify-center gap-2 mb-6">
-                    {Array.from({ length: gameState.sequence.length }).map((_, index) => (
+        {/* Content */}
+        <div className="container mx-auto px-4 py-8 pb-28 max-w-4xl">
+          <Card className="bg-white/60 dark:bg-gray-900/60 backdrop-blur-sm border-white/20 dark:border-gray-800/20 shadow-xl">
+            <CardContent className="p-8">
+              <div className="text-center">
+                <h2 className="text-2xl font-bold mb-4 text-gray-800 dark:text-gray-200">
+                  Seviye {gameState.currentLevel}
+                </h2>
+                <p className="text-lg text-gray-600 dark:text-gray-300 mb-8">
+                  Renkleri hatırlayın
+                </p>
+                
+                {/* Color Display */}
+                <div className="flex justify-center mb-8">
+                  <div className="grid grid-cols-2 gap-6 w-fit">
+                    {colors.map((color) => (
                       <div
-                        key={index}
-                        className={`w-12 h-12 border-2 rounded-lg flex items-center justify-center ${
-                          index < gameState.userInput.length
-                            ? `border-primary ${colors[gameState.userInput[index]].bg}`
-                            : 'border-border bg-muted/30'
-                        }`}
-                      >
-                        {index >= gameState.userInput.length && (
-                          <span className="text-muted-foreground">?</span>
-                        )}
-                      </div>
+                        key={color.id}
+                        className={`
+                          w-24 h-24 rounded-xl transition-all duration-300 shadow-lg
+                          ${highlightedColor === color.id 
+                            ? `${color.bg} scale-110 ring-4 ring-white shadow-2xl` 
+                            : `${color.bg} opacity-50`
+                          }
+                        `}
+                      />
                     ))}
                   </div>
                 </div>
-              )}
 
-              {gameState.phase === 'feedback' && (
-                <div className="space-y-4">
-                  <div className="p-6 border rounded-lg">
-                    <div className="text-lg font-semibold">
-                      {gameState.userInput.every((color, index) => color === gameState.sequence[index])
-                        ? '✅ Doğru!' 
-                        : '❌ Yanlış!'}
-                    </div>
-                    <div className="flex justify-center gap-2 mt-4">
-                      <div className="text-sm">
-                        <div className="text-muted-foreground mb-2">Doğru dizi:</div>
-                        <div className="flex gap-1">
-                          {gameState.sequence.map((colorId, index) => (
-                            <div 
-                              key={index}
-                              className={`w-8 h-8 border rounded ${colors[colorId].bg}`}
-                            />
-                          ))}
-                        </div>
-                      </div>
-                    </div>
-                  </div>
+                <Progress 
+                  value={(gameState.showingIndex + 1) / gameState.sequence.length * 100} 
+                  className="h-2 bg-white/40 dark:bg-gray-800/40 backdrop-blur-sm max-w-md mx-auto"
+                />
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+    )
+  }
+
+  if (gameState.phase === 'input') {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/30 to-indigo-50/50 dark:from-slate-950 dark:via-blue-950/30 dark:to-indigo-950/50">
+        <ExerciseHeader
+          title="Renk Dizisi Takibi"
+          onBack={handleBackWithProgress}
+          onPause={handlePauseGame}
+          onRestart={resetGame}
+          isPaused={false}
+          isPlaying={true}
+          stats={{
+            time: formatTime(gameState.currentTime),
+            level: gameState.currentLevel,
+            score: gameState.score,
+            progress: `${gameState.userInput.length}/${gameState.sequence.length}`
+          }}
+          showExitConfirmation={true}
+        />
+
+        {/* Content */}
+        <div className="container mx-auto px-4 py-8 pb-28 max-w-4xl">
+          <Card className="bg-white/60 dark:bg-gray-900/60 backdrop-blur-sm border-white/20 dark:border-gray-800/20 shadow-xl">
+            <CardContent className="p-8">
+              <div className="text-center">
+                <h2 className="text-2xl font-bold mb-4 text-gray-800 dark:text-gray-200">
+                  Renkleri Seçin
+                </h2>
+                <p className="text-lg text-gray-600 dark:text-gray-300 mb-8">
+                  Gördüğünüz sırayla renkleri tıklayın ({gameState.userInput.length}/{gameState.sequence.length})
+                </p>
+                
+                {/* User Input Display */}
+                <div className="flex justify-center items-center gap-4 mb-8">
+                  {gameState.sequence.map((colorId, index) => (
+                    <div
+                      key={index}
+                      className={`
+                        w-16 h-16 rounded-xl transition-all duration-300 border-4
+                        ${index < gameState.userInput.length
+                          ? `${colors[colorId].bg} border-white shadow-lg`
+                          : index === gameState.userInput.length
+                            ? 'bg-gray-200 dark:bg-gray-700 border-primary border-dashed'
+                            : 'bg-gray-100 dark:bg-gray-800 border-gray-300 dark:border-gray-600'
+                        }
+                      `}
+                    />
+                  ))}
                 </div>
-              )}
 
-              {/* Renk Butonları - DÜZELTİLDİ */}
-              {(gameState.phase === 'input' || gameState.phase === 'showing') && (
+                {/* Color Buttons */}
                 <div className="flex justify-center">
                   <div className="grid grid-cols-2 gap-6 w-fit">
                     {colors.map((color) => (
@@ -379,58 +501,174 @@ const RenkDizisiTakibiSayfasi: React.FC<RenkDizisiTakibiProps> = ({ onBack }) =>
                         variant="outline"
                         size="lg"
                         onClick={() => handleColorInput(color.id)}
-                        disabled={gameState.phase !== 'input'}
                         className={`
-                          w-24 h-24 border-2 transition-all duration-200 
-                          ${color.bg} 
-                          ${highlightedColor === color.id 
-                            ? `${color.active} scale-110 ring-4 ring-primary/50` 
-                            : `${color.hover} hover:scale-105`
-                          } 
-                          ${gameState.phase !== 'input' ? 'cursor-not-allowed' : ''}
+                          w-24 h-24 rounded-xl border-4 border-white/20 dark:border-gray-700/20 
+                          ${color.bg} ${color.hover} hover:scale-105 transition-all duration-200 shadow-lg hover:shadow-xl
                         `}
-                      >
-                        <span className="text-white font-semibold text-sm">
-                          {color.name}
-                        </span>
-                      </Button>
+                      />
                     ))}
                   </div>
                 </div>
-              )}
-            </div>
 
-            {/* İstatistikler */}
-            {isGameActive && (
-              <div className="grid grid-cols-3 gap-4 mt-6">
-                <div className="text-center p-3 bg-muted/30 rounded-lg">
-                  <div className="text-lg font-semibold text-primary">{gameState.currentLevel}</div>
-                  <div className="text-xs text-muted-foreground">Mevcut Seviye</div>
+
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+    )
+  }
+
+  if (gameState.phase === 'paused') {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/30 to-indigo-50/50 dark:from-slate-950 dark:via-blue-950/30 dark:to-indigo-950/50">
+        <ExerciseHeader
+          title="Renk Dizisi Takibi"
+          onBack={handleBackWithProgress}
+          onResume={handleResumeGame}
+          onRestart={resetGame}
+          isPaused={true}
+          isPlaying={false}
+          stats={{
+            time: formatTime(gameState.currentTime),
+            level: gameState.currentLevel,
+            score: gameState.score,
+            progress: `${gameState.userInput.length}/${gameState.sequence.length}`
+          }}
+          showExitConfirmation={true}
+        />
+
+        {/* Pause Overlay */}
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50">
+          <Card className="bg-white/90 dark:bg-gray-900/90 backdrop-blur-sm border-white/20 dark:border-gray-800/20 shadow-2xl max-w-md mx-4">
+            <CardContent className="p-8 text-center">
+              <div className="w-16 h-16 bg-orange-100 dark:bg-orange-900/20 rounded-2xl flex items-center justify-center mx-auto mb-4">
+                <Pause className="w-8 h-8 text-orange-600 dark:text-orange-400" />
+              </div>
+              <h3 className="text-xl font-bold text-gray-800 dark:text-gray-200 mb-2">Oyun Duraklatıldı</h3>
+              <p className="text-gray-600 dark:text-gray-300 mb-6">Devam etmek için butona tıklayın</p>
+              <div className="flex gap-3 justify-center">
+                <Button onClick={handleResumeGame} className="bg-gradient-to-r from-green-500 to-emerald-600">
+                  <PlayCircle className="w-4 h-4 mr-2" />
+                  Devam Et
+                </Button>
+                <Button onClick={resetGame} variant="outline">
+                  <RotateCcw className="w-4 h-4 mr-2" />
+                  Yeniden Başla
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+    )
+  }
+
+  if (gameState.phase === 'feedback') {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/30 to-indigo-50/50 dark:from-slate-950 dark:via-blue-950/30 dark:to-indigo-950/50">
+        {/* Header */}
+        <div className="bg-white/60 dark:bg-gray-900/60 backdrop-blur-sm border-b border-white/20 dark:border-gray-800/20 sticky top-0 z-10">
+          <div className="container mx-auto px-4 py-4">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-4">
+                <Button 
+                  variant="ghost" 
+                  size="sm"
+                  onClick={handleGameEnd}
+                  className="text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white"
+                >
+                  <ArrowLeft className="w-4 h-4 mr-2" />
+                  Bitir
+                </Button>
+                <div className="h-6 w-px bg-gray-300 dark:bg-gray-600" />
+                <h1 className="text-lg sm:text-xl font-semibold bg-gradient-to-r from-primary via-purple-600 to-pink-600 bg-clip-text text-transparent">
+                  Renk Dizisi Takibi
+                </h1>
+              </div>
+              <div className="flex items-center gap-3">
+                <Badge variant="secondary" className="bg-white/60 dark:bg-gray-800/60 backdrop-blur-sm">
+                  <Clock className="w-3 h-3 mr-1" />
+                  {formatTime(gameState.currentTime)}
+                </Badge>
+                <Badge variant="secondary" className="bg-white/60 dark:bg-gray-800/60 backdrop-blur-sm">
+                  <Star className="w-3 h-3 mr-1" />
+                  Skor: {gameState.score}
+                </Badge>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Content */}
+        <div className="container mx-auto px-4 py-8 pb-28 max-w-4xl">
+          <Card className="bg-white/60 dark:bg-gray-900/60 backdrop-blur-sm border-white/20 dark:border-gray-800/20 shadow-xl">
+            <CardHeader className="text-center pb-6">
+              <div className="w-20 h-20 bg-gradient-to-br from-green-500 to-emerald-600 rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-lg">
+                <Trophy className="w-10 h-10 text-white" />
+              </div>
+              <CardTitle className="text-2xl sm:text-3xl lg:text-4xl mb-4 bg-gradient-to-r from-green-600 via-emerald-600 to-teal-600 bg-clip-text text-transparent">
+                Oyun Devam Ediyor!
+              </CardTitle>
+              <CardDescription className="text-base sm:text-lg text-gray-600 dark:text-gray-300">
+                En yüksek seviye: {gameState.currentLevel - 1}
+              </CardDescription>
+            </CardHeader>
+            
+            <CardContent className="space-y-8">
+              {/* Results Grid */}
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <div className="bg-white/40 dark:bg-gray-800/40 backdrop-blur-sm rounded-xl p-4 text-center border border-white/20 dark:border-gray-700/20">
+                  <div className="w-12 h-12 bg-green-100 dark:bg-green-900/20 rounded-xl flex items-center justify-center mx-auto mb-3">
+                    <Target className="w-6 h-6 text-green-600 dark:text-green-400" />
+                  </div>
+                  <h3 className="font-semibold text-gray-700 dark:text-gray-300 mb-1">Doğru Diziler</h3>
+                  <p className="text-2xl font-bold text-green-600 dark:text-green-400">{gameState.correctCount}</p>
                 </div>
-                <div className="text-center p-3 bg-success/10 rounded-lg">
-                  <div className="text-lg font-semibold text-success">{gameState.correctCount}</div>
-                  <div className="text-xs text-muted-foreground">Doğru</div>
+                <div className="bg-white/40 dark:bg-gray-800/40 backdrop-blur-sm rounded-xl p-4 text-center border border-white/20 dark:border-gray-700/20">
+                  <div className="w-12 h-12 bg-blue-100 dark:bg-blue-900/20 rounded-xl flex items-center justify-center mx-auto mb-3">
+                    <Clock className="w-6 h-6 text-blue-600 dark:text-blue-400" />
+                  </div>
+                  <h3 className="font-semibold text-gray-700 dark:text-gray-300 mb-1">Süre</h3>
+                  <p className="text-2xl font-bold text-blue-600 dark:text-blue-400">{formatTime(gameState.currentTime)}</p>
                 </div>
-                <div className="text-center p-3 bg-destructive/10 rounded-lg">
-                  <div className="text-lg font-semibold text-destructive">{gameState.incorrectCount}</div>
-                  <div className="text-xs text-muted-foreground">Yanlış</div>
+                <div className="bg-white/40 dark:bg-gray-800/40 backdrop-blur-sm rounded-xl p-4 text-center border border-white/20 dark:border-gray-700/20">
+                  <div className="w-12 h-12 bg-purple-100 dark:bg-purple-900/20 rounded-xl flex items-center justify-center mx-auto mb-3">
+                    <Star className="w-6 h-6 text-purple-600 dark:text-purple-400" />
+                  </div>
+                  <h3 className="font-semibold text-gray-700 dark:text-gray-300 mb-1">Skor</h3>
+                  <p className="text-2xl font-bold text-purple-600 dark:text-purple-400">{gameState.score}</p>
                 </div>
               </div>
-            )}
-          </CardContent>
-        </Card>
 
-        {/* Oyun Sonu Butonu */}
-        {isGameActive && (
-          <div className="text-center">
-            <Button variant="destructive" onClick={handleGameEnd}>
-              Oyunu Bitir
-            </Button>
-          </div>
-        )}
+              {/* Action Buttons */}
+              <div className="flex flex-col sm:flex-row gap-4 justify-center pt-4">
+                <Button 
+                  onClick={handleGameEnd}
+                  variant="outline"
+                  size="lg"
+                  className="bg-white/40 dark:bg-gray-800/40 backdrop-blur-sm border-white/20 dark:border-gray-700/20 hover:bg-white/60 dark:hover:bg-gray-800/60"
+                >
+                  <Trophy className="w-5 h-5 mr-2" />
+                  Oyunu Bitir
+                </Button>
+                <Button 
+                  onClick={onBack}
+                  size="lg"
+                  className="bg-gradient-to-r from-primary to-purple-600 hover:from-primary/90 hover:to-purple-600/90 text-white shadow-lg hover:shadow-xl transition-all duration-200"
+                >
+                  <ArrowLeft className="w-5 h-5 mr-2" />
+                  Egzersizlere Dön
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
       </div>
-    </div>
-  )
+    )
+  }
+
+  return null
 }
 
 export default RenkDizisiTakibiSayfasi

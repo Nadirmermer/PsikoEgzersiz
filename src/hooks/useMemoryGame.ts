@@ -12,7 +12,9 @@ export const useMemoryGame = ({ level }: UseMemoryGameProps) => {
   const [flippedCards, setFlippedCards] = useState<Card[]>([])
   const [gameStarted, setGameStarted] = useState(false)
   const [gameCompleted, setGameCompleted] = useState(false)
+  const [isPaused, setIsPaused] = useState(false)
   const [startTime, setStartTime] = useState<number | null>(null)
+  const [pausedTime, setPausedTime] = useState(0)
   const [duration, setDuration] = useState(0)
   const [moves, setMoves] = useState(0)
   const [incorrectMoves, setIncorrectMoves] = useState(0)
@@ -29,7 +31,9 @@ export const useMemoryGame = ({ level }: UseMemoryGameProps) => {
     setFlippedCards([])
     setGameStarted(false)
     setGameCompleted(false)
+    setIsPaused(false)
     setStartTime(null)
+    setPausedTime(0)
     setDuration(0)
     setMoves(0)
     setIncorrectMoves(0)
@@ -53,9 +57,27 @@ export const useMemoryGame = ({ level }: UseMemoryGameProps) => {
     }
   }, [showingPreview])
 
+  // Oyunu duraklat
+  const pauseGame = useCallback(() => {
+    if (gameStarted && !gameCompleted && !isPaused) {
+      setIsPaused(true)
+      setPausedTime(Date.now())
+    }
+  }, [gameStarted, gameCompleted, isPaused])
+
+  // Oyunu devam ettir
+  const resumeGame = useCallback(() => {
+    if (gameStarted && !gameCompleted && isPaused && startTime) {
+      const pauseDuration = Date.now() - pausedTime
+      setStartTime(startTime + pauseDuration)
+      setIsPaused(false)
+      setPausedTime(0)
+    }
+  }, [gameStarted, gameCompleted, isPaused, startTime, pausedTime])
+
   // Kart tıklama
   const flipCard = useCallback((cardId: string) => {
-    if (!gameStarted || gameCompleted || showingPreview) return
+    if (!gameStarted || gameCompleted || showingPreview || isPaused) return
     
     setCardFlips(prev => prev + 1)
     
@@ -80,7 +102,7 @@ export const useMemoryGame = ({ level }: UseMemoryGameProps) => {
   useEffect(() => {
     let interval: NodeJS.Timeout
     
-    if (gameStarted && !gameCompleted && startTime) {
+    if (gameStarted && !gameCompleted && !isPaused && startTime) {
       interval = setInterval(() => {
         setDuration(Math.floor((Date.now() - startTime) / 1000))
       }, 1000)
@@ -89,7 +111,7 @@ export const useMemoryGame = ({ level }: UseMemoryGameProps) => {
     return () => {
       if (interval) clearInterval(interval)
     }
-  }, [gameStarted, gameCompleted, startTime])
+  }, [gameStarted, gameCompleted, isPaused, startTime])
 
   // Eşleşme kontrolü
   useEffect(() => {
@@ -171,7 +193,9 @@ export const useMemoryGame = ({ level }: UseMemoryGameProps) => {
         score: finalStats.score,
         duration: finalStats.duration_seconds,
         date: finalStats.timestamp,
-        details: finalStats
+        details: finalStats,
+        completed: true,
+        exitedEarly: false
       })
 
       // Seviye ilerlemesini kontrol et
@@ -186,6 +210,7 @@ export const useMemoryGame = ({ level }: UseMemoryGameProps) => {
     cards,
     gameStarted,
     gameCompleted,
+    isPaused,
     duration,
     moves,
     incorrectMoves,
@@ -193,6 +218,8 @@ export const useMemoryGame = ({ level }: UseMemoryGameProps) => {
     totalPairs: cards.length / 2,
     initializeGame,
     startGame,
+    pauseGame,
+    resumeGame,
     flipCard,
     flippedCards: flippedCards.length,
     showingPreview,

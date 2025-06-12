@@ -168,171 +168,225 @@ const EgzersizlerSayfasi: React.FC<EgzersizlerSayfasiProps> = ({
   ]
 
   return (
-    <div className="container mx-auto section-padding pb-28 max-w-7xl">
-      {/* Hero Section - Modern ve kompakt */}
-      <div className="text-center mb-8 animate-fade-in">
-        <div className="relative inline-flex items-center justify-center mb-6">
-          <div className="absolute inset-0 bg-primary/10 rounded-full blur-xl scale-150 animate-pulse" />
-          <div className="relative w-20 h-20 flex items-center justify-center shadow-lg rounded-full bg-white border-4 border-primary/30">
-            <img src="/logo.png" alt="Maskot Beyin" className="w-16 h-16 object-contain" />
-          </div>
-        </div>
-        <div className="flex items-center justify-center gap-2 mb-2">
-          <span className="text-lg font-semibold text-primary">Merhaba! Ben sizin bilişsel maskotunuzum 🧠🌱</span>
-        </div>
-        <h1 className="text-3xl md:text-4xl font-bold mb-3 bg-gradient-to-r from-primary via-primary/80 to-primary/60 bg-clip-text text-transparent leading-tight">
-          Bilişsel Egzersizler
-        </h1>
-        <p className="text-base md:text-lg text-muted-foreground max-w-2xl mx-auto leading-relaxed mb-4">
-          Zihin sağlığınızı destekleyen bilimsel egzersizlerle beyin gücünüzü artırın
-        </p>
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/30 to-indigo-50/50 dark:from-slate-950 dark:via-blue-950/30 dark:to-indigo-950/50">
+      {/* Mobile-First Hero Section */}
+      <div className="relative overflow-hidden">
+        {/* Background Pattern */}
+        <div className="absolute inset-0 bg-grid-pattern opacity-5" />
+        <div className="absolute top-0 left-0 w-full h-32 bg-gradient-to-b from-primary/5 to-transparent" />
+        
+        <div className="relative px-4 pt-8 pb-6 sm:px-6 lg:px-8">
+          {/* Compact Mobile Header */}
+          <div className="text-center space-y-4 animate-fade-in">
+            {/* Compact Mobile Mascot */}
+            <div className="relative inline-flex items-center justify-center mb-1">
+              <div className="relative w-12 h-12 sm:w-14 sm:h-14 bg-gradient-to-br from-primary/10 to-purple-500/10 rounded-full border border-primary/20 flex items-center justify-center">
+                <img 
+                  src="/logo.png" 
+                  alt="Bilişsel Asistan" 
+                  className="w-8 h-8 sm:w-10 sm:h-10 object-contain" 
+                />
+              </div>
+            </div>
 
-        {/* Kompakt istatistikler */}
-        <div className="flex items-center justify-center gap-6 text-sm">
-          <div className="flex items-center gap-2 text-muted-foreground">
-            <CheckCircle className="w-4 h-4 text-success" />
-            <span>8 Egzersiz</span>
-          </div>
-          <div className="flex items-center gap-2 text-muted-foreground">
-            <Sparkles className="w-4 h-4 text-primary" />
-            <span>Bilimsel</span>
-          </div>
-          <div className="flex items-center gap-2 text-muted-foreground">
-            <Trophy className="w-4 h-4 text-warning" />
-            <span>İlerleme Takibi</span>
+            {/* Main Title - Mobile Optimized */}
+            <div className="space-y-2">
+              <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold bg-gradient-to-r from-primary via-purple-600 to-pink-600 bg-clip-text text-transparent leading-tight px-4">
+                Bilişsel Egzersizler
+              </h1>
+              <p className="text-sm sm:text-base text-muted-foreground px-6 leading-relaxed">
+                Beyin gücünüzü artıran <span className="font-medium text-primary">8 bilimsel egzersiz</span>
+              </p>
+            </div>
+
+            {/* Mobile Stats Pills */}
+            <div className="flex flex-wrap items-center justify-center gap-2 px-4">
+              <div className="flex items-center gap-1.5 bg-success/10 text-success px-3 py-1.5 rounded-full text-xs font-medium">
+                <CheckCircle className="w-3 h-3" />
+                <span>8 Egzersiz</span>
+              </div>
+              <div className="flex items-center gap-1.5 bg-primary/10 text-primary px-3 py-1.5 rounded-full text-xs font-medium">
+                <Sparkles className="w-3 h-3" />
+                <span>Bilimsel</span>
+              </div>
+              <div className="flex items-center gap-1.5 bg-amber-500/10 text-amber-600 dark:text-amber-400 px-3 py-1.5 rounded-full text-xs font-medium">
+                <Trophy className="w-3 h-3" />
+                <span>İlerleme</span>
+              </div>
+            </div>
           </div>
         </div>
       </div>
 
-      {/* Modern Grid Layout - Egzersiz Kartları */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-6 mb-6">
-        {exerciseCategories.map((category, index) => {
-          const IconComponent = category.icon;
-          
-          return (
-            <Card 
-              key={category.id} 
-              className={`card-enhanced interactive-lift relative overflow-hidden ${category.bgGradient} ${category.borderColor} group transition-all duration-500 hover:shadow-xl border-2 h-full`}
-              style={{ backgroundImage: category.bgPattern }}
-              role="article"
-              aria-labelledby={`exercise-${category.id}-title`}
-            >
-              {/* Status Badge - Küçük ve zarif */}
-              <div className="absolute top-3 right-3 z-10">
-                <Badge className="bg-success/15 text-success border-success/30 font-medium text-xs px-2 py-1 shadow-sm">
-                  <CheckCircle className="w-3 h-3 mr-1" />
-                  Aktif
-                </Badge>
-              </div>
+      {/* Mobile-First Exercise Grid */}
+      <div className="px-4 pb-24 sm:px-6 lg:px-8">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-4 lg:gap-6">
+          {exerciseCategories.map((category, index) => {
+            const IconComponent = category.icon;
+            
+            return (
+              <Card 
+                key={category.id} 
+                className="group relative overflow-hidden bg-white/80 dark:bg-gray-900/80 backdrop-blur-sm border border-border/50 rounded-2xl shadow-sm hover:shadow-lg transition-all duration-300 hover:-translate-y-1 active:scale-[0.98]"
+                style={{ 
+                  animationDelay: `${index * 100}ms`,
+                  backgroundImage: `linear-gradient(135deg, ${category.bgGradient.includes('blue') ? 'rgba(59, 130, 246, 0.03)' : 
+                    category.bgGradient.includes('emerald') ? 'rgba(16, 185, 129, 0.03)' :
+                    category.bgGradient.includes('cyan') ? 'rgba(6, 182, 212, 0.03)' :
+                    category.bgGradient.includes('purple') ? 'rgba(147, 51, 234, 0.03)' :
+                    category.bgGradient.includes('orange') ? 'rgba(251, 146, 60, 0.03)' :
+                    category.bgGradient.includes('pink') ? 'rgba(236, 72, 153, 0.03)' :
+                    category.bgGradient.includes('indigo') ? 'rgba(99, 102, 241, 0.03)' :
+                    'rgba(245, 158, 11, 0.03)'} 0%, transparent 100%)`
+                }}
+                role="button"
+                tabIndex={0}
+                onClick={category.onStart}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    category.onStart();
+                  }
+                }}
+                aria-label={`${category.title} egzersizine başla`}
+              >
+                {/* Mobile Status Indicator */}
+                <div className="absolute top-3 right-3 z-10">
+                  <div className="w-2 h-2 bg-success rounded-full animate-pulse" />
+                </div>
 
-              {/* Accent line */}
-              <div className={`absolute top-0 left-0 right-0 h-1 ${category.accentColor}`} />
+                {/* Color Accent */}
+                <div className={`absolute top-0 left-0 right-0 h-1 ${category.accentColor} opacity-60`} />
 
-              <CardHeader className="pb-3 pt-4">
-                {/* Icon and Title */}
-                <div className="flex items-start gap-3 mb-3">
-                  <div className={`p-2.5 rounded-xl bg-background/80 backdrop-blur-sm shadow-md group-hover:scale-110 group-hover:shadow-lg transition-all duration-300 flex-shrink-0`}>
-                    <IconComponent className={`w-6 h-6 ${category.iconColor}`} />
+                <CardContent className="p-4 sm:p-5">
+                  {/* Mobile-Optimized Header */}
+                  <div className="flex items-start gap-3 mb-4">
+                    <div className="flex-shrink-0 p-2.5 rounded-xl bg-background/60 backdrop-blur-sm shadow-sm group-hover:scale-110 transition-transform duration-300">
+                      <IconComponent className={`w-5 h-5 sm:w-6 sm:h-6 ${category.iconColor}`} />
+                    </div>
+                    
+                    <div className="flex-1 min-w-0">
+                      <h3 className="text-base sm:text-lg font-bold text-foreground mb-1 group-hover:text-primary transition-colors duration-300 line-clamp-1">
+                        {category.title}
+                      </h3>
+                      <p className="text-xs text-primary/70 font-medium mb-1">{category.motto}</p>
+                      <p className="text-xs text-muted-foreground leading-relaxed line-clamp-2">
+                        {category.description}
+                      </p>
+                    </div>
                   </div>
                   
-                  <div className="flex-1 min-w-0">
-                    <CardTitle 
-                      id={`exercise-${category.id}-title`}
-                      className="text-lg mb-1 group-hover:text-primary transition-colors duration-300 leading-tight truncate"
-                    >
-                      {category.title}
-                    </CardTitle>
-                    <p className="text-xs text-primary/70 font-medium mb-1">{category.motto}</p>
-                    <CardDescription className="text-xs leading-relaxed text-muted-foreground/90 line-clamp-2">
-                      {category.description}
-                    </CardDescription>
-                  </div>
-                </div>
-                
-                {/* Progress Section - Sadece hafıza oyunu için detaylı */}
-                {category.stats ? (
-                  <div className="bg-background/70 backdrop-blur-sm rounded-lg p-3 border border-border/30 shadow-sm">
-                    <div className="flex items-center justify-between mb-2">
-                      <span className="text-xs font-medium text-muted-foreground flex items-center gap-1">
-                        <Trophy className="w-3 h-3" />
-                        İlerleme
-                      </span>
-                      <span className="text-xs font-bold text-primary">
-                        {category.stats.completed}/{category.stats.total}
-                      </span>
+                  {/* Mobile Progress Display */}
+                  {category.stats ? (
+                    <div className="bg-background/40 backdrop-blur-sm rounded-xl p-3 mb-4 border border-border/30">
+                      <div className="flex items-center justify-between mb-2">
+                        <span className="text-xs font-medium text-muted-foreground flex items-center gap-1">
+                          <Trophy className="w-3 h-3" />
+                          Seviye {category.stats.completed + 1}
+                        </span>
+                        <span className="text-xs font-bold text-primary">
+                          {category.stats.completed}/{category.stats.total}
+                        </span>
+                      </div>
+                      <Progress 
+                        value={category.stats.percentage} 
+                        className="h-1.5"
+                        aria-label={`İlerleme: ${category.stats.percentage.toFixed(0)}%`}
+                      />
                     </div>
-                    
-                    <Progress 
-                      value={category.stats.percentage} 
-                      className="h-1.5 mb-2"
-                      aria-label={`İlerleme: ${category.stats.percentage.toFixed(0)}%`}
-                    />
-                    
-                    <span className="text-xs text-muted-foreground">
-                      {category.currentProgress}
+                  ) : (
+                    <div className="bg-background/40 backdrop-blur-sm rounded-xl p-3 mb-4 border border-border/30">
+                      <div className="flex items-center gap-2">
+                        <Target className="w-3 h-3 text-muted-foreground" />
+                        <span className="text-xs text-muted-foreground">{category.currentProgress}</span>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Mobile Tags */}
+                  <div className="flex flex-wrap gap-1.5 mb-4">
+                    {category.highlights.slice(0, 2).map((highlight, highlightIndex) => (
+                      <Badge 
+                        key={highlightIndex}
+                        variant="outline"
+                        className="text-xs bg-background/50 border-border/50 px-2 py-0.5 h-5"
+                      >
+                        {highlight}
+                      </Badge>
+                    ))}
+                  </div>
+
+                  {/* Mobile CTA Button */}
+                  <Button 
+                    className="w-full h-10 text-sm font-semibold bg-primary hover:bg-primary/90 text-primary-foreground shadow-sm hover:shadow-md transition-all duration-300 rounded-xl"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      category.onStart();
+                    }}
+                  >
+                    <Play className="w-4 h-4 mr-2" />
+                    Başla
+                  </Button>
+                </CardContent>
+
+                {/* Mobile Hover Effect */}
+                <div className="absolute inset-0 rounded-2xl transition-all duration-300 opacity-0 group-hover:opacity-100 pointer-events-none">
+                  <div className="absolute top-0 right-0 w-16 h-16 bg-gradient-to-bl from-white/5 to-transparent rounded-full -translate-y-4 translate-x-4" />
+                </div>
+              </Card>
+            );
+          })}
+        </div>
+
+        {/* Assistant Message Card */}
+        <div className="mt-6 mb-4">
+          <Card className="bg-gradient-to-r from-blue-50/80 via-indigo-50/80 to-purple-50/80 dark:from-blue-950/40 dark:via-indigo-950/40 dark:to-purple-950/40 backdrop-blur-sm border border-primary/20 rounded-2xl shadow-sm relative overflow-hidden">
+            <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-primary via-purple-500 to-pink-500" />
+            <CardContent className="p-4 sm:p-5">
+              <div className="flex items-start gap-3">
+                <div className="flex-shrink-0 w-10 h-10 bg-gradient-to-br from-primary/20 to-purple-500/20 rounded-full border border-primary/30 flex items-center justify-center">
+                  <img 
+                    src="/logo.png" 
+                    alt="Asistan" 
+                    className="w-6 h-6 object-contain" 
+                  />
+                </div>
+                <div className="flex-1 space-y-2">
+                  <div className="flex items-center gap-2">
+                    <span className="text-lg">👋</span>
+                    <span className="text-base font-bold bg-gradient-to-r from-primary to-purple-600 bg-clip-text text-transparent">
+                      Merhaba!
                     </span>
                   </div>
-                ) : (
-                  <div className="bg-background/70 backdrop-blur-sm rounded-lg p-3 border border-border/30 shadow-sm">
-                    <div className="flex items-center justify-between mb-1">
-                      <span className="text-xs font-medium text-muted-foreground flex items-center gap-1">
-                        <Target className="w-3 h-3" />
-                        Hazır
-                      </span>
-                    </div>
-                    <span className="text-xs text-muted-foreground">
-                      {category.currentProgress}
-                    </span>
-                  </div>
-                )}
-
-                {/* Highlights - kompakt */}
-                <div className="flex flex-wrap gap-1.5 mt-3">
-                  {category.highlights.map((highlight, highlightIndex) => (
-                    <Badge 
-                      key={highlightIndex}
-                      variant="outline"
-                      className="text-xs bg-background/60 hover:bg-background/80 transition-colors duration-200 px-2 py-0.5 h-6"
-                    >
-                      {highlight}
-                    </Badge>
-                  ))}
+                  <p className="text-sm text-muted-foreground leading-relaxed">
+                    Ben sizin <span className="font-semibold text-primary">bilişsel asistanınızım</span>. 
+                    Size 8 farklı egzersiz türü ile beyin gücünüzü geliştirmenizde yardımcı olacağım! 🧠✨
+                  </p>
                 </div>
-              </CardHeader>
-              
-              <CardContent className="pt-0 pb-4">
-                {/* Action Button - kompakt */}
-                <Button 
-                  className="w-full font-semibold text-sm py-2 h-9 transition-all duration-300 bg-primary hover:bg-primary/90 text-primary-foreground shadow-md hover:shadow-lg hover:scale-[1.02] focus:scale-[1.02]"
-                  onClick={category.onStart}
-                  aria-label={`${category.title} egzersizine başla`}
-                >
-                  <Play className="w-4 h-4 mr-2" />
-                  Başla
-                </Button>
-              </CardContent>
-
-              {/* Hover efekti */}
-              <div className="absolute inset-0 rounded-xl transition-all duration-300 opacity-0 group-hover:opacity-100 pointer-events-none">
-                <div className="absolute top-0 right-0 w-20 h-20 bg-gradient-to-bl from-white/10 to-transparent rounded-full -translate-y-8 translate-x-8" />
               </div>
-            </Card>
-          );
-        })}
-      </div>
+            </CardContent>
+          </Card>
+        </div>
 
-      {/* Bilgi kartı - çok kompakt */}
-      <Card className="card-enhanced bg-muted/30 border-border/50 text-center py-6">
-        <CardContent className="py-0">
-          <div className="inline-flex items-center justify-center w-12 h-12 bg-muted/50 rounded-xl mb-3">
-            <Brain className="w-6 h-6 text-muted-foreground" />
-          </div>
-          <h3 className="text-lg font-bold mb-2">8 Aktif Egzersiz Hazır!</h3>
-          <p className="text-muted-foreground text-sm leading-relaxed max-w-xl mx-auto">
-            Bilişsel performansınızı artırmak için tasarlanmış 8 farklı egzersiz türü.
-          </p>
-        </CardContent>
-      </Card>
+        {/* Quick Stats */}
+        <div className="mt-4 text-center">
+          <Card className="bg-white/60 dark:bg-gray-900/60 backdrop-blur-sm border border-border/50 rounded-2xl shadow-sm">
+            <CardContent className="p-4">
+              <div className="flex items-center justify-center gap-4 text-sm">
+                <div className="flex items-center gap-1.5 text-success">
+                  <div className="w-2 h-2 bg-success rounded-full animate-pulse" />
+                  <span className="font-medium">8 Aktif Egzersiz</span>
+                </div>
+                <div className="w-px h-4 bg-border" />
+                <div className="flex items-center gap-1.5 text-primary">
+                  <Brain className="w-3 h-3" />
+                  <span className="font-medium">Bilimsel Temelli</span>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
     </div>
   )
 }

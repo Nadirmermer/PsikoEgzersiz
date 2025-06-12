@@ -1,12 +1,12 @@
-
 import React, { useState, useEffect, useCallback } from 'react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Progress } from '@/components/ui/progress'
-import { ArrowLeft, Shuffle, Clock, Target, Eye, Star } from 'lucide-react'
+import { ArrowLeft, Shuffle, Clock, Target, Eye, Star, Play, RotateCcw, Trophy, Brain, Lightbulb, CheckCircle, Pause, PlayCircle } from 'lucide-react'
 import { LocalStorageManager } from '../utils/localStorage'
 import { toast } from '@/components/ui/sonner'
+import ExerciseHeader from '../components/ExerciseHeader'
 import { WORD_CIRCLE_LEVELS, WordCircleLevel, TargetWord } from '../data/wordCircleLevels'
 
 interface KelimeCemberiBulmacasiProps {
@@ -14,6 +14,7 @@ interface KelimeCemberiBulmacasiProps {
 }
 
 interface GameState {
+  phase: 'ready' | 'playing' | 'completed' | 'paused'
   currentLevel: number
   selectedLetters: number[]
   currentWord: string
@@ -24,10 +25,12 @@ interface GameState {
   currentTime: number
   isGameActive: boolean
   grid: (string | null)[][]
+  pausedTime: number
 }
 
 const KelimeCemberiBulmacasiSayfasi: React.FC<KelimeCemberiBulmacasiProps> = ({ onBack }) => {
   const [gameState, setGameState] = useState<GameState>({
+    phase: 'ready',
     currentLevel: 1,
     selectedLetters: [],
     currentWord: '',
@@ -37,11 +40,14 @@ const KelimeCemberiBulmacasiSayfasi: React.FC<KelimeCemberiBulmacasiProps> = ({ 
     startTime: 0,
     currentTime: 0,
     isGameActive: false,
-    grid: []
+    grid: [],
+    pausedTime: 0
   })
 
   const [isDragging, setIsDragging] = useState(false)
   const [currentLevelData, setCurrentLevelData] = useState<WordCircleLevel | null>(null)
+  const [animatingLetters, setAnimatingLetters] = useState<Set<number>>(new Set())
+  const [wordAnimation, setWordAnimation] = useState<string>('')
 
   // Zamanlayıcı
   useEffect(() => {
@@ -66,6 +72,13 @@ const KelimeCemberiBulmacasiSayfasi: React.FC<KelimeCemberiBulmacasiProps> = ({ 
     }
   }, [gameState.currentLevel])
 
+  const formatTime = (ms: number) => {
+    const seconds = Math.floor(ms / 1000)
+    const mins = Math.floor(seconds / 60)
+    const secs = seconds % 60
+    return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`
+  }
+
   const initializeGrid = useCallback((levelData: WordCircleLevel) => {
     const { rows, cols } = levelData.gridDimensions
     const newGrid = Array(rows).fill(null).map(() => Array(cols).fill(null))
@@ -81,9 +94,96 @@ const KelimeCemberiBulmacasiSayfasi: React.FC<KelimeCemberiBulmacasiProps> = ({ 
     }))
   }, [])
 
+  const startGame = useCallback(() => {
+    setGameState(prev => ({
+      ...prev,
+      phase: 'playing',
+      startTime: Date.now(),
+      currentTime: 0,
+      isGameActive: true
+    }))
+    
+    const levelData = WORD_CIRCLE_LEVELS.find(level => level.levelNumber === 1)
+    if (levelData) {
+      setCurrentLevelData(levelData)
+      initializeGrid(levelData)
+    }
+  }, [initializeGrid])
+
+  const resetGame = useCallback(() => {
+    setGameState({
+      phase: 'ready',
+      currentLevel: 1,
+      selectedLetters: [],
+      currentWord: '',
+      foundWords: [],
+      bonusWords: [],
+      score: 0,
+      startTime: 0,
+      currentTime: 0,
+      isGameActive: false,
+      grid: [],
+      pausedTime: 0
+    })
+    setCurrentLevelData(null)
+    setIsDragging(false)
+    setAnimatingLetters(new Set())
+    setWordAnimation('')
+  }, [])
+
+  const handlePauseGame = useCallback(() => {
+    setGameState(prev => ({
+      ...prev,
+      phase: 'paused',
+      pausedTime: Date.now(),
+      isGameActive: false
+    }))
+    toast.info('Oyun duraklatıldı')
+  }, [])
+
+  const handleResumeGame = useCallback(() => {
+    const pauseDuration = Date.now() - gameState.pausedTime
+    setGameState(prev => ({
+      ...prev,
+      phase: 'playing',
+      startTime: prev.startTime + pauseDuration,
+      isGameActive: true
+    }))
+    toast.info('Oyun devam ediyor')
+  }, [gameState.pausedTime])
+
+  const handleBackWithProgress = useCallback(async () => {
+    if (gameState.phase === 'playing' || gameState.phase === 'paused') {
+      try {
+        const progressData = {
+          currentLevel: gameState.currentLevel,
+          foundWords: gameState.foundWords,
+          bonusWords: gameState.bonusWords,
+          score: gameState.score,
+          progress: Math.round((gameState.foundWords.length / (currentLevelData?.targetWords.length || 1)) * 100)
+        }
+        
+        await LocalStorageManager.savePartialProgress(
+          'Kelime Çemberi Bulmacası',
+          progressData,
+          Math.floor(gameState.currentTime / 1000)
+        )
+        toast.success('İlerleme kaydedildi')
+      } catch (error) {
+        console.error('İlerleme kaydedilirken hata:', error)
+        toast.error('İlerleme kaydedilemedi')
+      }
+    }
+    onBack()
+  }, [gameState, currentLevelData, onBack])
+
   const shuffleLetters = useCallback(() => {
     if (!currentLevelData) return
     
+    // Karıştırma animasyonu
+    setAnimatingLetters(new Set(Array.from({ length: currentLevelData.circleLetters.length }, (_, i) => i)))
+    
+    setTimeout(() => {
     const shuffled = [...currentLevelData.circleLetters].sort(() => Math.random() - 0.5)
     setCurrentLevelData(prev => prev ? { ...prev, circleLetters: shuffled } : null)
     
@@ -92,9 +192,16 @@ const KelimeCemberiBulmacasiSayfasi: React.FC<KelimeCemberiBulmacasiProps> = ({ 
       selectedLetters: [],
       currentWord: ''
     }))
+      
+      setTimeout(() => {
+        setAnimatingLetters(new Set())
+      }, 300)
+    }, 200)
   }, [currentLevelData])
 
   const handleLetterSelect = useCallback((index: number) => {
+    if (gameState.phase !== 'playing') return
+    
     if (!isDragging && gameState.selectedLetters.length === 0) {
       setIsDragging(true)
     }
@@ -109,7 +216,7 @@ const KelimeCemberiBulmacasiSayfasi: React.FC<KelimeCemberiBulmacasiProps> = ({ 
         currentWord: newWord
       }))
     }
-  }, [gameState.selectedLetters, currentLevelData, isDragging])
+  }, [gameState.selectedLetters, gameState.phase, currentLevelData, isDragging])
 
   const handleLetterRelease = useCallback(() => {
     if (gameState.currentWord.length > 0) {
@@ -136,6 +243,10 @@ const KelimeCemberiBulmacasiSayfasi: React.FC<KelimeCemberiBulmacasiProps> = ({ 
         }
       }
 
+      // Kelime bulundu animasyonu
+      setWordAnimation(word)
+      setTimeout(() => setWordAnimation(''), 2000)
+
       setGameState(prev => ({
         ...prev,
         grid: newGrid,
@@ -145,16 +256,19 @@ const KelimeCemberiBulmacasiSayfasi: React.FC<KelimeCemberiBulmacasiProps> = ({ 
         currentWord: ''
       }))
 
-      toast.success(`Harika! "${word}" kelimesini buldunuz!`)
+      toast.success(`Harika! "${word}" kelimesini buldunuz! (+${word.length * 10} puan)`)
 
       // Seviye tamamlanma kontrolü
       if (gameState.foundWords.length + 1 >= currentLevelData.targetWords.length) {
         setTimeout(() => {
           completeLevel()
-        }, 1000)
+        }, 1500)
       }
     } else if (currentLevelData.bonusWords?.includes(word) && !gameState.bonusWords.includes(word)) {
       // Bonus kelime
+      setWordAnimation(`BONUS: ${word}`)
+      setTimeout(() => setWordAnimation(''), 2000)
+
       setGameState(prev => ({
         ...prev,
         bonusWords: [...prev.bonusWords, word],
@@ -197,211 +311,285 @@ const KelimeCemberiBulmacasiSayfasi: React.FC<KelimeCemberiBulmacasiProps> = ({ 
       score: gameState.score,
       duration,
       date: new Date().toISOString(),
-      details: exerciseData
+      details: exerciseData,
+      completed: true,
+      exitedEarly: false
     })
 
-    toast.success(`Seviye ${gameState.currentLevel} tamamlandı!`)
-    
-    // Sonraki seviyeye geç
-    if (gameState.currentLevel < WORD_CIRCLE_LEVELS.length) {
       setGameState(prev => ({
         ...prev,
-        currentLevel: prev.currentLevel + 1
-      }))
-    } else {
-      toast.success('Tebrikler! Tüm seviyeleri tamamladınız!')
-      setGameState(prev => ({ ...prev, isGameActive: false }))
-    }
+      phase: 'completed',
+      isGameActive: false
+    }))
+
+    toast.success('Seviye tamamlandı!')
   }, [gameState, currentLevelData])
-
-  const resetGame = useCallback(() => {
-    setGameState({
-      currentLevel: 1,
-      selectedLetters: [],
-      currentWord: '',
-      foundWords: [],
-      bonusWords: [],
-      score: 0,
-      startTime: 0,
-      currentTime: 0,
-      isGameActive: false,
-      grid: []
-    })
-  }, [])
-
-  const formatTime = (ms: number) => {
-    const seconds = Math.floor(ms / 1000)
-    const minutes = Math.floor(seconds / 60)
-    return `${minutes.toString().padStart(2, '0')}:${(seconds % 60).toString().padStart(2, '0')}`
-  }
 
   const calculateAngle = (index: number, total: number) => {
     return (index * 360) / total - 90 // -90 to start from top
   }
 
-  if (!currentLevelData) {
+  // Ready state
+  if (gameState.phase === 'ready') {
     return (
-      <div className="min-h-screen bg-background p-4 flex items-center justify-center">
-        <Card className="card-enhanced">
-          <CardContent className="p-8 text-center">
-            <h3 className="text-lg font-semibold mb-4">Seviye Yükleniyor...</h3>
-            <Button onClick={onBack}>Geri Dön</Button>
-          </CardContent>
-        </Card>
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/30 to-indigo-50/50 dark:from-slate-950 dark:via-blue-950/30 dark:to-indigo-950/50">
+        <ExerciseHeader
+          title="Kelime Çemberi Bulmacası"
+          onBack={onBack}
+          showExitConfirmation={false}
+          stats={{
+            score: gameState.score,
+            progress: '0%'
+          }}
+        />
+
+        {/* Content */}
+        <div className="container mx-auto px-4 py-8 pb-28 max-w-4xl">
+          {/* Stats Grid */}
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-8">
+            <div className="bg-white/40 dark:bg-gray-800/40 backdrop-blur-sm rounded-xl p-4 text-center border border-white/20 dark:border-gray-700/20">
+              <div className="w-10 h-10 bg-blue-100 dark:bg-blue-900/20 rounded-xl flex items-center justify-center mx-auto mb-2">
+                <Target className="w-5 h-5 text-blue-600 dark:text-blue-400" />
+              </div>
+              <div className="text-sm text-gray-600 dark:text-gray-300">Seviye</div>
+              <div className="text-xl font-bold text-blue-600 dark:text-blue-400">1</div>
+            </div>
+            <div className="bg-white/40 dark:bg-gray-800/40 backdrop-blur-sm rounded-xl p-4 text-center border border-white/20 dark:border-gray-700/20">
+              <div className="w-10 h-10 bg-green-100 dark:bg-green-900/20 rounded-xl flex items-center justify-center mx-auto mb-2">
+                <CheckCircle className="w-5 h-5 text-green-600 dark:text-green-400" />
+              </div>
+              <div className="text-sm text-gray-600 dark:text-gray-300">Bulunan</div>
+              <div className="text-xl font-bold text-green-600 dark:text-green-400">0</div>
+            </div>
+            <div className="bg-white/40 dark:bg-gray-800/40 backdrop-blur-sm rounded-xl p-4 text-center border border-white/20 dark:border-gray-700/20">
+              <div className="w-10 h-10 bg-purple-100 dark:bg-purple-900/20 rounded-xl flex items-center justify-center mx-auto mb-2">
+                <Star className="w-5 h-5 text-purple-600 dark:text-purple-400" />
+              </div>
+              <div className="text-sm text-gray-600 dark:text-gray-300">Bonus</div>
+              <div className="text-xl font-bold text-purple-600 dark:text-purple-400">0</div>
+                    </div>
+            <div className="bg-white/40 dark:bg-gray-800/40 backdrop-blur-sm rounded-xl p-4 text-center border border-white/20 dark:border-gray-700/20">
+              <div className="w-10 h-10 bg-orange-100 dark:bg-orange-900/20 rounded-xl flex items-center justify-center mx-auto mb-2">
+                <Trophy className="w-5 h-5 text-orange-600 dark:text-orange-400" />
+              </div>
+              <div className="text-sm text-gray-600 dark:text-gray-300">Skor</div>
+              <div className="text-xl font-bold text-orange-600 dark:text-orange-400">0</div>
+              </div>
+            </div>
+
+          {/* Instructions */}
+          <Card className="bg-white/60 dark:bg-gray-900/60 backdrop-blur-sm border-white/20 dark:border-gray-800/20 shadow-xl mb-8">
+            <CardHeader>
+              <div className="flex items-center gap-3 mb-4">
+                <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-purple-600 rounded-xl flex items-center justify-center">
+                  <Brain className="w-6 h-6 text-white" />
+                </div>
+                <div>
+                  <CardTitle className="text-xl text-gray-800 dark:text-gray-200">Nasıl Oynanır?</CardTitle>
+                  <CardDescription className="text-gray-600 dark:text-gray-300">
+                    Çemberdeki harflerle kelimeler oluşturun
+                  </CardDescription>
+                </div>
+              </div>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="grid gap-4">
+                <div className="flex items-start gap-3">
+                  <div className="w-8 h-8 bg-blue-100 dark:bg-blue-900/20 rounded-lg flex items-center justify-center flex-shrink-0 mt-0.5">
+                    <span className="text-sm font-bold text-blue-600 dark:text-blue-400">1</span>
+                  </div>
+                  <div>
+                    <h4 className="font-semibold text-gray-800 dark:text-gray-200 mb-1">Harfleri Seçin</h4>
+                    <p className="text-sm text-gray-600 dark:text-gray-300">Çemberdeki harflere tıklayarak kelime oluşturun</p>
+                  </div>
+                </div>
+                <div className="flex items-start gap-3">
+                  <div className="w-8 h-8 bg-blue-100 dark:bg-blue-900/20 rounded-lg flex items-center justify-center flex-shrink-0 mt-0.5">
+                    <span className="text-sm font-bold text-blue-600 dark:text-blue-400">2</span>
+                  </div>
+                  <div>
+                    <h4 className="font-semibold text-gray-800 dark:text-gray-200 mb-1">Kelime Oluşturun</h4>
+                    <p className="text-sm text-gray-600 dark:text-gray-300">Geçerli kelimeler grid'de yerlerine yerleştirilir</p>
+                  </div>
+                </div>
+                <div className="flex items-start gap-3">
+                  <div className="w-8 h-8 bg-blue-100 dark:bg-blue-900/20 rounded-lg flex items-center justify-center flex-shrink-0 mt-0.5">
+                    <span className="text-sm font-bold text-blue-600 dark:text-blue-400">3</span>
+                  </div>
+                  <div>
+                    <h4 className="font-semibold text-gray-800 dark:text-gray-200 mb-1">Bonus Kelimeler</h4>
+                    <p className="text-sm text-gray-600 dark:text-gray-300">Ekstra kelimeler bularak bonus puan kazanın</p>
+                  </div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Game Preview */}
+          <Card className="bg-white/60 dark:bg-gray-900/60 backdrop-blur-sm border-white/20 dark:border-gray-800/20 shadow-xl mb-8">
+            <CardHeader>
+              <CardTitle className="text-center text-gray-800 dark:text-gray-200">Oyun Önizlemesi</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="flex justify-center">
+                <div className="relative w-64 h-64">
+                  {/* Örnek çember */}
+                  <div className="absolute inset-0 rounded-full border-4 border-dashed border-gray-300 dark:border-gray-600"></div>
+                  <div className="absolute inset-4 rounded-full bg-gradient-to-br from-blue-100 to-purple-100 dark:from-blue-900/20 dark:to-purple-900/20 flex items-center justify-center">
+                    <Lightbulb className="w-12 h-12 text-gray-400 dark:text-gray-500" />
+                  </div>
+                  {/* Örnek harfler */}
+                  {['K', 'E', 'L', 'İ', 'M', 'E'].map((letter, index) => {
+                    const angle = calculateAngle(index, 6)
+                    const radius = 100
+                    const x = Math.cos((angle * Math.PI) / 180) * radius
+                    const y = Math.sin((angle * Math.PI) / 180) * radius
+                    
+                    return (
+                      <div
+                        key={index}
+                        className="absolute w-12 h-12 bg-white dark:bg-gray-800 rounded-full border-2 border-gray-200 dark:border-gray-600 flex items-center justify-center font-bold text-gray-600 dark:text-gray-300 shadow-lg"
+                        style={{
+                          left: `calc(50% + ${x}px - 24px)`,
+                          top: `calc(50% + ${y}px - 24px)`,
+                        }}
+                      >
+                        {letter}
+                      </div>
+                    )
+                  })}
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Start Button */}
+          <div className="text-center">
+            <Button 
+              onClick={startGame}
+              size="lg"
+              className="bg-gradient-to-r from-primary to-purple-600 hover:from-primary/90 hover:to-purple-600/90 text-white px-8 py-6 text-lg font-semibold shadow-xl hover:shadow-2xl transition-all duration-300 hover:scale-105"
+            >
+              <Play className="w-6 h-6 mr-3" />
+              Oyunu Başlat
+            </Button>
+          </div>
+        </div>
       </div>
     )
   }
 
-  return (
-    <div className="min-h-screen bg-background p-4">
-      <div className="container mx-auto max-w-4xl">
-        {/* Header */}
-        <div className="flex items-center justify-between mb-6">
-          <Button 
-            variant="ghost" 
-            size="sm" 
-            onClick={onBack}
-            className="text-muted-foreground hover:text-foreground"
-          >
-            <ArrowLeft className="w-4 h-4 mr-2" />
-            Geri
-          </Button>
-          
-          <div className="text-center">
-            <h1 className="text-2xl font-bold text-primary">Kelime Çemberi Bulmacası</h1>
-            <p className="text-sm text-muted-foreground">Harfleri birleştirerek kelimeleri bulun</p>
+  // Playing state
+  if (gameState.phase === 'playing') {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/30 to-indigo-50/50 dark:from-slate-950 dark:via-blue-950/30 dark:to-indigo-950/50">
+        <ExerciseHeader
+          title="Kelime Çemberi Bulmacası"
+          onBack={handleBackWithProgress}
+          showExitConfirmation={true}
+          onPause={handlePauseGame}
+          onRestart={resetGame}
+          isPaused={false}
+          isPlaying={true}
+          stats={{
+            time: formatTime(gameState.currentTime),
+            level: gameState.currentLevel,
+            score: gameState.score,
+            progress: `${Math.round((gameState.foundWords.length / (currentLevelData?.targetWords.length || 1)) * 100)}%`
+          }}
+        />
+
+        {/* Content */}
+        <div className="container mx-auto px-4 py-8 pb-28 max-w-4xl">
+          {/* Stats Grid */}
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-6">
+            <div className="bg-white/40 dark:bg-gray-800/40 backdrop-blur-sm rounded-xl p-3 text-center border border-white/20 dark:border-gray-700/20">
+              <div className="text-sm text-gray-600 dark:text-gray-300">Bulunan</div>
+              <div className="text-xl font-bold text-green-600">{gameState.foundWords.length}/{currentLevelData?.targetWords.length || 0}</div>
+            </div>
+            <div className="bg-white/40 dark:bg-gray-800/40 backdrop-blur-sm rounded-xl p-3 text-center border border-white/20 dark:border-gray-700/20">
+              <div className="text-sm text-gray-600 dark:text-gray-300">Bonus</div>
+              <div className="text-xl font-bold text-purple-600">{gameState.bonusWords.length}</div>
+            </div>
+            <div className="bg-white/40 dark:bg-gray-800/40 backdrop-blur-sm rounded-xl p-3 text-center border border-white/20 dark:border-gray-700/20">
+              <div className="text-sm text-gray-600 dark:text-gray-300">Skor</div>
+              <div className="text-xl font-bold text-orange-600">{gameState.score}</div>
+            </div>
+            <div className="bg-white/40 dark:bg-gray-800/40 backdrop-blur-sm rounded-xl p-3 text-center border border-white/20 dark:border-gray-700/20">
+              <div className="text-sm text-gray-600 dark:text-gray-300">Süre</div>
+              <div className="text-xl font-bold text-blue-600">{formatTime(gameState.currentTime)}</div>
+            </div>
           </div>
-          
-          <div className="w-20" />
-        </div>
 
-        {/* Ana Oyun Kartı */}
-        <Card className="card-enhanced mb-6">
-          <CardHeader>
-            <div className="flex items-center justify-between">
-              <div>
-                <CardTitle className="text-xl">
-                  Seviye {gameState.currentLevel}
-                </CardTitle>
-                <CardDescription className="flex items-center gap-4 text-sm mt-2">
-                  <span className="flex items-center gap-1">
-                    <Target className="w-3 h-3" />
-                    Skor: {gameState.score}
-                  </span>
-                  <span className="flex items-center gap-1">
-                    <Clock className="w-3 h-3" />
-                    Süre: {formatTime(gameState.currentTime)}
-                  </span>
-                  <span className="flex items-center gap-1">
-                    <Eye className="w-3 h-3" />
-                    {gameState.foundWords.length}/{currentLevelData.targetWords.length} Kelime
-                  </span>
-                </CardDescription>
+          {/* Word Animation */}
+          {wordAnimation && (
+            <div className="fixed inset-0 flex items-center justify-center z-50 pointer-events-none">
+              <div className="bg-gradient-to-r from-green-500 to-emerald-600 text-white px-8 py-4 rounded-2xl shadow-2xl animate-bounce">
+                <div className="text-2xl font-bold">{wordAnimation}</div>
               </div>
             </div>
-          </CardHeader>
+          )}
 
-          <CardContent className="space-y-6">
-            {/* Kelime Grid'i */}
+          {/* Current Word Display */}
+          {gameState.currentWord && (
+            <div className="text-center mb-6">
+              <div className="bg-white/60 dark:bg-gray-800/60 backdrop-blur-sm rounded-2xl px-6 py-3 inline-block border border-white/20 dark:border-gray-700/20">
+                <div className="text-sm text-gray-600 dark:text-gray-300 mb-1">Mevcut Kelime</div>
+                <div className="text-2xl font-bold text-primary tracking-wider">{gameState.currentWord}</div>
+                </div>
+              </div>
+            )}
+
+          {/* Game Area */}
+          <div className="grid lg:grid-cols-2 gap-8">
+            {/* Letter Circle */}
+            <Card className="bg-white/60 dark:bg-gray-900/60 backdrop-blur-sm border-white/20 dark:border-gray-800/20 shadow-xl">
+              <CardHeader className="text-center">
+                <CardTitle className="text-gray-800 dark:text-gray-200">Harf Çemberi</CardTitle>
+                <Button
+                  onClick={shuffleLetters}
+                  variant="outline"
+                  size="sm"
+                  className="mx-auto bg-white/40 dark:bg-gray-800/40 backdrop-blur-sm border-white/20 dark:border-gray-700/20"
+                >
+                  <Shuffle className="w-4 h-4 mr-2" />
+                  Karıştır
+                </Button>
+              </CardHeader>
+              <CardContent>
+                <div className="flex justify-center">
+                  <div className="relative w-80 h-80">
+                    {/* Center circle */}
+                    <div className="absolute inset-16 rounded-full bg-gradient-to-br from-blue-100 to-purple-100 dark:from-blue-900/20 dark:to-purple-900/20 border-4 border-white/40 dark:border-gray-700/40 flex items-center justify-center shadow-lg">
             <div className="text-center">
-              <h3 className="text-lg font-semibold mb-4">Kelime Tablosu</h3>
-              <div 
-                className="inline-grid gap-1 bg-muted/20 p-4 rounded-lg"
-                style={{
-                  gridTemplateColumns: `repeat(${currentLevelData.gridDimensions.cols}, 1fr)`,
-                  gridTemplateRows: `repeat(${currentLevelData.gridDimensions.rows}, 1fr)`
-                }}
-              >
-                {gameState.grid.map((row, rowIndex) =>
-                  row.map((cell, colIndex) => (
-                    <div
-                      key={`${rowIndex}-${colIndex}`}
-                      className={`
-                        w-12 h-12 border-2 rounded-lg flex items-center justify-center font-bold text-lg
-                        transition-all duration-300
-                        ${cell 
-                          ? 'bg-primary text-primary-foreground border-primary scale-105' 
-                          : 'bg-background border-border'
-                        }
-                      `}
-                    >
-                      {cell && (
-                        <span className="animate-scale-in">{cell}</span>
-                      )}
+                        <Lightbulb className="w-8 h-8 text-gray-400 dark:text-gray-500 mx-auto mb-2" />
+                        <div className="text-sm text-gray-500 dark:text-gray-400">Kelime<br/>Oluştur</div>
+                      </div>
                     </div>
-                  ))
-                )}
-              </div>
-            </div>
-
-            {/* Bulunan Kelimeler */}
-            {gameState.foundWords.length > 0 && (
-              <div className="text-center">
-                <h4 className="font-semibold mb-2">Bulunan Kelimeler</h4>
-                <div className="flex flex-wrap gap-2 justify-center">
-                  {gameState.foundWords.map((word, index) => (
-                    <Badge key={index} variant="secondary" className="text-sm">
-                      {word}
-                    </Badge>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {/* Bonus Kelimeler */}
-            {gameState.bonusWords.length > 0 && (
-              <div className="text-center">
-                <h4 className="font-semibold mb-2 flex items-center justify-center gap-1">
-                  <Star className="w-4 h-4 text-yellow-500" />
-                  Bonus Kelimeler
-                </h4>
-                <div className="flex flex-wrap gap-2 justify-center">
-                  {gameState.bonusWords.map((word, index) => (
-                    <Badge key={index} className="text-sm bg-yellow-500/10 text-yellow-700 border-yellow-500/20">
-                      {word}
-                    </Badge>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {/* Seçilen Kelime Önizlemesi */}
-            {gameState.currentWord && (
-              <div className="text-center">
-                <div className="inline-block bg-primary/10 border border-primary/20 rounded-lg px-4 py-2">
-                  <span className="text-lg font-bold text-primary">{gameState.currentWord}</span>
-                </div>
-              </div>
-            )}
-
-            {/* Harf Dairesi */}
-            <div className="text-center">
-              <div className="relative w-64 h-64 mx-auto mb-4">
-                <div className="absolute inset-0 rounded-full border-2 border-dashed border-border/30"></div>
-                
-                {currentLevelData.circleLetters.map((letter, index) => {
+                    
+                    {/* Letter buttons */}
+                    {currentLevelData?.circleLetters.map((letter, index) => {
                   const angle = calculateAngle(index, currentLevelData.circleLetters.length)
-                  const radian = (angle * Math.PI) / 180
-                  const radius = 100
-                  const x = Math.cos(radian) * radius
-                  const y = Math.sin(radian) * radius
-                  
+                      const radius = 120
+                      const x = Math.cos((angle * Math.PI) / 180) * radius
+                      const y = Math.sin((angle * Math.PI) / 180) * radius
                   const isSelected = gameState.selectedLetters.includes(index)
+                      const isAnimating = animatingLetters.has(index)
                   
                   return (
                     <button
                       key={index}
                       className={`
-                        absolute w-12 h-12 rounded-full border-2 font-bold text-lg
-                        transition-all duration-200 transform
+                            absolute w-16 h-16 rounded-full border-3 font-bold text-lg transition-all duration-300 shadow-lg
                         ${isSelected 
-                          ? 'bg-primary text-primary-foreground border-primary scale-110 z-10' 
-                          : 'bg-background text-foreground border-border hover:scale-105 hover:border-primary/50'
+                              ? 'bg-gradient-to-br from-primary to-purple-600 text-white border-primary scale-110 shadow-xl' 
+                              : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 border-gray-200 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700 hover:scale-105'
                         }
+                            ${isAnimating ? 'animate-spin' : ''}
                       `}
                       style={{
-                        left: `calc(50% + ${x}px - 24px)`,
-                        top: `calc(50% + ${y}px - 24px)`
+                            left: `calc(50% + ${x}px - 32px)`,
+                            top: `calc(50% + ${y}px - 32px)`,
                       }}
                       onMouseDown={() => handleLetterSelect(index)}
                       onMouseEnter={() => isDragging && handleLetterSelect(index)}
@@ -413,39 +601,209 @@ const KelimeCemberiBulmacasiSayfasi: React.FC<KelimeCemberiBulmacasiProps> = ({ 
                     </button>
                   )
                 })}
-                
-                {/* Merkez Karıştır Butonu */}
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={shuffleLetters}
-                  className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 rounded-full w-16 h-16 p-0"
-                >
-                  <Shuffle className="w-5 h-5" />
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Word Grid */}
+            <Card className="bg-white/60 dark:bg-gray-900/60 backdrop-blur-sm border-white/20 dark:border-gray-800/20 shadow-xl">
+              <CardHeader className="text-center">
+                <CardTitle className="text-gray-800 dark:text-gray-200">Kelime Tablosu</CardTitle>
+                <CardDescription className="text-gray-600 dark:text-gray-300">
+                  Bulunan kelimeler burada görünür
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="grid gap-1" style={{ gridTemplateColumns: `repeat(${currentLevelData?.gridDimensions.cols || 5}, 1fr)` }}>
+                  {gameState.grid.map((row, rowIndex) =>
+                    row.map((cell, colIndex) => (
+                      <div
+                        key={`${rowIndex}-${colIndex}`}
+                        className={`
+                          w-8 h-8 border border-gray-300 dark:border-gray-600 flex items-center justify-center text-sm font-bold rounded transition-all duration-300
+                          ${cell 
+                            ? 'bg-gradient-to-br from-green-100 to-emerald-100 dark:from-green-900/20 dark:to-emerald-900/20 text-green-700 dark:text-green-300 border-green-300 dark:border-green-600 animate-pulse' 
+                            : 'bg-gray-50 dark:bg-gray-800 text-gray-400 dark:text-gray-500'
+                          }
+                        `}
+                      >
+                        {cell || ''}
+                      </div>
+                    ))
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Found Words */}
+          {(gameState.foundWords.length > 0 || gameState.bonusWords.length > 0) && (
+            <Card className="bg-white/60 dark:bg-gray-900/60 backdrop-blur-sm border-white/20 dark:border-gray-800/20 shadow-xl mt-6">
+              <CardHeader>
+                <CardTitle className="text-gray-800 dark:text-gray-200">Bulunan Kelimeler</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <h4 className="font-semibold text-green-600 dark:text-green-400 mb-2">Ana Kelimeler</h4>
+                    <div className="flex flex-wrap gap-2">
+                      {gameState.foundWords.map((word, index) => (
+                        <Badge key={index} variant="secondary" className="bg-green-100 dark:bg-green-900/20 text-green-700 dark:text-green-300">
+                          {word}
+                        </Badge>
+                      ))}
+                    </div>
+                  </div>
+                  <div>
+                    <h4 className="font-semibold text-purple-600 dark:text-purple-400 mb-2">Bonus Kelimeler</h4>
+                    <div className="flex flex-wrap gap-2">
+                      {gameState.bonusWords.map((word, index) => (
+                        <Badge key={index} variant="secondary" className="bg-purple-100 dark:bg-purple-900/20 text-purple-700 dark:text-purple-300">
+                          {word}
+                        </Badge>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          )}
+        </div>
+      </div>
+    )
+  }
+
+  if (gameState.phase === 'paused') {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/30 to-indigo-50/50 dark:from-slate-950 dark:via-blue-950/30 dark:to-indigo-950/50">
+        <ExerciseHeader
+          title="Kelime Çemberi Bulmacası"
+          onBack={handleBackWithProgress}
+          showExitConfirmation={true}
+          onPause={handleResumeGame}
+          onRestart={resetGame}
+          isPaused={true}
+          isPlaying={false}
+          stats={{
+            time: formatTime(gameState.currentTime),
+            level: gameState.currentLevel,
+            score: gameState.score,
+            progress: `${Math.round((gameState.foundWords.length / (currentLevelData?.targetWords.length || 1)) * 100)}%`
+          }}
+        />
+
+        {/* Pause Overlay */}
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50">
+          <Card className="bg-white/90 dark:bg-gray-900/90 backdrop-blur-sm border-white/20 dark:border-gray-800/20 shadow-2xl max-w-md mx-4">
+            <CardContent className="p-8 text-center">
+              <div className="w-16 h-16 bg-orange-100 dark:bg-orange-900/20 rounded-2xl flex items-center justify-center mx-auto mb-4">
+                <Pause className="w-8 h-8 text-orange-600 dark:text-orange-400" />
+              </div>
+              <h3 className="text-xl font-bold text-gray-800 dark:text-gray-200 mb-2">Oyun Duraklatıldı</h3>
+              <p className="text-gray-600 dark:text-gray-300 mb-6">Devam etmek için butona tıklayın</p>
+              <div className="flex gap-3 justify-center">
+                <Button onClick={handleResumeGame} className="bg-gradient-to-r from-green-500 to-emerald-600">
+                  <PlayCircle className="w-4 h-4 mr-2" />
+                  Devam Et
                 </Button>
+                <Button onClick={resetGame} variant="outline">
+                  <RotateCcw className="w-4 h-4 mr-2" />
+                  Yeniden Başla
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+    )
+  }
+
+  // Completed state
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/30 to-indigo-50/50 dark:from-slate-950 dark:via-blue-950/30 dark:to-indigo-950/50">
+      <ExerciseHeader
+        title="Kelime Çemberi Bulmacası"
+        onBack={onBack}
+        showExitConfirmation={false}
+        stats={{
+          time: formatTime(gameState.currentTime),
+          score: gameState.score,
+          progress: '100%'
+        }}
+      />
+
+      {/* Content */}
+      <div className="container mx-auto px-4 py-8 pb-28 max-w-4xl">
+        <Card className="bg-white/60 dark:bg-gray-900/60 backdrop-blur-sm border-white/20 dark:border-gray-800/20 shadow-xl">
+          <CardHeader className="text-center pb-6">
+            <div className="w-20 h-20 bg-gradient-to-br from-green-500 to-emerald-600 rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-lg">
+              <Trophy className="w-10 h-10 text-white" />
+            </div>
+            <CardTitle className="text-2xl sm:text-3xl lg:text-4xl mb-4 bg-gradient-to-r from-green-600 via-emerald-600 to-teal-600 bg-clip-text text-transparent">
+              Tebrikler!
+            </CardTitle>
+            <CardDescription className="text-base sm:text-lg text-gray-600 dark:text-gray-300">
+              Kelime Çemberi Bulmacası seviyesini tamamladınız
+            </CardDescription>
+          </CardHeader>
+          
+          <CardContent className="space-y-8">
+            {/* Results Grid */}
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+              <div className="bg-white/40 dark:bg-gray-800/40 backdrop-blur-sm rounded-xl p-4 text-center border border-white/20 dark:border-gray-700/20">
+                <div className="w-12 h-12 bg-green-100 dark:bg-green-900/20 rounded-xl flex items-center justify-center mx-auto mb-3">
+                  <CheckCircle className="w-6 h-6 text-green-600 dark:text-green-400" />
+                </div>
+                <h3 className="font-semibold text-gray-700 dark:text-gray-300 mb-1">Bulunan Kelimeler</h3>
+                <p className="text-2xl font-bold text-green-600 dark:text-green-400">{gameState.foundWords.length}</p>
+              </div>
+              <div className="bg-white/40 dark:bg-gray-800/40 backdrop-blur-sm rounded-xl p-4 text-center border border-white/20 dark:border-gray-700/20">
+                <div className="w-12 h-12 bg-purple-100 dark:bg-purple-900/20 rounded-xl flex items-center justify-center mx-auto mb-3">
+                  <Star className="w-6 h-6 text-purple-600 dark:text-purple-400" />
+                </div>
+                <h3 className="font-semibold text-gray-700 dark:text-gray-300 mb-1">Bonus Kelimeler</h3>
+                <p className="text-2xl font-bold text-purple-600 dark:text-purple-400">{gameState.bonusWords.length}</p>
+              </div>
+              <div className="bg-white/40 dark:bg-gray-800/40 backdrop-blur-sm rounded-xl p-4 text-center border border-white/20 dark:border-gray-700/20">
+                <div className="w-12 h-12 bg-orange-100 dark:bg-orange-900/20 rounded-xl flex items-center justify-center mx-auto mb-3">
+                  <Trophy className="w-6 h-6 text-orange-600 dark:text-orange-400" />
+                </div>
+                <h3 className="font-semibold text-gray-700 dark:text-gray-300 mb-1">Toplam Skor</h3>
+                <p className="text-2xl font-bold text-orange-600 dark:text-orange-400">{gameState.score}</p>
               </div>
             </div>
 
-            {/* İlerleme */}
-            <div className="space-y-2">
-              <div className="flex justify-between text-sm">
-                <span>İlerleme</span>
-                <span>{gameState.foundWords.length}/{currentLevelData.targetWords.length}</span>
+            {/* Time */}
+            <div className="bg-white/40 dark:bg-gray-800/40 backdrop-blur-sm rounded-xl p-6 text-center border border-white/20 dark:border-gray-700/20">
+              <h3 className="font-semibold text-gray-700 dark:text-gray-300 mb-2">Tamamlama Süresi</h3>
+              <div className="text-4xl font-bold text-blue-600 dark:text-blue-400">
+                {formatTime(gameState.currentTime)}
               </div>
-              <Progress 
-                value={(gameState.foundWords.length / currentLevelData.targetWords.length) * 100} 
-                className="h-2"
-              />
+            </div>
+
+            {/* Action Buttons */}
+            <div className="flex flex-col sm:flex-row gap-4 justify-center pt-4">
+              <Button 
+                onClick={resetGame}
+                variant="outline"
+                size="lg"
+                className="bg-white/40 dark:bg-gray-800/40 backdrop-blur-sm border-white/20 dark:border-gray-700/20 hover:bg-white/60 dark:hover:bg-gray-800/60"
+              >
+                <RotateCcw className="w-5 h-5 mr-2" />
+                Tekrar Oyna
+              </Button>
+              <Button 
+                onClick={onBack}
+                size="lg"
+                className="bg-gradient-to-r from-primary to-purple-600 hover:from-primary/90 hover:to-purple-600/90"
+              >
+                <ArrowLeft className="w-5 h-5 mr-2" />
+                Ana Menüye Dön
+              </Button>
             </div>
           </CardContent>
         </Card>
-
-        {/* Reset Butonu */}
-        <div className="text-center">
-          <Button variant="outline" onClick={resetGame}>
-            Yeniden Başla
-          </Button>
-        </div>
       </div>
     </div>
   )
