@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useCallback } from 'react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -370,27 +369,33 @@ const RenkDizisiTakibiSayfasi: React.FC<RenkDizisiTakibiProps> = ({ onBack }) =>
                 </div>
               )}
 
-              {/* Renk Butonları */}
+              {/* Renk Butonları - DÜZELTİLDİ */}
               {(gameState.phase === 'input' || gameState.phase === 'showing') && (
-                <div className="grid grid-cols-2 gap-4 max-w-xs mx-auto">
-                  {colors.map((color) => (
-                    <Button
-                      key={color.id}
-                      variant="outline"
-                      size="lg"
-                      onClick={() => handleColorInput(color.id)}
-                      disabled={gameState.phase !== 'input'}
-                      className={`aspect-square h-24 border-2 transition-all duration-200 ${color.bg} ${
-                        highlightedColor === color.id 
-                          ? `${color.active} scale-110 ring-4 ring-primary/50` 
-                          : `${color.hover} hover:scale-105`
-                      } ${gameState.phase !== 'input' ? 'cursor-not-allowed' : ''}`}
-                    >
-                      <span className="text-white font-semibold text-sm">
-                        {color.name}
-                      </span>
-                    </Button>
-                  ))}
+                <div className="flex justify-center">
+                  <div className="grid grid-cols-2 gap-6 w-fit">
+                    {colors.map((color) => (
+                      <Button
+                        key={color.id}
+                        variant="outline"
+                        size="lg"
+                        onClick={() => handleColorInput(color.id)}
+                        disabled={gameState.phase !== 'input'}
+                        className={`
+                          w-24 h-24 border-2 transition-all duration-200 
+                          ${color.bg} 
+                          ${highlightedColor === color.id 
+                            ? `${color.active} scale-110 ring-4 ring-primary/50` 
+                            : `${color.hover} hover:scale-105`
+                          } 
+                          ${gameState.phase !== 'input' ? 'cursor-not-allowed' : ''}
+                        `}
+                      >
+                        <span className="text-white font-semibold text-sm">
+                          {color.name}
+                        </span>
+                      </Button>
+                    ))}
+                  </div>
                 </div>
               )}
             </div>

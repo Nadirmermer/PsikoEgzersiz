@@ -1,10 +1,11 @@
+
 import React from 'react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Progress } from '@/components/ui/progress'
 import { LocalStorageManager, MEMORY_GAME_LEVELS } from '../utils/localStorage'
-import { Brain, Target, Puzzle, Settings, Play, Clock, Trophy, CheckCircle, Star, Award, Zap, ArrowRightLeft, Eye, Layers, Hash, Palette } from 'lucide-react'
+import { Brain, Target, Puzzle, Settings, Play, Clock, Trophy, CheckCircle, Star, Award, Zap, ArrowRightLeft, Eye, Layers, Hash, Palette, BookOpen } from 'lucide-react'
 
 interface EgzersizlerSayfasiProps {
   onMemoryGameStart: () => void
@@ -13,6 +14,7 @@ interface EgzersizlerSayfasiProps {
   onTowerOfLondonStart: () => void
   onNumberSequenceStart: () => void
   onColorSequenceStart: () => void
+  onWordCirclePuzzleStart: () => void
 }
 
 const EgzersizlerSayfasi: React.FC<EgzersizlerSayfasiProps> = ({ 
@@ -21,7 +23,8 @@ const EgzersizlerSayfasi: React.FC<EgzersizlerSayfasiProps> = ({
   onWordImageMatchingStart,
   onTowerOfLondonStart,
   onNumberSequenceStart,
-  onColorSequenceStart
+  onColorSequenceStart,
+  onWordCirclePuzzleStart
 }) => {
   const currentLevel = LocalStorageManager.getCurrentMemoryGameLevel()
   const currentLevelData = MEMORY_GAME_LEVELS[currentLevel - 1] || MEMORY_GAME_LEVELS[0]
@@ -112,6 +115,19 @@ const EgzersizlerSayfasi: React.FC<EgzersizlerSayfasiProps> = ({
       highlights: ['Simon Benzeri', 'Görsel Takip', 'Hafıza Geliştirme']
     },
     {
+      title: 'Kelime Çemberi Bulmacası',
+      description: 'Harfleri birleştirerek kelimeleri bulun',
+      icon: BookOpen,
+      iconColor: 'text-indigo-600 dark:text-indigo-400',
+      bgGradient: 'bg-gradient-to-br from-indigo-50 via-blue-50 to-purple-100 dark:from-indigo-950/40 dark:via-blue-900/30 dark:to-purple-900/40',
+      borderColor: 'border-indigo-200/60 dark:border-indigo-800/60',
+      exercises: ['Kelime Oluşturma', 'Dil Becerileri', 'Örüntü Tanıma'],
+      available: true,
+      onStart: onWordCirclePuzzleStart,
+      currentProgress: 'Çoklu Seviye - Bonus Kelimeler',
+      highlights: ['WOW Tarzı Oyun', 'Bonus Sistem', 'Akıcı Animasyonlar']
+    },
+    {
       title: 'Dikkat Egzersizleri',
       description: 'Odaklanma ve dikkat sürenizi artırın',
       icon: Target,
@@ -173,7 +189,7 @@ const EgzersizlerSayfasi: React.FC<EgzersizlerSayfasiProps> = ({
         <div className="flex items-center justify-center gap-8 mt-8 text-sm">
           <div className="flex items-center gap-2 text-muted-foreground">
             <CheckCircle className="w-4 h-4 text-success" />
-            <span>6 Aktif Egzersiz</span>
+            <span>7 Aktif Egzersiz</span>
           </div>
           <div className="flex items-center gap-2 text-muted-foreground">
             <Clock className="w-4 h-4 text-warning" />
@@ -273,7 +289,8 @@ const EgzersizlerSayfasi: React.FC<EgzersizlerSayfasiProps> = ({
                         Egzersiz Bilgileri
                       </span>
                       <Badge variant="outline" className="text-primary border-primary/30 bg-primary/10">
-                        {['Sayı Dizisi Takibi', 'Renk Dizisi Takibi'].includes(category.title) ? 'Yeni!' : 
+                        {category.title === 'Kelime Çemberi Bulmacası' ? 'Yeni!' :
+                         ['Sayı Dizisi Takibi', 'Renk Dizisi Takibi'].includes(category.title) ? 'Güncel' : 
                          category.title === 'Londra Kulesi Testi' ? 'Güncel!' : 'Aktif'}
                       </Badge>
                     </div>
@@ -355,26 +372,26 @@ const EgzersizlerSayfasi: React.FC<EgzersizlerSayfasiProps> = ({
         })}
       </div>
 
-      {/* Enhanced Feature Highlight - Yeni Egzersizler */}
-      <Card className="card-enhanced bg-gradient-to-r from-cyan-5 via-cyan/8 to-pink/5 border-cyan/20 mb-12 overflow-hidden relative">
-        <div className="absolute inset-0 bg-gradient-to-r from-transparent via-cyan/5 to-transparent opacity-50" />
+      {/* Enhanced Feature Highlight - Yeni Kelime Oyunu */}
+      <Card className="card-enhanced bg-gradient-to-r from-indigo-5 via-indigo/8 to-purple/5 border-indigo/20 mb-12 overflow-hidden relative">
+        <div className="absolute inset-0 bg-gradient-to-r from-transparent via-indigo/5 to-transparent opacity-50" />
         
         <CardHeader className="relative">
           <div className="flex items-start gap-4 mb-4">
-            <div className="p-3 bg-cyan-500/10 rounded-xl shadow-sm">
-              <Hash className="w-8 h-8 text-cyan-600" />
+            <div className="p-3 bg-indigo-500/10 rounded-xl shadow-sm">
+              <BookOpen className="w-8 h-8 text-indigo-600" />
             </div>
             <div className="flex-1">
-              <CardTitle className="text-2xl text-cyan-600 mb-2 flex items-center gap-3">
-                🧠 Yeni Dizi Takip Egzersizleri
-                <Badge className="bg-cyan-500/10 text-cyan-600 border-cyan-500/20 text-sm px-3 py-1">
+              <CardTitle className="text-2xl text-indigo-600 mb-2 flex items-center gap-3">
+                📝 Yeni Kelime Çemberi Bulmacası
+                <Badge className="bg-indigo-500/10 text-indigo-600 border-indigo-500/20 text-sm px-3 py-1">
                   <Award className="w-3 h-3 mr-1" />
                   Yeni!
                 </Badge>
               </CardTitle>
               <CardDescription className="text-base leading-relaxed">
-                Sayı ve renk dizilerini takip eden yeni egzersizler eklendi! 
-                Sonsuz seviye sistemi ile çalışma hafızanızı ve dikkat becerinizi geliştirin.
+                Words of Wonders tarzında kelime bulmaca oyunu eklendi! 
+                Dairesel harf düzeninden kelimeleri bulun ve bonus puanlar kazanın.
               </CardDescription>
             </div>
           </div>
@@ -383,16 +400,16 @@ const EgzersizlerSayfasi: React.FC<EgzersizlerSayfasiProps> = ({
         <CardContent className="relative">
           <div className="grid md:grid-cols-2 gap-8">
             <div>
-              <h4 className="font-bold mb-4 text-cyan-600 flex items-center gap-2">
-                <Hash className="w-5 h-5" />
-                Sayı Dizisi Takibi
+              <h4 className="font-bold mb-4 text-indigo-600 flex items-center gap-2">
+                <BookOpen className="w-5 h-5" />
+                Oyun Özellikleri
               </h4>
               <div className="space-y-3">
                 {[
-                  'Sonsuz seviye sistemi',
-                  '3 rakamla başlayıp uzar',
-                  'Gerçek zamanlı performans',
-                  'Tablet uyumlu tuş takımı'
+                  'Dairesel harf düzeni ile sezgisel oynama',
+                  'Çapraz bulmaca grid sistemi',
+                  'Akıcı animasyonlar ve geçişler',
+                  'Tablet uyumlu dokunmatik kontroller'
                 ].map((feature, index) => (
                   <div key={index} className="flex items-center gap-3 text-sm">
                     <CheckCircle className="w-5 h-5 text-success flex-shrink-0" />
@@ -403,19 +420,19 @@ const EgzersizlerSayfasi: React.FC<EgzersizlerSayfasiProps> = ({
             </div>
             
             <div>
-              <h4 className="font-bold mb-4 text-pink-600 flex items-center gap-2">
-                <Palette className="w-5 h-5" />
-                Renk Dizisi Takibi
+              <h4 className="font-bold mb-4 text-purple-600 flex items-center gap-2">
+                <Star className="w-5 h-5" />
+                Özel Özellikler
               </h4>
               <div className="space-y-3">
                 {[
-                  'Simon benzeri oyun mekaniği',
-                  '4 renkli buton sistemi',
-                  'Görsel takip becerileri',
-                  'Aşamalı zorluk artışı'
+                  'Ana kelimeler ve bonus kelime sistemi',
+                  'Harfleri karıştırma özelliği',
+                  'Seviye bazlı ilerleme takibi',
+                  'Kelime dağarcığı geliştirme'
                 ].map((benefit, index) => (
                   <div key={index} className="flex items-center gap-3 text-sm">
-                    <Star className="w-5 h-5 text-pink-600 flex-shrink-0" />
+                    <Star className="w-5 h-5 text-purple-600 flex-shrink-0" />
                     <span>{benefit}</span>
                   </div>
                 ))}

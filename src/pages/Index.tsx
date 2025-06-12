@@ -10,6 +10,7 @@ import KelimeResimEslestirmeSayfasi from "./KelimeResimEslestirmeSayfasi";
 import LondraKulesiSayfasi from "./LondraKulesiSayfasi";
 import SayiDizisiTakibiSayfasi from "./SayiDizisiTakibiSayfasi";
 import RenkDizisiTakibiSayfasi from "./RenkDizisiTakibiSayfasi";
+import KelimeCemberiBulmacasiSayfasi from "./KelimeCemberiBulmacasiSayfasi";
 import BottomNavigation from "../components/BottomNavigation";
 import ClientModeHandler from "../components/ClientModeHandler";
 import SkipNavigation from "../components/SkipNavigation";
@@ -25,6 +26,7 @@ const Index = () => {
   const [isTowerOfLondonActive, setIsTowerOfLondonActive] = useState(false);
   const [isNumberSequenceActive, setIsNumberSequenceActive] = useState(false);
   const [isColorSequenceActive, setIsColorSequenceActive] = useState(false);
+  const [isWordCirclePuzzleActive, setIsWordCirclePuzzleActive] = useState(false);
   const { isClientMode, exitClientMode } = useClientMode();
   const { user, professional, loading: authLoading } = useAuth();
 
@@ -99,6 +101,14 @@ const Index = () => {
 
   const handleColorSequenceEnd = () => {
     setIsColorSequenceActive(false);
+  };
+
+  const handleWordCirclePuzzleStart = () => {
+    setIsWordCirclePuzzleActive(true);
+  };
+
+  const handleWordCirclePuzzleEnd = () => {
+    setIsWordCirclePuzzleActive(false);
   };
 
   const handlePageChange = (page: string) => {
@@ -194,6 +204,20 @@ const Index = () => {
     );
   }
 
+  // Render Word Circle Puzzle game
+  if (isWordCirclePuzzleActive) {
+    return (
+      <>
+        <SkipNavigation />
+        <KelimeCemberiBulmacasiSayfasi onBack={handleWordCirclePuzzleEnd} />
+        <ClientModeHandler 
+          isClientMode={isClientMode}
+          onExitClientMode={exitClientMode}
+        />
+      </>
+    );
+  }
+
   const renderActivePage = () => {
     switch (activePage) {
       case "egzersizler":
@@ -205,6 +229,7 @@ const Index = () => {
             onTowerOfLondonStart={handleTowerOfLondonStart}
             onNumberSequenceStart={handleNumberSequenceStart}
             onColorSequenceStart={handleColorSequenceStart}
+            onWordCirclePuzzleStart={handleWordCirclePuzzleStart}
           />
         );
       case "istatistikler":
@@ -222,6 +247,7 @@ const Index = () => {
             onTowerOfLondonStart={handleTowerOfLondonStart}
             onNumberSequenceStart={handleNumberSequenceStart}
             onColorSequenceStart={handleColorSequenceStart}
+            onWordCirclePuzzleStart={handleWordCirclePuzzleStart}
           />
         );
     }
