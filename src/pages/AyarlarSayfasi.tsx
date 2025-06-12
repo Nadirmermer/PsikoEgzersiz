@@ -1,300 +1,329 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState } from 'react'
+import { useTheme } from '../contexts/ThemeContext'
+import { useAuth } from '../contexts/AuthContext'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Switch } from '@/components/ui/switch'
-import { Badge } from '@/components/ui/badge'
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
 import { Separator } from '@/components/ui/separator'
-import { useToast } from '@/hooks/use-toast'
-import { useTheme } from '../contexts/ThemeContext'
-import { useAuth } from '../contexts/AuthContext'
-import { supabase } from '../lib/supabase'
-import { 
-  Settings, 
-  Moon, 
-  Sun, 
-  Monitor, 
-  User, 
-  LogOut, 
-  Eye,
-  Accessibility,
-  Palette
-} from 'lucide-react'
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
+import { toast } from 'sonner'
+import { Moon, Sun, User, LogOut, Shield, Eye, Palette, Settings } from 'lucide-react'
 
-const AyarlarSayfasi = () => {
-  const { theme, setTheme } = useTheme()
-  const { user, professional, logout } = useAuth()
-  const { toast } = useToast()
+const AyarlarSayfasi: React.FC = () => {
+  const { theme, toggleTheme } = useTheme()
+  const { user, professional, signOut, signIn, signUp, isSupabaseConfigured } = useAuth()
+  
+  // Disleksi okuma modu için state
+  const [isDyslexicMode, setIsDyslexicMode] = useState(() => {
+    return localStorage.getItem('dyslexic-mode') === 'true'
+  })
 
-  const [name, setName] = useState('')
+  // Uzman giriş form states
+  const [isLoginMode, setIsLoginMode] = useState(true)
   const [email, setEmail] = useState('')
-  const [isUpdating, setIsUpdating] = useState(false)
+  const [password, setPassword] = useState('')
+  const [displayName, setDisplayName] = useState('')
+  const [isLoading, setIsLoading] = useState(false)
 
-  // Disleksi okuma modu state'i
-  const [dyslexiaMode, setDyslexiaMode] = useState(false)
-
-  useEffect(() => {
-    if (user) {
-      setName(user.user_metadata.full_name || '')
-      setEmail(user.email || '')
+  const handleDyslexicModeToggle = (enabled: boolean) => {
+    setIsDyslexicMode(enabled)
+    localStorage.setItem('dyslexic-mode', enabled.toString())
+    
+    if (enabled) {
+      document.documentElement.classList.add('dyslexic-mode')
+      toast.success('Disleksi okuma modu etkinleştirildi')
+    } else {
+      document.documentElement.classList.remove('dyslexic-mode')
+      toast.success('Disleksi okuma modu kapatıldı')
     }
-  }, [user])
+  }
 
-  useEffect(() => {
-    const savedDyslexiaMode = localStorage.getItem('dyslexia-mode') === 'true'
-    setDyslexiaMode(savedDyslexiaMode)
-    applyDyslexiaMode(savedDyslexiaMode)
+  const handleUzmanAuth = async (e: React.FormEvent) => {
+    e.preventDefault()
+    
+    if (!email || !password) {
+      toast.error('Lütfen email ve şifre girin')
+      return
+    }
+
+    if (!isLoginMode && !displayName) {
+      toast.error('Lütfen görünen ad girin')
+      return
+    }
+
+    setIsLoading(true)
+
+    try {
+      if (isLoginMode) {
+        await signIn(email, password)
+      } else {
+        await signUp(email, password, displayName)
+      }
+      
+      // Clear form
+      setEmail('')
+      setPassword('')
+      setDisplayName('')
+    } catch (error) {
+      console.error('Auth error:', error)
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  const handleSignOut = async () => {
+    try {
+      await signOut()
+      setEmail('')
+      setPassword('')
+      setDisplayName('')
+    } catch (error) {
+      console.error('Sign out error:', error)
+    }
+  }
+
+  React.useEffect(() => {
+    // Sayfa yüklendiğinde disleksi modunu kontrol et
+    if (isDyslexicMode) {
+      document.documentElement.classList.add('dyslexic-mode')
+    }
   }, [])
 
-  const handleDyslexiaModeChange = (enabled: boolean) => {
-    setDyslexiaMode(enabled)
-    localStorage.setItem('dyslexia-mode', enabled.toString())
-    applyDyslexiaMode(enabled)
-    
-    toast({
-      title: enabled ? "Disleksi okuma modu açıldı" : "Disleksi okuma modu kapatıldı",
-      description: enabled 
-        ? "Metinler daha okunabilir hale getirildi." 
-        : "Normal görünüm geri yüklendi."
-    })
-  }
-
-  const applyDyslexiaMode = (enabled: boolean) => {
-    const root = document.documentElement
-    if (enabled) {
-      root.style.setProperty('--dyslexia-font', '"Verdana", "Tahoma", "Arial", sans-serif')
-      root.style.setProperty('--dyslexia-letter-spacing', '0.12em')
-      root.style.setProperty('--dyslexia-word-spacing', '0.16em')
-      root.style.setProperty('--dyslexia-line-height', '1.8')
-      root.classList.add('dyslexia-mode')
-    } else {
-      root.style.removeProperty('--dyslexia-font')
-      root.style.removeProperty('--dyslexia-letter-spacing')
-      root.style.removeProperty('--dyslexia-word-spacing')
-      root.style.removeProperty('--dyslexia-line-height')
-      root.classList.remove('dyslexia-mode')
-    }
-  }
-
-  const handleLogout = async () => {
-    try {
-      await logout()
-      toast({
-        title: "Çıkış yapıldı",
-        description: "Başarıyla çıkış yaptınız.",
-      })
-    } catch (error) {
-      toast({
-        variant: "destructive",
-        title: "Çıkış yapılamadı",
-        description: "Lütfen tekrar deneyin.",
-      })
-    }
-  }
-
   return (
-    <div className="container mx-auto section-padding pb-28 max-w-4xl">
-      <div className="text-center mb-8 animate-fade-in">
-        <div className="relative inline-flex items-center justify-center mb-5">
-          <div className="absolute inset-0 bg-primary/10 rounded-full blur-xl scale-150 animate-pulse" />
-          <div className="relative w-14 h-14 bg-gradient-to-br from-primary to-primary/70 rounded-2xl flex items-center justify-center shadow-lg">
-            <Settings className="w-7 h-7 text-white" />
-          </div>
-        </div>
-        <h1 className="text-3xl font-bold mb-3 bg-gradient-to-r from-primary via-primary/80 to-primary/60 bg-clip-text text-transparent leading-tight">
-          Hesap Ayarları
+    <div className="container mx-auto px-4 py-6 max-w-4xl space-y-6">
+      <div className="text-center mb-8">
+        <h1 className="text-3xl font-bold text-foreground mb-2 flex items-center justify-center gap-2">
+          <Settings className="w-8 h-8 text-primary" />
+          Ayarlar
         </h1>
-        <p className="text-muted-foreground text-base md:text-lg max-w-xl mx-auto leading-relaxed">
-          Hesap bilgilerinizi yönetin, temayı değiştirin ve erişilebilirlik ayarlarını düzenleyin.
+        <p className="text-muted-foreground">
+          Uygulamanızı kişiselleştirin ve hesap ayarlarınızı yönetin
         </p>
       </div>
 
-      <div className="grid gap-6">
+      <div className="grid gap-6 md:grid-cols-2">
         {/* Tema Ayarları */}
-        <Card className="card-enhanced">
+        <Card className="h-fit">
           <CardHeader>
-            <div className="flex items-center gap-3">
-              <div className="p-2 rounded-lg bg-primary/10">
-                <Palette className="w-5 h-5 text-primary" />
-              </div>
-              <div>
-                <CardTitle className="text-lg">Tema Ayarları</CardTitle>
-                <CardDescription>Uygulamanın görünümünü kişiselleştirin</CardDescription>
-              </div>
-            </div>
+            <CardTitle className="flex items-center gap-2">
+              <Palette className="w-5 h-5" />
+              Görünüm
+            </CardTitle>
+            <CardDescription>
+              Uygulamanın görünümünü kişiselleştirin
+            </CardDescription>
           </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="flex items-center justify-between">
-              <div className="space-y-1">
-                <Label className="text-sm font-medium">Görünüm</Label>
-                <p className="text-xs text-muted-foreground">
-                  Açık veya koyu tema seçin. Sistem ayarlarını takip etmesi için "Otomatik" seçeneğini kullanın.
-                </p>
-              </div>
-              <div className="space-x-2 flex items-center">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className={theme === "light" ? "active" : ""}
-                  onClick={() => setTheme("light")}
-                >
-                  <Sun className="h-4 w-4 mr-2" />
-                  Açık
-                </Button>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className={theme === "dark" ? "active" : ""}
-                  onClick={() => setTheme("dark")}
-                >
-                  <Moon className="h-4 w-4 mr-2" />
-                  Koyu
-                </Button>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className={theme === "system" ? "active" : ""}
-                  onClick={() => setTheme("system")}
-                >
-                  <Monitor className="h-4 w-4 mr-2" />
-                  Otomatik
-                </Button>
-              </div>
-            </div>
-            <Separator />
-            <div className="flex items-center justify-between">
-              <div className="space-y-1">
-                <Label className="text-sm font-medium">Arka Plan Gürültüsü</Label>
-                <p className="text-xs text-muted-foreground">
-                  Daha az dikkat dağıtıcı bir deneyim için arka plan animasyonlarını kapatın.
-                </p>
-              </div>
-              <Badge className="bg-muted-foreground/10 text-muted-foreground rounded-md px-2 py-1">
-                Yakında
-              </Badge>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Erişilebilirlik Ayarları - Yeni bölüm */}
-        <Card className="card-enhanced">
-          <CardHeader>
-            <div className="flex items-center gap-3">
-              <div className="p-2 rounded-lg bg-emerald-500/10">
-                <Accessibility className="w-5 h-5 text-emerald-600" />
-              </div>
-              <div>
-                <CardTitle className="text-lg">Erişilebilirlik</CardTitle>
-                <CardDescription>Okuma ve kullanım kolaylığı ayarları</CardDescription>
-              </div>
-            </div>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="flex items-center justify-between">
-              <div className="space-y-1">
-                <Label className="text-sm font-medium">Disleksi Okuma Modu</Label>
-                <p className="text-xs text-muted-foreground">
-                  Metinleri daha okunabilir hale getirir. Harf aralıkları artırılır ve özel font kullanılır.
-                </p>
-              </div>
-              <Switch
-                checked={dyslexiaMode}
-                onCheckedChange={handleDyslexiaModeChange}
-                aria-label="Disleksi okuma modu"
-              />
-            </div>
-            
-            {dyslexiaMode && (
-              <div className="bg-emerald-50 dark:bg-emerald-950/20 border border-emerald-200 dark:border-emerald-800 rounded-lg p-3">
-                <div className="flex items-center gap-2 text-emerald-700 dark:text-emerald-300">
-                  <Eye className="w-4 h-4" />
-                  <span className="text-sm font-medium">Disleksi modu aktif</span>
+          <CardContent className="space-y-6">
+            <div>
+              <Label className="text-base font-medium mb-3 block">Tema Seçimi</Label>
+              <RadioGroup 
+                value={theme} 
+                onValueChange={toggleTheme}
+                className="flex flex-col space-y-2"
+              >
+                <div className="flex items-center space-x-2 p-3 rounded-lg border hover:bg-accent/50 transition-colors">
+                  <RadioGroupItem value="light" id="light" />
+                  <Sun className="w-4 h-4 text-yellow-500" />
+                  <Label htmlFor="light" className="flex-1 cursor-pointer">
+                    Açık Tema
+                  </Label>
                 </div>
-                <p className="text-xs text-emerald-600 dark:text-emerald-400 mt-1">
-                  Tüm metinler daha okunabilir font ve aralıklarla gösterilmektedir.
-                </p>
+                <div className="flex items-center space-x-2 p-3 rounded-lg border hover:bg-accent/50 transition-colors">
+                  <RadioGroupItem value="dark" id="dark" />
+                  <Moon className="w-4 h-4 text-blue-500" />
+                  <Label htmlFor="dark" className="flex-1 cursor-pointer">
+                    Koyu Tema
+                  </Label>
+                </div>
+              </RadioGroup>
+            </div>
+
+            <Separator />
+
+            {/* Disleksi Okuma Modu */}
+            <div className="space-y-3">
+              <Label className="text-base font-medium flex items-center gap-2">
+                <Eye className="w-4 h-4" />
+                Erişilebilirlik
+              </Label>
+              <div className="flex items-center justify-between p-3 rounded-lg border">
+                <div className="space-y-1">
+                  <Label htmlFor="dyslexic-mode" className="text-sm font-medium">
+                    Disleksi Okuma Modu
+                  </Label>
+                  <p className="text-xs text-muted-foreground">
+                    Okumayı kolaylaştıran font ve boşluklar
+                  </p>
+                </div>
+                <Switch
+                  id="dyslexic-mode"
+                  checked={isDyslexicMode}
+                  onCheckedChange={handleDyslexicModeToggle}
+                />
               </div>
-            )}
+            </div>
           </CardContent>
         </Card>
 
         {/* Uzman Hesabı */}
-        {professional && (
-          <Card className="card-enhanced">
-            <CardHeader>
-              <div className="flex items-center gap-3">
-                <div className="p-2 rounded-lg bg-orange-500/10">
-                  <User className="w-5 h-5 text-orange-600" />
-                </div>
-                <div>
-                  <CardTitle className="text-lg">Uzman Hesabı</CardTitle>
-                  <CardDescription>
-                    Uzman paneline erişin ve hasta hesaplarını yönetin.
-                  </CardDescription>
-                </div>
-              </div>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <p className="text-sm text-muted-foreground">
-                Bu hesap, uzman ayrıcalıklarına sahiptir.
-              </p>
-              <Button variant="secondary" asChild>
-                <a href="/?page=uzman-dashboard">Uzman Paneline Git</a>
-              </Button>
-            </CardContent>
-          </Card>
-        )}
-
-        {/* Hesap Bilgileri */}
-        <Card className="card-enhanced">
+        <Card className="h-fit">
           <CardHeader>
-            <div className="flex items-center gap-3">
-              <div className="p-2 rounded-lg bg-blue-500/10">
-                <User className="w-5 h-5 text-blue-600" />
-              </div>
-              <div>
-                <CardTitle className="text-lg">Hesap Bilgileri</CardTitle>
-                <CardDescription>
-                  Adınızı ve e-posta adresinizi güncelleyin.
-                </CardDescription>
-              </div>
-            </div>
+            <CardTitle className="flex items-center gap-2">
+              <Shield className="w-5 h-5" />
+              Ruh Sağlığı Uzmanı
+            </CardTitle>
+            <CardDescription>
+              {user ? 'Uzman hesabınızı yönetin' : 'Uzman hesabınızla giriş yapın'}
+            </CardDescription>
           </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="name">Adınız</Label>
-              <Input id="name" value={name} onChange={(e) => setName(e.target.value)} />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="email">E-posta Adresiniz</Label>
-              <Input id="email" type="email" value={email} readOnly />
-            </div>
-            <Button disabled={isUpdating}>
-              {isUpdating ? "Güncelleniyor..." : "Bilgileri Güncelle"}
-            </Button>
+          <CardContent>
+            {!isSupabaseConfigured ? (
+              <div className="text-center py-6">
+                <Shield className="w-12 h-12 text-muted-foreground mx-auto mb-3" />
+                <p className="text-muted-foreground mb-4">
+                  Uzman özellikleri için Supabase bağlantısı gereklidir
+                </p>
+                <p className="text-xs text-muted-foreground">
+                  Lütfen Supabase yapılandırmanızı kontrol edin
+                </p>
+              </div>
+            ) : user && professional ? (
+              // Uzman giriş yapmış durumda
+              <div className="space-y-4">
+                <div className="p-4 bg-green-50 dark:bg-green-900/20 rounded-lg border border-green-200 dark:border-green-800">
+                  <div className="flex items-center gap-2 mb-2">
+                    <User className="w-4 h-4 text-green-600" />
+                    <span className="text-sm font-medium text-green-800 dark:text-green-200">
+                      Giriş Yapılmış
+                    </span>
+                  </div>
+                  <p className="text-sm text-green-700 dark:text-green-300">
+                    <strong>Ad:</strong> {professional.display_name}
+                  </p>
+                  <p className="text-sm text-green-700 dark:text-green-300">
+                    <strong>E-posta:</strong> {professional.email}
+                  </p>
+                </div>
+                
+                <Button 
+                  onClick={handleSignOut}
+                  variant="outline" 
+                  className="w-full"
+                  disabled={isLoading}
+                >
+                  <LogOut className="w-4 h-4 mr-2" />
+                  Çıkış Yap
+                </Button>
+              </div>
+            ) : (
+              // Uzman giriş formu
+              <form onSubmit={handleUzmanAuth} className="space-y-4">
+                <div className="flex rounded-lg border p-1 bg-muted">
+                  <Button
+                    type="button"
+                    variant={isLoginMode ? "default" : "ghost"}
+                    size="sm"
+                    onClick={() => setIsLoginMode(true)}
+                    className="flex-1"
+                  >
+                    Giriş Yap
+                  </Button>
+                  <Button
+                    type="button"
+                    variant={!isLoginMode ? "default" : "ghost"}
+                    size="sm"
+                    onClick={() => setIsLoginMode(false)}
+                    className="flex-1"
+                  >
+                    Kayıt Ol
+                  </Button>
+                </div>
+
+                <div className="space-y-3">
+                  <div>
+                    <Label htmlFor="email">E-posta</Label>
+                    <Input
+                      id="email"
+                      type="email"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      placeholder="uzman@ornek.com"
+                      disabled={isLoading}
+                    />
+                  </div>
+
+                  {!isLoginMode && (
+                    <div>
+                      <Label htmlFor="displayName">Görünen Ad</Label>
+                      <Input
+                        id="displayName"
+                        type="text"
+                        value={displayName}
+                        onChange={(e) => setDisplayName(e.target.value)}
+                        placeholder="Dr. Ad Soyad"
+                        disabled={isLoading}
+                      />
+                    </div>
+                  )}
+
+                  <div>
+                    <Label htmlFor="password">Şifre</Label>
+                    <Input
+                      id="password"
+                      type="password"
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      placeholder="••••••••"
+                      disabled={isLoading}
+                    />
+                  </div>
+                </div>
+
+                <Button 
+                  type="submit" 
+                  className="w-full" 
+                  disabled={isLoading}
+                >
+                  {isLoading ? 'İşleniyor...' : (isLoginMode ? 'Giriş Yap' : 'Kayıt Ol')}
+                </Button>
+              </form>
+            )}
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Bilgi Kartları */}
+      <div className="grid gap-4 md:grid-cols-3">
+        <Card className="text-center">
+          <CardContent className="pt-6">
+            <Palette className="w-8 h-8 text-primary mx-auto mb-2" />
+            <h3 className="font-semibold mb-1">Kişiselleştirme</h3>
+            <p className="text-sm text-muted-foreground">
+              Temalar ve erişilebilirlik seçenekleri
+            </p>
           </CardContent>
         </Card>
 
-        {/* Güvenlik */}
-        <Card className="card-enhanced">
-          <CardHeader>
-            <div className="flex items-center gap-3">
-              <div className="p-2 rounded-lg bg-red-500/10">
-                <LogOut className="w-5 h-5 text-red-600" />
-              </div>
-              <div>
-                <CardTitle className="text-lg">Güvenlik</CardTitle>
-                <CardDescription>
-                  Hesabınızdan çıkış yapın.
-                </CardDescription>
-              </div>
-            </div>
-          </CardHeader>
-          <CardContent>
-            <Button variant="destructive" onClick={handleLogout}>
-              Çıkış Yap
-            </Button>
+        <Card className="text-center">
+          <CardContent className="pt-6">
+            <Shield className="w-8 h-8 text-primary mx-auto mb-2" />
+            <h3 className="font-semibold mb-1">Uzman Erişimi</h3>
+            <p className="text-sm text-muted-foreground">
+              Gelişmiş analiz ve danışan yönetimi
+            </p>
+          </CardContent>
+        </Card>
+
+        <Card className="text-center">
+          <CardContent className="pt-6">
+            <Eye className="w-8 h-8 text-primary mx-auto mb-2" />
+            <h3 className="font-semibold mb-1">Erişilebilirlik</h3>
+            <p className="text-sm text-muted-foreground">
+              Herkes için kolay kullanım
+            </p>
           </CardContent>
         </Card>
       </div>
