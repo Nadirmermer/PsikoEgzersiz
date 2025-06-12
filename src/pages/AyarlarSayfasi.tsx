@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { useTheme } from '../contexts/ThemeContext'
 import { useAuth } from '../contexts/AuthContext'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
@@ -10,7 +10,9 @@ import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
 import { Separator } from '@/components/ui/separator'
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
 import { toast } from 'sonner'
-import { Moon, Sun, User, LogOut, Shield, Eye, Palette, Settings } from 'lucide-react'
+import { Moon, Sun, User, LogOut, Shield, Eye, Palette, Settings, Link, Unlink, Upload, Users, CheckCircle, AlertCircle } from 'lucide-react'
+import { LocalStorageManager } from '../utils/localStorage'
+import { uploadLocalDataToSupabase, saveToSupabase } from '../lib/supabaseClient'
 
 const AyarlarSayfasi: React.FC = () => {
   const { theme, toggleTheme } = useTheme()
@@ -27,6 +29,18 @@ const AyarlarSayfasi: React.FC = () => {
   const [password, setPassword] = useState('')
   const [displayName, setDisplayName] = useState('')
   const [isLoading, setIsLoading] = useState(false)
+
+  // Uzmana bağlan form states
+  const [professionalId, setProfessionalId] = useState('')
+  const [clientIdentifier, setClientIdentifier] = useState('')
+  const [isConnecting, setIsConnecting] = useState(false)
+  const [connectionData, setConnectionData] = useState<{ professionalId: string; clientIdentifier: string } | null>(null)
+
+  // Component mount olduğunda bağlantı durumunu kontrol et
+  useEffect(() => {
+    const existingConnection = LocalStorageManager.getConnectionData()
+    setConnectionData(existingConnection)
+  }, [])
 
   const handleDyslexicModeToggle = (enabled: boolean) => {
     setIsDyslexicMode(enabled)
@@ -83,6 +97,103 @@ const AyarlarSayfasi: React.FC = () => {
     } catch (error) {
       console.error('Sign out error:', error)
     }
+  }
+
+  const handleConnectToProfessional = async (e: React.FormEvent) => {
+    e.preventDefault()
+    
+    if (!professionalId.trim() || !clientIdentifier.trim()) {
+      toast.error('Lütfen uzman ID ve tanımlayıcı adınızı girin')
+      return
+    }
+
+    // UUID format validation
+    const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
+    if (!uuidRegex.test(professionalId.trim())) {
+      toast.error('Uzman ID formatı geçersiz. UUID formatında olmalıdır (örn: 12345678-1234-1234-1234-123456789abc)')
+      return
+    }
+
+    setIsConnecting(true)
+
+    try {
+      console.log('Connecting to professional:', { professionalId, clientIdentifier })
+      
+      // Geçmiş verileri al
+      const localResults = LocalStorageManager.getExerciseResults()
+      console.log('Local results found:', localResults.length)
+
+      if (localResults.length > 0) {
+        toast.info('Geçmiş verileriniz uzmanınıza yükleniyor...')
+        
+        // Verileri Supabase'e yükle
+        const uploadResult = await uploadLocalDataToSupabase(
+          professionalId.trim(),
+          clientIdentifier.trim(),
+          localResults
+        )
+
+        console.log('Upload result:', uploadResult)
+
+        if (uploadResult.success) {
+          toast.success(`${uploadResult.uploaded} geçmiş egzersiz verisi başarıyla yüklendi!`)
+          
+          // Yüklenen verileri işaretle
+          const uploadedIds = localResults.map((_, index) => index.toString())
+          LocalStorageManager.markResultsAsUploaded(uploadedIds)
+        } else if (uploadResult.uploaded > 0) {
+          toast.success(`${uploadResult.uploaded} veri yüklendi, ${uploadResult.failed} veri yüklenemedi`)
+        } else {
+          toast.error('Geçmiş veriler yüklenemedi. Lütfen Uzman ID\'nin doğru olduğundan emin olun.')
+          setIsConnecting(false)
+          return
+        }
+      }
+
+      // Test veri gönderimi yaparak uzman ID'nin geçerli olduğunu kontrol edelim
+      const testData = {
+        professional_id: professionalId.trim(),
+        client_identifier: clientIdentifier.trim(),
+        exercise_data: {
+          test: true,
+          exercise_name: 'connection_test',
+          timestamp: new Date().toISOString()
+        },
+        is_client_mode_session: false
+      }
+
+      const testSuccess = await saveToSupabase(testData)
+      if (!testSuccess) {
+        toast.error('Uzman ID bulunamadı veya geçersiz. Lütfen uzmanınızdan doğru ID\'yi alın.')
+        setIsConnecting(false)
+        return
+      }
+
+      // Bağlantı bilgilerini kaydet
+      LocalStorageManager.setConnectionData(professionalId.trim(), clientIdentifier.trim())
+      setConnectionData({
+        professionalId: professionalId.trim(),
+        clientIdentifier: clientIdentifier.trim()
+      })
+
+      toast.success('Uzmanınıza başarıyla bağlandınız!')
+      
+      // Form temizle
+      setProfessionalId('')
+      setClientIdentifier('')
+
+    } catch (error) {
+      console.error('Connection error:', error)
+      toast.error('Bağlantı kurulurken bir hata oluştu')
+    } finally {
+      setIsConnecting(false)
+    }
+  }
+
+  const handleDisconnectFromProfessional = () => {
+    LocalStorageManager.clearConnectionData()
+    setConnectionData(null)
+    toast.success('Uzman bağlantısı kesildi')
   }
 
   React.useEffect(() => {
@@ -224,6 +335,9 @@ const AyarlarSayfasi: React.FC = () => {
                   <p className="text-sm text-green-700 dark:text-green-300">
                     <strong>E-posta:</strong> {professional.email}
                   </p>
+                  <p className="text-xs text-green-600 dark:text-green-400 mt-2 font-mono bg-green-100 dark:bg-green-900/40 p-2 rounded">
+                    <strong>Uzman ID:</strong> {professional.id}
+                  </p>
                 </div>
                 
                 <Button 
@@ -313,6 +427,130 @@ const AyarlarSayfasi: React.FC = () => {
         </Card>
       </div>
 
+      {/* Uzmana Bağlan Kartı - Sadece anonim kullanıcılar için */}
+      {!user && isSupabaseConfigured && (
+        <Card className="max-w-2xl mx-auto">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Users className="w-5 h-5" />
+              Ruh Sağlığı Uzmanıyla Verilerinizi Paylaşın
+            </CardTitle>
+            <CardDescription>
+              Çalıştığınız uzmanla egzersiz sonuçlarınızı otomatik olarak paylaşın
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            {connectionData ? (
+              // Bağlantı kurulmuş durumda
+              <div className="space-y-4">
+                <div className="p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
+                  <div className="flex items-center gap-2 mb-3">
+                    <CheckCircle className="w-5 h-5 text-blue-600" />
+                    <span className="text-sm font-medium text-blue-800 dark:text-blue-200">
+                      Uzmanınıza Bağlısınız
+                    </span>
+                  </div>
+                  <div className="space-y-2 text-sm text-blue-700 dark:text-blue-300">
+                    <p>
+                      <strong>Uzman ID:</strong> <code className="bg-blue-100 dark:bg-blue-900/40 px-1 rounded font-mono text-xs">
+                        {connectionData.professionalId.substring(0, 8)}...
+                      </code>
+                    </p>
+                    <p>
+                      <strong>Tanımlayıcı Adınız:</strong> {connectionData.clientIdentifier}
+                    </p>
+                  </div>
+                  <div className="mt-3 p-3 bg-blue-100 dark:bg-blue-900/40 rounded text-xs text-blue-600 dark:text-blue-400">
+                    <div className="flex items-center gap-1 mb-1">
+                      <AlertCircle className="w-3 h-3" />
+                      <span className="font-medium">Otomatik Paylaşım Aktif</span>
+                    </div>
+                    <p>Tamamladığınız tüm egzersizler otomatik olarak uzmanınızla paylaşılacaktır.</p>
+                  </div>
+                </div>
+                
+                <Button 
+                  onClick={handleDisconnectFromProfessional}
+                  variant="outline"
+                  className="w-full"
+                >
+                  <Unlink className="w-4 h-4 mr-2" />
+                  Bağlantıyı Kes
+                </Button>
+              </div>
+            ) : (
+              // Bağlantı kurma formu
+              <form onSubmit={handleConnectToProfessional} className="space-y-4">
+                <div className="p-4 bg-yellow-50 dark:bg-yellow-900/20 rounded-lg border border-yellow-200 dark:border-yellow-800">
+                  <div className="flex items-center gap-2 mb-2">
+                    <AlertCircle className="w-4 h-4 text-yellow-600" />
+                    <span className="text-sm font-medium text-yellow-800 dark:text-yellow-200">
+                      Nasıl Bağlanabilirsiniz?
+                    </span>
+                  </div>
+                  <div className="text-xs text-yellow-700 dark:text-yellow-300 space-y-1">
+                    <p><strong>1. Uzman ID Alma:</strong> Ruh sağlığı uzmanınız bu uygulamaya kayıt olmalı</p>
+                    <p><strong>2. ID Formatı:</strong> UUID formatında (12345678-1234-1234-1234-123456789abc)</p>
+                    <p><strong>3. ID Alma:</strong> Uzmanınızın Ayarlar &gt; Ruh Sağlığı Uzmanı bölümünden ID'yi alın</p>
+                    <p><strong>4. Tanımlayıcı:</strong> Uzmanınızın sizi tanıyacağı isim/kod girin</p>
+                  </div>
+                </div>
+
+                <div className="space-y-3">
+                  <div>
+                    <Label htmlFor="professionalId">Uzman ID</Label>
+                    <Input
+                      id="professionalId"
+                      type="text"
+                      value={professionalId}
+                      onChange={(e) => setProfessionalId(e.target.value)}
+                      placeholder="Uzmanınızdan aldığınız ID"
+                      disabled={isConnecting}
+                    />
+                    <p className="text-xs text-muted-foreground mt-1">
+                      Bu ID'yi uzmanınızdan temin edin
+                    </p>
+                  </div>
+
+                  <div>
+                    <Label htmlFor="clientIdentifier">Tanımlayıcı Adınız</Label>
+                    <Input
+                      id="clientIdentifier"
+                      type="text"
+                      value={clientIdentifier}
+                      onChange={(e) => setClientIdentifier(e.target.value)}
+                      placeholder="Örn: Ahmet K., Danışan-01, vs."
+                      disabled={isConnecting}
+                    />
+                    <p className="text-xs text-muted-foreground mt-1">
+                      Uzmanınızın sizi tanıyacağı isim/kod
+                    </p>
+                  </div>
+                </div>
+
+                <Button 
+                  type="submit" 
+                  className="w-full" 
+                  disabled={isConnecting || !professionalId.trim() || !clientIdentifier.trim()}
+                >
+                  {isConnecting ? (
+                    <>
+                      <Upload className="w-4 h-4 mr-2 animate-spin" />
+                      Bağlanıyor ve Veriler Yükleniyor...
+                    </>
+                  ) : (
+                    <>
+                      <Link className="w-4 h-4 mr-2" />
+                      Bağlan ve Verileri Yükle
+                    </>
+                  )}
+                </Button>
+              </form>
+            )}
+          </CardContent>
+        </Card>
+      )}
+
       {/* Bilgi Kartları */}
       <div className="grid gap-4 md:grid-cols-3">
         <Card className="text-center">
@@ -337,10 +575,10 @@ const AyarlarSayfasi: React.FC = () => {
 
         <Card className="text-center">
           <CardContent className="pt-6">
-            <Eye className="w-8 h-8 text-primary mx-auto mb-2" />
-            <h3 className="font-semibold mb-1">Erişilebilirlik</h3>
+            <Users className="w-8 h-8 text-primary mx-auto mb-2" />
+            <h3 className="font-semibold mb-1">Veri Paylaşımı</h3>
             <p className="text-sm text-muted-foreground">
-              Herkes için kolay kullanım
+              Uzmanınızla güvenli veri paylaşımı
             </p>
           </CardContent>
         </Card>

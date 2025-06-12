@@ -524,7 +524,12 @@ const IstatistiklerSayfasi: React.FC = () => {
                           {typeof result.exerciseName === 'string' && result.exerciseName.includes('Mantık') && <Gauge className="w-5 h-5 text-red-600" />}
                         </div>
                         <div>
-                          <div className="font-semibold text-base">{result.exerciseName}</div>
+                          <div className="font-semibold text-base">
+                            {typeof result.exerciseName === 'string' 
+                              ? result.exerciseName 
+                              : (result.exerciseName as any)?.exerciseName || 'Bilinmeyen Egzersiz'
+                            }
+                          </div>
                           <div className="text-sm text-muted-foreground flex items-center gap-3">
                             <span>{new Date(result.date).toLocaleDateString('tr-TR')}</span>
                             <span>•</span>
@@ -762,7 +767,12 @@ const IstatistiklerSayfasi: React.FC = () => {
                           <TableCell className="text-sm font-medium">
                             {new Date(result.date).toLocaleDateString('tr-TR')}
                           </TableCell>
-                          <TableCell className="font-semibold">{result.exerciseName}</TableCell>
+                          <TableCell className="font-semibold">
+                          {typeof result.exerciseName === 'string' 
+                            ? result.exerciseName 
+                            : (result.exerciseName as any)?.exerciseName || 'Bilinmeyen Egzersiz'
+                          }
+                        </TableCell>
                           <TableCell>
                             <Badge variant="outline" className="text-xs">
                               {result.details?.level_identifier || 'Bilinmiyor'}

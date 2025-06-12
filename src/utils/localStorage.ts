@@ -174,17 +174,20 @@ export const LocalStorageManager = {
 
   // Save partial progress when exiting early
   savePartialProgress(exerciseName: string, currentProgress: any, duration: number): void {
+    // exerciseName'in string olduğundan emin olalım
+    const normalizedExerciseName = typeof exerciseName === 'string' ? exerciseName : 'Bilinmeyen Egzersiz'
+    
     const partialResult: ExerciseResult = {
-      exerciseName,
+      exerciseName: normalizedExerciseName,
       score: 0,
-      duration,
+      duration: duration || 0,
       date: new Date().toISOString(),
       completed: false,
       exitedEarly: true,
       currentProgress,
       details: {
-        exercise_name: exerciseName,
-        session_duration_seconds: duration,
+        exercise_name: normalizedExerciseName,
+        session_duration_seconds: duration || 0,
         completed: false,
         exited_early: true,
         partial_data: currentProgress,

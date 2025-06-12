@@ -24,13 +24,6 @@ export const saveToSupabase = async (data: ClientStatisticData): Promise<boolean
   })
 
   try {
-    // Get current user info for debugging
-    const { data: { user }, error: userError } = await supabase.auth.getUser()
-    console.log('saveToSupabase - Current user:', { 
-      user: user ? { id: user.id, email: user.email } : null, 
-      userError 
-    })
-
     const insertData = {
       professional_id: data.professional_id,
       client_identifier: data.client_identifier,
@@ -44,7 +37,6 @@ export const saveToSupabase = async (data: ClientStatisticData): Promise<boolean
     const { data: result, error } = await supabase
       .from('client_statistics')
       .insert([insertData])
-      .select()
 
     if (error) {
       console.error('saveToSupabase - Supabase save error:', {
@@ -107,6 +99,27 @@ export const uploadLocalDataToSupabase = async (
   return { success: failed === 0, uploaded, failed }
 }
 
+// Helper function to check if professional exists
+const checkProfessionalExists = async (professionalId: string): Promise<boolean> => {
+  try {
+    const { data, error } = await supabase
+      .from('professionals')
+      .select('id')
+      .eq('id', professionalId)
+      .single()
+      
+    if (error) {
+      console.log('checkProfessionalExists - Professional not found:', professionalId)
+      return false
+    }
+    
+    return !!data
+  } catch (error) {
+    console.log('checkProfessionalExists - Error checking professional:', error)
+    return false
+  }
+}
+
 export const syncPendingData = async (): Promise<void> => {
   if (!supabase) {
     console.log('syncPendingData - Supabase not configured')
@@ -124,12 +137,28 @@ export const syncPendingData = async (): Promise<void> => {
   try {
     const pendingData = JSON.parse(pendingDataStr)
     const successfulSyncs: string[] = []
+    const invalidProfessionalIds: string[] = []
 
     console.log('syncPendingData - Pending data items:', Object.keys(pendingData).length)
 
     for (const [key, data] of Object.entries(pendingData)) {
       console.log('syncPendingData - Syncing pending item:', { key, data })
-      const success = await saveToSupabase(data as ClientStatisticData)
+      
+      const clientData = data as ClientStatisticData
+      
+      // Check if professional exists before attempting save
+      const professionalExists = await checkProfessionalExists(clientData.professional_id)
+      
+      if (!professionalExists) {
+        console.log('syncPendingData - Professional not found, removing from pending:', {
+          key,
+          professionalId: clientData.professional_id
+        })
+        invalidProfessionalIds.push(key)
+        continue
+      }
+      
+      const success = await saveToSupabase(clientData)
       if (success) {
         successfulSyncs.push(key)
         console.log('syncPendingData - Successfully synced:', key)
@@ -138,17 +167,23 @@ export const syncPendingData = async (): Promise<void> => {
       }
     }
 
-    // Remove successfully synced data
-    if (successfulSyncs.length > 0) {
+    // Remove successfully synced data and invalid professional IDs
+    const keysToRemove = [...successfulSyncs, ...invalidProfessionalIds]
+    
+    if (keysToRemove.length > 0) {
       const remainingData = { ...pendingData }
-      successfulSyncs.forEach(key => delete remainingData[key])
+      keysToRemove.forEach(key => delete remainingData[key])
       
       if (Object.keys(remainingData).length === 0) {
         localStorage.removeItem('pendingSyncData')
-        console.log('syncPendingData - All pending data synced, cleared storage')
+        console.log('syncPendingData - All pending data processed, cleared storage')
       } else {
         localStorage.setItem('pendingSyncData', JSON.stringify(remainingData))
         console.log('syncPendingData - Some items remain pending:', Object.keys(remainingData).length)
+      }
+      
+      if (invalidProfessionalIds.length > 0) {
+        console.log('syncPendingData - Removed invalid professional data:', invalidProfessionalIds.length)
       }
     }
   } catch (error) {

@@ -1,4 +1,3 @@
-
 -- Complete Schema Migration with All Required Permissions
 -- This replaces all previous migration files and provides complete setup
 
@@ -30,6 +29,7 @@ CREATE INDEX IF NOT EXISTS idx_client_statistics_session_date ON client_statisti
 CREATE INDEX IF NOT EXISTS idx_client_statistics_client_identifier ON client_statistics(client_identifier);
 
 -- CRITICAL: Grant schema usage permissions to both authenticated and anonymous users
+-- This is essential for any database operations
 GRANT USAGE ON SCHEMA public TO authenticated;
 GRANT USAGE ON SCHEMA public TO anon;
 
@@ -49,49 +49,74 @@ GRANT DELETE ON TABLE public.client_statistics TO authenticated;
 GRANT INSERT ON TABLE public.client_statistics TO anon;
 
 -- CRITICAL: Anonymous users need SELECT access to professionals.id for RLS policy validation
-GRANT SELECT (id) ON TABLE public.professionals TO anon;
+GRANT SELECT ON TABLE public.professionals TO anon;
+
+-- CRITICAL: Grant sequence permissions for UUID generation
+GRANT USAGE, SELECT ON ALL SEQUENCES IN SCHEMA public TO anon;
+GRANT USAGE, SELECT ON ALL SEQUENCES IN SCHEMA public TO authenticated;
 
 -- Enable Row Level Security (RLS)
 ALTER TABLE professionals ENABLE ROW LEVEL SECURITY;
 ALTER TABLE client_statistics ENABLE ROW LEVEL SECURITY;
 
+-- Drop existing policies to avoid conflicts
+DROP POLICY IF EXISTS "Professionals can view own data" ON professionals;
+DROP POLICY IF EXISTS "Professionals can update own data" ON professionals;
+DROP POLICY IF EXISTS "Professionals can insert own data" ON professionals;
+DROP POLICY IF EXISTS "Anonymous can view professional IDs for validation" ON professionals;
+DROP POLICY IF EXISTS "Professionals can view own client statistics" ON client_statistics;
+DROP POLICY IF EXISTS "Professionals can insert client statistics" ON client_statistics;
+DROP POLICY IF EXISTS "Professionals can update own client statistics" ON client_statistics;
+DROP POLICY IF EXISTS "Professionals can delete own client statistics" ON client_statistics;
+DROP POLICY IF EXISTS "Anonymous can insert valid statistics" ON client_statistics;
+
 -- RLS Policies for professionals table
 -- Professionals can only read/update their own data
 CREATE POLICY "Professionals can view own data" ON professionals
-    FOR SELECT USING (auth.uid() = id);
+    FOR SELECT TO authenticated
+    USING (auth.uid() = id);
 
 CREATE POLICY "Professionals can update own data" ON professionals
-    FOR UPDATE USING (auth.uid() = id);
+    FOR UPDATE TO authenticated
+    USING (auth.uid() = id);
 
 CREATE POLICY "Professionals can insert own data" ON professionals
-    FOR INSERT WITH CHECK (auth.uid() = id);
+    FOR INSERT TO authenticated
+    WITH CHECK (auth.uid() = id);
+
+-- Allow anonymous users to view professionals table for validation (full table access for ID validation)
+CREATE POLICY "Anonymous can view professional IDs for validation" ON professionals
+    FOR SELECT TO anon
+    USING (true);
 
 -- RLS Policies for client_statistics table
 -- Professionals can only access statistics linked to their account
 CREATE POLICY "Professionals can view own client statistics" ON client_statistics
-    FOR SELECT USING (professional_id = auth.uid());
+    FOR SELECT TO authenticated
+    USING (professional_id = auth.uid());
 
 CREATE POLICY "Professionals can insert client statistics" ON client_statistics
-    FOR INSERT WITH CHECK (professional_id = auth.uid());
+    FOR INSERT TO authenticated
+    WITH CHECK (professional_id = auth.uid());
 
 CREATE POLICY "Professionals can update own client statistics" ON client_statistics
-    FOR UPDATE USING (professional_id = auth.uid());
+    FOR UPDATE TO authenticated
+    USING (professional_id = auth.uid());
 
 CREATE POLICY "Professionals can delete own client statistics" ON client_statistics
-    FOR DELETE USING (professional_id = auth.uid());
+    FOR DELETE TO authenticated
+    USING (professional_id = auth.uid());
 
--- CRITICAL: RLS Policy for anonymous users to insert valid non-client-mode statistics
--- This allows anonymous users to insert data only when:
--- 1. is_client_mode_session = false (not a client mode session)
--- 2. professional_id is not null and exists in professionals table
-CREATE POLICY "Anonymous can insert valid non-client-mode statistics"
-ON public.client_statistics
-FOR INSERT TO anon
-WITH CHECK (
-    is_client_mode_session = false AND
-    professional_id IS NOT NULL AND
-    EXISTS (SELECT 1 FROM public.professionals WHERE id = professional_id)
-);
+-- CRITICAL: Enhanced RLS Policy for anonymous users to insert valid statistics
+-- This allows anonymous users to insert data for any valid professional_id
+CREATE POLICY "Anonymous can insert valid statistics" ON client_statistics
+    FOR INSERT TO anon
+    WITH CHECK (
+        professional_id IS NOT NULL AND
+        client_identifier IS NOT NULL AND
+        exercise_data IS NOT NULL AND
+        EXISTS (SELECT 1 FROM professionals WHERE id = professional_id)
+    );
 
 -- Create a function to handle professional profile creation
 CREATE OR REPLACE FUNCTION handle_new_professional() 
