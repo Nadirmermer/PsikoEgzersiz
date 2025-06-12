@@ -19,7 +19,7 @@ const ClientModeHandler: React.FC<ClientModeHandlerProps> = ({
   const [password, setPassword] = useState('')
   const [showExitDialog, setShowExitDialog] = useState(false)
   const [isExiting, setIsExiting] = useState(false)
-  const { professional } = useAuth()
+  const { professional, refreshProfessional } = useAuth()
 
   const handlePasswordSubmit = async () => {
     if (password !== '1923') {
@@ -52,7 +52,10 @@ const ClientModeHandler: React.FC<ClientModeHandlerProps> = ({
         try {
           console.log('ClientModeHandler - Refreshing session and navigating to dashboard')
           
-          // Force page reload to ensure clean state
+          // Refresh professional data first
+          await refreshProfessional()
+          
+          // Navigate to dashboard with URL parameter
           window.location.href = '/?page=uzman-dashboard'
         } catch (error) {
           console.error('ClientModeHandler - Error during session refresh:', error)
