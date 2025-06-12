@@ -225,6 +225,7 @@ const AyarlarSayfasi: React.FC = () => {
                             value={professionalId}
                             onChange={(e) => setProfessionalId(e.target.value)}
                             placeholder="Uzman ID'sini girin"
+                            autoComplete="off"
                           />
                         </div>
                         <div>
@@ -234,6 +235,7 @@ const AyarlarSayfasi: React.FC = () => {
                             value={clientIdentifier}
                             onChange={(e) => setClientIdentifier(e.target.value)}
                             placeholder="Adınızı veya takma adınızı girin"
+                            autoComplete="name"
                           />
                         </div>
                         <Button 
@@ -312,6 +314,7 @@ const AyarlarSayfasi: React.FC = () => {
                         value={email}
                         onChange={(e) => setEmail(e.target.value)}
                         placeholder="uzman@email.com"
+                        autoComplete="email"
                         required
                       />
                     </div>
@@ -323,6 +326,7 @@ const AyarlarSayfasi: React.FC = () => {
                         value={password}
                         onChange={(e) => setPassword(e.target.value)}
                         placeholder="••••••••"
+                        autoComplete="current-password"
                         required
                       />
                     </div>
@@ -344,6 +348,7 @@ const AyarlarSayfasi: React.FC = () => {
                         value={displayName}
                         onChange={(e) => setDisplayName(e.target.value)}
                         placeholder="Dr. Ahmet Yılmaz"
+                        autoComplete="name"
                         required
                       />
                     </div>
@@ -355,6 +360,7 @@ const AyarlarSayfasi: React.FC = () => {
                         value={email}
                         onChange={(e) => setEmail(e.target.value)}
                         placeholder="uzman@email.com"
+                        autoComplete="email"
                         required
                       />
                     </div>
@@ -366,6 +372,7 @@ const AyarlarSayfasi: React.FC = () => {
                         value={password}
                         onChange={(e) => setPassword(e.target.value)}
                         placeholder="••••••••"
+                        autoComplete="new-password"
                         required
                         minLength={6}
                       />
