@@ -189,7 +189,7 @@ const IstatistiklerSayfasi: React.FC = () => {
               <Brain className="w-12 h-12 text-muted-foreground" />
             </div>
             <h3 className="text-2xl font-semibold mb-3">
-              Henüz egz ersiz yapmadınız
+              Henüz egzersiz yapmadınız
             </h3>
             <p className="text-muted-foreground mb-6 max-w-md mx-auto">
               İlk egzersiznizi tamamladığınızda performans istatistikleriniz burada görünecek
@@ -268,7 +268,7 @@ const IstatistiklerSayfasi: React.FC = () => {
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
-                  {exerciseRes ults.slice(-5).reverse().map((result, index) => (
+                  {exerciseResults.slice(-5).reverse().map((result, index) => (
                     <div key={index} className="flex justify-between items-center p-4 bg-gradient-to-r from-muted/20 to-muted/10 rounded-xl border border-border/30 hover:shadow-sm transition-all duration-300">
                       <div className="flex items-center gap-4">
                         <div className="p-2 bg-primary/10 rounded-lg">
