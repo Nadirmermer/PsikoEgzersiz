@@ -1,5 +1,5 @@
 # Bağımlılıklar
-node_modules
+node_modules/
 /.pnp
 .pnp.js
 .yarn/*
@@ -10,7 +10,7 @@ node_modules
 !.yarn/versions
 
 # Derleme çıktıları
-/dist
+dist/
 /dist-ssr
 /build
 *.local

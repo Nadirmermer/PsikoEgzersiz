@@ -186,9 +186,9 @@ Sorularınız, önerileriniz veya hata bildirimleri için:
 
 ## Geliştiriciler
 
-- **Ana Geliştirici**: [Your Name]
-- **UI/UX Tasarım**: [Designer Name]
-- **Bilişsel Uzman Danışman**: [Expert Name]
+- **Ana Geliştirici**: Nadir MERMER
+- **UI/UX Tasarım**: Nadir MERMER
+- **Bilişsel Uzman Danışman**: Nadir MERMER
 
 ---
 
