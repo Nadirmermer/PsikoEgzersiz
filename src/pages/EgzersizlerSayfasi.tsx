@@ -5,6 +5,7 @@ import { Badge } from '@/components/ui/badge'
 import { Progress } from '@/components/ui/progress'
 import { LocalStorageManager, MEMORY_GAME_LEVELS } from '../utils/localStorage'
 import { Brain, Target, Play, Clock, Trophy, CheckCircle, Star, ArrowRightLeft, Eye, Layers, Hash, Palette, BookOpen, Calculator, Sparkles } from 'lucide-react'
+import { useAudio } from '../hooks/useAudio'
 
 interface EgzersizlerSayfasiProps {
   onMemoryGameStart: () => void
@@ -27,6 +28,7 @@ const EgzersizlerSayfasi: React.FC<EgzersizlerSayfasiProps> = ({
   onWordCirclePuzzleStart,
   onLogicSequencesStart
 }) => {
+  const { playSound } = useAudio()
   const currentLevel = LocalStorageManager.getCurrentMemoryGameLevel()
   const currentLevelData = MEMORY_GAME_LEVELS[currentLevel - 1] || MEMORY_GAME_LEVELS[0]
   const progressPercentage = ((currentLevel - 1) / MEMORY_GAME_LEVELS.length) * 100
@@ -44,7 +46,10 @@ const EgzersizlerSayfasi: React.FC<EgzersizlerSayfasiProps> = ({
       borderColor: 'border-blue-200/60 dark:border-blue-800/60',
       accentColor: 'bg-blue-500',
       available: true,
-      onStart: onMemoryGameStart,
+      onStart: () => {
+        playSound('button-click')
+        onMemoryGameStart()
+      },
       currentProgress: `Seviye ${currentLevel}`,
       stats: {
         completed: currentLevel - 1,
@@ -65,7 +70,10 @@ const EgzersizlerSayfasi: React.FC<EgzersizlerSayfasiProps> = ({
       borderColor: 'border-emerald-200/60 dark:border-emerald-800/60',
       accentColor: 'bg-emerald-500',
       available: true,
-      onStart: onImageWordMatchingStart,
+      onStart: () => {
+        playSound('button-click')
+        onImageWordMatchingStart()
+      },
       currentProgress: '15 Çeşitli Soru',
       highlights: ['Görsel Tanıma', 'Hızlı Düşünme']
     },
@@ -81,7 +89,10 @@ const EgzersizlerSayfasi: React.FC<EgzersizlerSayfasiProps> = ({
       borderColor: 'border-cyan-200/60 dark:border-cyan-800/60',
       accentColor: 'bg-cyan-500',
       available: true,
-      onStart: onWordImageMatchingStart,
+      onStart: () => {
+        playSound('button-click')
+        onWordImageMatchingStart()
+      },
       currentProgress: '15 Çeşitli Soru',
       highlights: ['Kelime Anlama', 'Görsel İlişki']
     },
@@ -97,7 +108,10 @@ const EgzersizlerSayfasi: React.FC<EgzersizlerSayfasiProps> = ({
       borderColor: 'border-purple-200/60 dark:border-purple-800/60',
       accentColor: 'bg-purple-500',
       available: true,
-      onStart: onTowerOfLondonStart,
+      onStart: () => {
+        playSound('button-click')
+        onTowerOfLondonStart()
+      },
       currentProgress: '15 Artan Seviye',
       highlights: ['Strateji', 'Problem Çözme']
     },
@@ -113,7 +127,10 @@ const EgzersizlerSayfasi: React.FC<EgzersizlerSayfasiProps> = ({
       borderColor: 'border-orange-200/60 dark:border-orange-800/60',
       accentColor: 'bg-orange-500',
       available: true,
-      onStart: onNumberSequenceStart,
+      onStart: () => {
+        playSound('button-click')
+        onNumberSequenceStart()
+      },
       currentProgress: 'Sonsuz Seviye',
       highlights: ['Sıralı Hafıza', 'Dikkat']
     },
@@ -129,7 +146,10 @@ const EgzersizlerSayfasi: React.FC<EgzersizlerSayfasiProps> = ({
       borderColor: 'border-pink-200/60 dark:border-pink-800/60',
       accentColor: 'bg-pink-500',
       available: true,
-      onStart: onColorSequenceStart,
+      onStart: () => {
+        playSound('button-click')
+        onColorSequenceStart()
+      },
       currentProgress: 'Sonsuz Seviye',
       highlights: ['Görsel Hafıza', 'Simon Oyunu']
     },
@@ -145,7 +165,10 @@ const EgzersizlerSayfasi: React.FC<EgzersizlerSayfasiProps> = ({
       borderColor: 'border-indigo-200/60 dark:border-indigo-800/60',
       accentColor: 'bg-indigo-500',
       available: true,
-      onStart: onWordCirclePuzzleStart,
+      onStart: () => {
+        playSound('button-click')
+        onWordCirclePuzzleStart()
+      },
       currentProgress: '7 Seviye',
       highlights: ['Kelime Oyunu', 'Bonus Sistem']
     },
@@ -161,7 +184,10 @@ const EgzersizlerSayfasi: React.FC<EgzersizlerSayfasiProps> = ({
       borderColor: 'border-amber-200/60 dark:border-amber-800/60',
       accentColor: 'bg-amber-500',
       available: true,
-      onStart: onLogicSequencesStart,
+      onStart: () => {
+        playSound('button-click')
+        onLogicSequencesStart()
+      },
       currentProgress: 'Sonsuz Soru',
       highlights: ['Matematik', 'Örüntü Tanıma']
     }
@@ -228,6 +254,7 @@ const EgzersizlerSayfasi: React.FC<EgzersizlerSayfasiProps> = ({
               <Card 
                 key={category.id} 
                 className="group relative overflow-hidden bg-white/80 dark:bg-gray-900/80 backdrop-blur-sm border border-border/50 rounded-2xl shadow-sm hover:shadow-lg transition-all duration-300 hover:-translate-y-1 active:scale-[0.98]"
+                onMouseEnter={() => playSound('button-hover')}
                 style={{ 
                   animationDelay: `${index * 100}ms`,
                   backgroundImage: `linear-gradient(135deg, ${category.bgGradient.includes('blue') ? 'rgba(59, 130, 246, 0.03)' : 
@@ -321,6 +348,7 @@ const EgzersizlerSayfasi: React.FC<EgzersizlerSayfasiProps> = ({
                     className="w-full h-10 text-sm font-semibold bg-primary hover:bg-primary/90 text-primary-foreground shadow-sm hover:shadow-md transition-all duration-300 rounded-xl"
                     onClick={(e) => {
                       e.stopPropagation();
+                      playSound('button-click');
                       category.onStart();
                     }}
                   >

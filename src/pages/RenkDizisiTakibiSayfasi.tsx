@@ -7,6 +7,7 @@ import { ArrowLeft, Play, RotateCcw, Palette, Clock, Target, Eye, Trophy, Star, 
 import { LocalStorageManager } from '../utils/localStorage'
 import { toast } from '@/components/ui/sonner'
 import ExerciseHeader from '../components/ExerciseHeader'
+import { useAudio } from '../hooks/useAudio'
 
 interface RenkDizisiTakibiProps {
   onBack: () => void
@@ -34,6 +35,7 @@ const colors = [
 ]
 
 const RenkDizisiTakibiSayfasi: React.FC<RenkDizisiTakibiProps> = ({ onBack }) => {
+  const { playSound } = useAudio()
   const [gameState, setGameState] = useState<GameState>({
     phase: 'ready',
     currentLevel: 1,
@@ -77,6 +79,7 @@ const RenkDizisiTakibiSayfasi: React.FC<RenkDizisiTakibiProps> = ({ onBack }) =>
   }, [])
 
   const startGame = useCallback(() => {
+    playSound('exercise-start')
     const newSequence = generateSequence(1 + gameState.currentLevel)
     setGameState(prev => ({
       ...prev,
@@ -87,9 +90,10 @@ const RenkDizisiTakibiSayfasi: React.FC<RenkDizisiTakibiProps> = ({ onBack }) =>
       startTime: prev.startTime || Date.now()
     }))
     setIsGameActive(true)
-  }, [gameState.currentLevel, generateSequence])
+  }, [gameState.currentLevel, generateSequence, playSound])
 
   const resetGame = useCallback(() => {
+    playSound('button-click')
     setGameState({
       phase: 'ready',
       currentLevel: 1,
@@ -105,7 +109,7 @@ const RenkDizisiTakibiSayfasi: React.FC<RenkDizisiTakibiProps> = ({ onBack }) =>
     })
     setIsGameActive(false)
     setHighlightedColor(null)
-  }, [])
+  }, [playSound])
 
   const handlePauseGame = useCallback(() => {
     setGameState(prev => ({
@@ -170,6 +174,7 @@ const RenkDizisiTakibiSayfasi: React.FC<RenkDizisiTakibiProps> = ({ onBack }) =>
 
     if (!isCorrect) {
       // Hatalı giriş
+      playSound('wrong-answer')
       setGameState(prev => ({
         ...prev,
         phase: 'feedback',
@@ -195,6 +200,7 @@ const RenkDizisiTakibiSayfasi: React.FC<RenkDizisiTakibiProps> = ({ onBack }) =>
 
     if (newUserInput.length === gameState.sequence.length) {
       // Seviye tamamlandı
+      playSound('correct-answer')
       const newScore = gameState.score + (gameState.currentLevel * 10)
       setGameState(prev => ({
         ...prev,
@@ -224,11 +230,29 @@ const RenkDizisiTakibiSayfasi: React.FC<RenkDizisiTakibiProps> = ({ onBack }) =>
         userInput: newUserInput
       }))
     }
-  }, [gameState, generateSequence])
+  }, [gameState, generateSequence, playSound])
 
   const handleGameEnd = useCallback(() => {
     const duration = Math.floor(gameState.currentTime / 1000)
     const maxLevel = gameState.currentLevel - 1
+
+    // Mükemmel skor kontrolü (hiç yanlış cevap yoksa)
+    if (gameState.incorrectCount === 0 && gameState.correctCount > 0) {
+      playSound('perfect-score')
+      toast.success(`🏆 MÜKEMMEL! Hiç hata yapmadınız!`)
+    } else {
+      playSound('exercise-complete')
+    }
+
+    // İlk defa tamamlama kontrolü
+    const previousResults = LocalStorageManager.getExerciseResults()
+    const colorResults = previousResults.filter(r => r.exerciseName === 'Renk Dizisi Takibi')
+    if (colorResults.length === 0) {
+      setTimeout(() => {
+        playSound('achievement')
+        toast.success(`🎖️ BAŞARI: İlk Renk Dizisi Takibi tamamlandı!`)
+      }, 1000)
+    }
 
     const exerciseData = {
       exercise_name: 'Renk Dizisi Takibi',
@@ -252,9 +276,10 @@ const RenkDizisiTakibiSayfasi: React.FC<RenkDizisiTakibiProps> = ({ onBack }) =>
 
     toast.success(`Oyun bitti! En yüksek seviye: ${maxLevel}`)
     setIsGameActive(false)
-  }, [gameState])
+  }, [gameState, playSound])
 
   const handleBackWithProgress = useCallback(() => {
+    playSound('button-click')
     if (gameState.phase === 'showing' || gameState.phase === 'input') {
       const duration = Math.floor(gameState.currentTime / 1000)
       const currentProgress = {
@@ -270,7 +295,7 @@ const RenkDizisiTakibiSayfasi: React.FC<RenkDizisiTakibiProps> = ({ onBack }) =>
       LocalStorageManager.savePartialProgress('Renk Dizisi Takibi', currentProgress, duration)
     }
     onBack()
-  }, [gameState, onBack])
+  }, [gameState, onBack, playSound])
 
   if (gameState.phase === 'ready') {
     return (
@@ -500,7 +525,10 @@ const RenkDizisiTakibiSayfasi: React.FC<RenkDizisiTakibiProps> = ({ onBack }) =>
                         key={color.id}
                         variant="outline"
                         size="lg"
-                        onClick={() => handleColorInput(color.id)}
+                                                  onClick={() => {
+                            playSound('button-click')
+                            handleColorInput(color.id)
+                          }}
                         className={`
                           w-24 h-24 rounded-xl border-4 border-white/20 dark:border-gray-700/20 
                           ${color.bg} ${color.hover} hover:scale-105 transition-all duration-200 shadow-lg hover:shadow-xl

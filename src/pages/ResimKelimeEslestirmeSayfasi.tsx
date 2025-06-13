@@ -8,12 +8,14 @@ import { toast } from 'sonner'
 import { LocalStorageManager } from '../utils/localStorage'
 import { generateMatchingQuestion, MatchingQuestion, MatchingGameResult } from '../utils/matchingExerciseUtils'
 import ExerciseHeader from '../components/ExerciseHeader'
+import { useAudio } from '../hooks/useAudio'
 
 interface ResimKelimeEslestirmeSayfasiProps {
   onBack: () => void
 }
 
 const ResimKelimeEslestirmeSayfasi: React.FC<ResimKelimeEslestirmeSayfasiProps> = ({ onBack }) => {
+  const { playSound } = useAudio()
   const [gameState, setGameState] = useState<'ready' | 'playing' | 'finished' | 'paused'>('ready')
   const [currentQuestion, setCurrentQuestion] = useState<MatchingQuestion | null>(null)
   const [questionNumber, setQuestionNumber] = useState(1)
@@ -52,6 +54,7 @@ const ResimKelimeEslestirmeSayfasi: React.FC<ResimKelimeEslestirmeSayfasiProps> 
   }
 
   const startGame = () => {
+    playSound('exercise-start')
     setGameState('playing')
     setQuestionNumber(1)
     setScore(0)
@@ -76,6 +79,9 @@ const ResimKelimeEslestirmeSayfasi: React.FC<ResimKelimeEslestirmeSayfasiProps> 
 
     const isCorrect = answer === currentQuestion.correctAnswer.word
     const responseTime = Date.now() - questionStartTime
+
+    // Ses efekti
+    playSound(isCorrect ? 'correct-answer' : 'wrong-answer')
 
     setSelectedAnswer(answer)
     setLastAnswerCorrect(isCorrect)
@@ -105,6 +111,24 @@ const ResimKelimeEslestirmeSayfasi: React.FC<ResimKelimeEslestirmeSayfasiProps> 
     const endTime = Date.now()
     const totalDuration = Math.round((endTime - startTime) / 1000)
     const finalScore = Math.round((score / TOTAL_QUESTIONS) * 100)
+
+    // Mükemmel skor kontrolü
+    if (score === TOTAL_QUESTIONS) {
+      playSound('perfect-score')
+      toast.success(`🏆 MÜKEMMEL! Tüm soruları doğru cevapladınız!`)
+    } else {
+      playSound('exercise-complete')
+    }
+
+    // İlk defa tamamlama kontrolü
+    const previousResults = LocalStorageManager.getExerciseResults()
+    const exerciseResults = previousResults.filter(r => r.exerciseName === 'Resim-Kelime Eşleştirme')
+    if (exerciseResults.length === 0) {
+      setTimeout(() => {
+        playSound('achievement')
+        toast.success(`🎖️ BAŞARI: İlk Resim-Kelime Eşleştirme tamamlandı!`)
+      }, 1000)
+    }
 
     const gameResult: MatchingGameResult = {
       exercise_name: 'Resim-Kelime Eşleştirme',
@@ -143,6 +167,7 @@ const ResimKelimeEslestirmeSayfasi: React.FC<ResimKelimeEslestirmeSayfasiProps> 
   }
 
   const resetGame = () => {
+    playSound('button-click')
     setGameState('ready')
     setCurrentQuestion(null)
     setQuestionNumber(1)
@@ -167,6 +192,7 @@ const ResimKelimeEslestirmeSayfasi: React.FC<ResimKelimeEslestirmeSayfasiProps> 
   }
 
   const handleBackWithProgress = async () => {
+    playSound('button-click')
     if (gameState === 'playing' || gameState === 'paused') {
       try {
         await LocalStorageManager.savePartialProgress({

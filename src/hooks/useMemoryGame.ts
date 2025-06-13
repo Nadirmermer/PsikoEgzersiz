@@ -2,12 +2,14 @@
 import { useState, useEffect, useCallback } from 'react'
 import { Card, GameStats, generateCards, calculateScore } from '../utils/memoryGameUtils'
 import { LocalStorageManager, MemoryGameLevel, MEMORY_GAME_LEVELS } from '../utils/localStorage'
+import { useAudio } from './useAudio'
 
 interface UseMemoryGameProps {
   level: MemoryGameLevel
 }
 
 export const useMemoryGame = ({ level }: UseMemoryGameProps) => {
+  const { playSound } = useAudio()
   const [cards, setCards] = useState<Card[]>([])
   const [flippedCards, setFlippedCards] = useState<Card[]>([])
   const [gameStarted, setGameStarted] = useState(false)
@@ -44,6 +46,14 @@ export const useMemoryGame = ({ level }: UseMemoryGameProps) => {
     
     // Kart önizlemesini başlat
     setShowingPreview(true)
+    
+    // Önizleme bitiminden 3 saniye önce countdown sesi çal
+    if (level.previewTime > 3000) {
+      setTimeout(() => {
+        playSound('countdown')
+      }, level.previewTime - 3000)
+    }
+    
     setTimeout(() => {
       setShowingPreview(false)
     }, level.previewTime)
@@ -104,14 +114,20 @@ export const useMemoryGame = ({ level }: UseMemoryGameProps) => {
     
     if (gameStarted && !gameCompleted && !isPaused && startTime) {
       interval = setInterval(() => {
-        setDuration(Math.floor((Date.now() - startTime) / 1000))
+        const newDuration = Math.floor((Date.now() - startTime) / 1000)
+        setDuration(newDuration)
+        
+        // Her 10 saniyede bir timer-tick sesi çal
+        if (newDuration > 0 && newDuration % 10 === 0) {
+          playSound('timer-tick')
+        }
       }, 1000)
     }
     
     return () => {
       if (interval) clearInterval(interval)
     }
-  }, [gameStarted, gameCompleted, isPaused, startTime])
+  }, [gameStarted, gameCompleted, isPaused, startTime, playSound])
 
   // Eşleşme kontrolü
   useEffect(() => {
@@ -122,6 +138,7 @@ export const useMemoryGame = ({ level }: UseMemoryGameProps) => {
       
       if (card1.emoji === card2.emoji) {
         // Eşleşme bulundu
+        playSound('correct-answer')
         if (firstMatchTime === null && startTime) {
           setFirstMatchTime(Math.floor((Date.now() - startTime) / 1000))
         }
@@ -137,6 +154,7 @@ export const useMemoryGame = ({ level }: UseMemoryGameProps) => {
         setFlippedCards([])
       } else {
         // Eşleşme yok
+        playSound('wrong-answer')
         setIncorrectMoves(prev => prev + 1)
         
         setTimeout(() => {
@@ -152,7 +170,7 @@ export const useMemoryGame = ({ level }: UseMemoryGameProps) => {
         }, 1500)
       }
     }
-  }, [flippedCards.length, firstMatchTime, startTime])
+  }, [flippedCards.length, firstMatchTime, startTime, playSound])
 
   // Oyun tamamlanma kontrolü
   useEffect(() => {
@@ -186,6 +204,22 @@ export const useMemoryGame = ({ level }: UseMemoryGameProps) => {
         score: calculateScore(stats),
         timestamp: new Date().toISOString()
       }
+
+      // Mükemmel skor kontrolü (hiç yanlış hamle yoksa)
+      if (incorrectMoves === 0) {
+        playSound('perfect-score')
+      } else {
+        playSound('exercise-complete')
+      }
+
+      // İlk defa tamamlama kontrolü
+      const previousResults = LocalStorageManager.getExerciseResults()
+      const memoryGameResults = previousResults.filter(r => r.exerciseName === 'Hafıza Oyunu')
+      if (memoryGameResults.length === 0) {
+        setTimeout(() => {
+          playSound('achievement')
+        }, 1000)
+      }
       
       // Local storage'a kaydet
       LocalStorageManager.saveExerciseResult({
@@ -204,7 +238,7 @@ export const useMemoryGame = ({ level }: UseMemoryGameProps) => {
         setNextLevelUnlocked(true)
       }
     }
-  }, [cards, gameCompleted, moves, incorrectMoves, duration, startTime, firstMatchTime, cardFlips, level])
+  }, [cards, gameCompleted, moves, incorrectMoves, duration, startTime, firstMatchTime, cardFlips, level, playSound])
 
   return {
     cards,

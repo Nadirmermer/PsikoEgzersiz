@@ -21,6 +21,7 @@ import { LocalStorageManager } from '../utils/localStorage'
 import { ArrowLeft, RotateCcw, Target, Clock, Move, Trophy, Star, CheckCircle, Play, HelpCircle, ChevronDown, Mouse, Castle, Zap, Brain, Pause, PlayCircle } from 'lucide-react'
 import { toast } from '@/components/ui/sonner'
 import ExerciseHeader from '../components/ExerciseHeader'
+import { useAudio } from '../hooks/useAudio'
 
 interface LondraKulesiProps {
   onBack: () => void
@@ -41,6 +42,7 @@ interface GameState {
 }
 
 const LondraKulesiSayfasi: React.FC<LondraKulesiProps> = ({ onBack }) => {
+  const { playSound } = useAudio()
   const [gameState, setGameState] = useState<GameState>({
     phase: 'ready',
     currentLevel: 1,
@@ -94,6 +96,7 @@ const LondraKulesiSayfasi: React.FC<LondraKulesiProps> = ({ onBack }) => {
   }, [])
 
   const startGame = useCallback(() => {
+    playSound('exercise-start')
     setGameState(prev => ({
       ...prev,
       phase: 'playing',
@@ -102,9 +105,10 @@ const LondraKulesiSayfasi: React.FC<LondraKulesiProps> = ({ onBack }) => {
     }))
     setIsGameActive(true)
     initializeLevel(1)
-  }, [initializeLevel])
+  }, [initializeLevel, playSound])
 
   const resetGame = useCallback(() => {
+    playSound('button-click')
     setGameState({
       phase: 'ready',
       currentLevel: 1,
@@ -119,7 +123,7 @@ const LondraKulesiSayfasi: React.FC<LondraKulesiProps> = ({ onBack }) => {
       pausedTime: 0
     })
     setIsGameActive(false)
-  }, [])
+  }, [playSound])
 
   const handlePauseGame = useCallback(() => {
     setGameState(prev => ({
@@ -155,6 +159,7 @@ const LondraKulesiSayfasi: React.FC<LondraKulesiProps> = ({ onBack }) => {
   const moveDisk = useCallback((fromTower: number, toTower: number) => {
     if (!canMoveDisk(fromTower, toTower)) return
 
+    playSound('button-click')
     const newTowers = gameState.towers.map(tower => [...tower])
     const disk = newTowers[fromTower].pop()!
     newTowers[toTower].push(disk)
@@ -172,6 +177,7 @@ const LondraKulesiSayfasi: React.FC<LondraKulesiProps> = ({ onBack }) => {
     const diskCount = Math.min(2 + gameState.currentLevel, 6)
     if (newTowers[2].length === diskCount) {
       // Seviye tamamlandı
+      playSound('correct-answer')
       const efficiency = Math.max(0, 100 - Math.floor((newMoves - gameState.minMoves) / gameState.minMoves * 50))
       const timeBonus = Math.max(0, 50 - Math.floor(gameState.currentTime / 1000))
       const levelScore = efficiency + timeBonus
@@ -184,6 +190,7 @@ const LondraKulesiSayfasi: React.FC<LondraKulesiProps> = ({ onBack }) => {
           finishGame()
         } else {
           // Sonraki seviye
+          playSound('level-up')
           setGameState(prev => ({
             ...prev,
             currentLevel: prev.currentLevel + 1,
@@ -194,7 +201,7 @@ const LondraKulesiSayfasi: React.FC<LondraKulesiProps> = ({ onBack }) => {
         }
       }, 1500)
     }
-  }, [gameState, canMoveDisk, initializeLevel])
+  }, [gameState, canMoveDisk, initializeLevel, playSound])
 
   const handleTowerClick = useCallback((towerIndex: number) => {
     if (gameState.phase !== 'playing') return
@@ -217,6 +224,7 @@ const LondraKulesiSayfasi: React.FC<LondraKulesiProps> = ({ onBack }) => {
   }, [gameState, moveDisk])
 
   const handleBackWithProgress = useCallback(() => {
+    playSound('button-click')
     if (gameState.phase === 'playing' && gameState.moves > 0) {
       const duration = Math.floor(gameState.currentTime / 1000)
       const currentProgress = {
@@ -229,11 +237,30 @@ const LondraKulesiSayfasi: React.FC<LondraKulesiProps> = ({ onBack }) => {
       LocalStorageManager.savePartialProgress('Londra Kulesi', currentProgress, duration)
     }
     onBack()
-  }, [gameState, onBack])
+  }, [gameState, onBack, playSound])
 
   const finishGame = useCallback(() => {
     const duration = Math.floor(gameState.currentTime / 1000)
     const finalScore = gameState.score
+
+    // Mükemmel skor kontrolü (tüm seviyeleri optimal hamle ile tamamladıysa)
+    const averageEfficiency = finalScore / gameState.levelsCompleted
+    if (averageEfficiency >= 90) {
+      playSound('perfect-score')
+      toast.success(`🏆 MÜKEMMEL! Çok verimli oynadınız!`)
+    } else {
+      playSound('exercise-complete')
+    }
+
+    // İlk defa tamamlama kontrolü
+    const previousResults = LocalStorageManager.getExerciseResults()
+    const towerResults = previousResults.filter(r => r.exerciseName === 'Londra Kulesi')
+    if (towerResults.length === 0) {
+      setTimeout(() => {
+        playSound('achievement')
+        toast.success(`🎖️ BAŞARI: İlk Londra Kulesi tamamlandı!`)
+      }, 1000)
+    }
 
     const exerciseData = {
       exercise_name: 'Londra Kulesi',
@@ -256,7 +283,7 @@ const LondraKulesiSayfasi: React.FC<LondraKulesiProps> = ({ onBack }) => {
 
     setGameState(prev => ({ ...prev, phase: 'completed' }))
     setIsGameActive(false)
-  }, [gameState])
+  }, [gameState, playSound])
 
   const getDiskColor = (size: number, maxSize: number) => {
     const colors = [

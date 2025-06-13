@@ -10,13 +10,16 @@ import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
 import { Separator } from '@/components/ui/separator'
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
 import { toast } from 'sonner'
-import { Moon, Sun, User, LogOut, Shield, Eye, Palette, Settings, Link, Unlink, Upload, Users, CheckCircle, AlertCircle } from 'lucide-react'
+import { Moon, Sun, User, LogOut, Shield, Eye, Palette, Settings, Link, Unlink, Upload, Users, CheckCircle, AlertCircle, Volume2, VolumeX } from 'lucide-react'
 import { LocalStorageManager } from '../utils/localStorage'
 import { uploadLocalDataToSupabase, saveToSupabase } from '../lib/supabaseClient'
+import { useAudio } from '../hooks/useAudio'
+import { Slider } from '@/components/ui/slider'
 
 const AyarlarSayfasi: React.FC = () => {
   const { theme, toggleTheme } = useTheme()
   const { user, professional, signOut, signIn, signUp, isSupabaseConfigured } = useAuth()
+  const { playSound, getAudioSettings, setVolume, toggleSoundCategory, toggleAllSounds } = useAudio()
   
   // Disleksi okuma modu için state
   const [isDyslexicMode, setIsDyslexicMode] = useState(() => {
@@ -27,6 +30,9 @@ const AyarlarSayfasi: React.FC = () => {
   const [fontSize, setFontSize] = useState(() => {
     return localStorage.getItem('font-size') || 'normal'
   })
+
+  // Ses ayarları için state
+  const [audioSettings, setAudioSettings] = useState(() => getAudioSettings())
 
   // Uzman giriş form states
   const [isLoginMode, setIsLoginMode] = useState(true)
@@ -80,6 +86,51 @@ const AyarlarSayfasi: React.FC = () => {
     }
     
     toast.success(`Font boyutu: ${sizeLabels[size as keyof typeof sizeLabels]}`)
+  }
+
+  const handleVolumeChange = (value: number[]) => {
+    const newVolume = value[0]
+    setVolume(newVolume)
+    setAudioSettings(prev => ({ ...prev, volume: newVolume }))
+    
+    // Test sesi çal
+    playSound('button-click', { volume: newVolume })
+  }
+
+  const handleToggleAllSounds = () => {
+    toggleAllSounds()
+    const newSettings = getAudioSettings()
+    setAudioSettings(newSettings)
+    
+    if (newSettings.enabled) {
+      playSound('notification')
+      toast.success('Sesler etkinleştirildi')
+    } else {
+      toast.success('Sesler kapatıldı')
+    }
+  }
+
+  const handleToggleSoundCategory = (category: keyof Omit<typeof audioSettings, 'enabled' | 'volume'>) => {
+    toggleSoundCategory(category)
+    const newSettings = getAudioSettings()
+    setAudioSettings(newSettings)
+    
+    const categoryLabels = {
+      uiSounds: 'Arayüz Sesleri',
+      exerciseSounds: 'Egzersiz Sesleri',
+      feedbackSounds: 'Geri Bildirim Sesleri',
+      ambientSounds: 'Ortam Sesleri'
+    }
+    
+    const status = newSettings[category] ? 'etkinleştirildi' : 'kapatıldı'
+    toast.success(`${categoryLabels[category]} ${status}`)
+    
+    // Test sesi çal (kategori açıksa)
+    if (newSettings[category]) {
+      if (category === 'uiSounds') playSound('button-click')
+      else if (category === 'exerciseSounds') playSound('exercise-start')
+      else if (category === 'feedbackSounds') playSound('correct-answer')
+    }
   }
 
   const handleUzmanAuth = async (e: React.FormEvent) => {
@@ -235,7 +286,10 @@ const AyarlarSayfasi: React.FC = () => {
     if (savedFontSize !== 'normal') {
       document.documentElement.classList.add(`font-${savedFontSize}`)
     }
-  }, [])
+
+    // Ses ayarlarını güncelle
+    setAudioSettings(getAudioSettings())
+  }, [getAudioSettings])
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/30 to-indigo-50/50 dark:from-slate-950 dark:via-blue-950/30 dark:to-indigo-950/50">
@@ -363,11 +417,114 @@ const AyarlarSayfasi: React.FC = () => {
                     </Label>
                   </div>
                 </RadioGroup>
-                <p className="text-xs text-muted-foreground">
-                  Tüm uygulama için font boyutunu ayarlayın
-                </p>
-              </div>
-            </div>
+                                 <p className="text-xs text-muted-foreground">
+                   Tüm uygulama için font boyutunu ayarlayın
+                 </p>
+               </div>
+
+               {/* Ses Ayarları */}
+               <div className="space-y-4">
+                 <Label className="text-sm font-medium flex items-center gap-2">
+                   {audioSettings.enabled ? <Volume2 className="w-4 h-4" /> : <VolumeX className="w-4 h-4" />}
+                   Ses Ayarları
+                 </Label>
+                 
+                 {/* Ana Ses Kontrolü */}
+                 <div className="flex items-center justify-between p-3 rounded-lg border">
+                   <div className="space-y-1">
+                     <Label className="text-sm font-medium">
+                       Sesler
+                     </Label>
+                     <p className="text-xs text-muted-foreground">
+                       Tüm ses efektlerini aç/kapat
+                     </p>
+                   </div>
+                   <Switch
+                     checked={audioSettings.enabled}
+                     onCheckedChange={handleToggleAllSounds}
+                   />
+                 </div>
+
+                 {/* Ses Seviyesi */}
+                 {audioSettings.enabled && (
+                   <div className="space-y-3">
+                     <Label className="text-sm font-medium">Ses Seviyesi</Label>
+                     <div className="px-3">
+                       <Slider
+                         value={[audioSettings.volume]}
+                         onValueChange={handleVolumeChange}
+                         max={1}
+                         min={0}
+                         step={0.1}
+                         className="w-full"
+                       />
+                       <div className="flex justify-between text-xs text-muted-foreground mt-1">
+                         <span>Sessiz</span>
+                         <span>{Math.round(audioSettings.volume * 100)}%</span>
+                         <span>Yüksek</span>
+                       </div>
+                     </div>
+                   </div>
+                 )}
+
+                 {/* Ses Kategorileri */}
+                 {audioSettings.enabled && (
+                   <div className="space-y-3">
+                     <Label className="text-sm font-medium">Ses Kategorileri</Label>
+                     
+                     <div className="grid grid-cols-1 gap-2">
+                       <div className="flex items-center justify-between p-2 rounded-lg border hover:bg-accent/50 transition-colors">
+                         <div className="space-y-1">
+                           <Label className="text-xs font-medium">Arayüz Sesleri</Label>
+                           <p className="text-xs text-muted-foreground">Buton tıklama, hover efektleri</p>
+                         </div>
+                         <Switch
+                           checked={audioSettings.uiSounds}
+                           onCheckedChange={() => handleToggleSoundCategory('uiSounds')}
+                           size="sm"
+                         />
+                       </div>
+
+                       <div className="flex items-center justify-between p-2 rounded-lg border hover:bg-accent/50 transition-colors">
+                         <div className="space-y-1">
+                           <Label className="text-xs font-medium">Egzersiz Sesleri</Label>
+                           <p className="text-xs text-muted-foreground">Başlangıç, tamamlama, seviye atlama</p>
+                         </div>
+                         <Switch
+                           checked={audioSettings.exerciseSounds}
+                           onCheckedChange={() => handleToggleSoundCategory('exerciseSounds')}
+                           size="sm"
+                         />
+                       </div>
+
+                       <div className="flex items-center justify-between p-2 rounded-lg border hover:bg-accent/50 transition-colors">
+                         <div className="space-y-1">
+                           <Label className="text-xs font-medium">Geri Bildirim Sesleri</Label>
+                           <p className="text-xs text-muted-foreground">Doğru/yanlış cevap, başarı sesleri</p>
+                         </div>
+                         <Switch
+                           checked={audioSettings.feedbackSounds}
+                           onCheckedChange={() => handleToggleSoundCategory('feedbackSounds')}
+                           size="sm"
+                         />
+                       </div>
+
+                       <div className="flex items-center justify-between p-2 rounded-lg border hover:bg-accent/50 transition-colors">
+                         <div className="space-y-1">
+                           <Label className="text-xs font-medium">Ortam Sesleri</Label>
+                           <p className="text-xs text-muted-foreground">Odaklanma müziği, arka plan sesleri</p>
+                         </div>
+                         <Switch
+                           checked={audioSettings.ambientSounds}
+                           onCheckedChange={() => handleToggleSoundCategory('ambientSounds')}
+                           size="sm"
+                         />
+                       </div>
+                     </div>
+                   </div>
+                 )}
+               </div>
+             </div>
           </CardContent>
         </Card>
 

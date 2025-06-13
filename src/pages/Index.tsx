@@ -17,8 +17,10 @@ import SkipNavigation from "../components/SkipNavigation";
 import { useClientMode } from "../hooks/useClientMode";
 import { useAuth } from "../contexts/AuthContext";
 import { syncPendingData } from "../lib/supabaseClient";
+import { useAudio } from "../hooks/useAudio";
 
 const Index = () => {
+  const { playSound } = useAudio()
   const [activePage, setActivePage] = useState("egzersizler");
   const [isMemoryGameActive, setIsMemoryGameActive] = useState(false);
   const [isImageWordMatchingActive, setIsImageWordMatchingActive] = useState(false);
@@ -57,66 +59,82 @@ const Index = () => {
   }, [isClientMode, activePage]);
 
   const handleMemoryGameStart = () => {
+    playSound('button-click')
     setIsMemoryGameActive(true);
   };
 
   const handleMemoryGameEnd = () => {
+    playSound('button-click')
     setIsMemoryGameActive(false);
   };
 
   const handleImageWordMatchingStart = () => {
+    playSound('button-click')
     setIsImageWordMatchingActive(true);
   };
 
   const handleImageWordMatchingEnd = () => {
+    playSound('button-click')
     setIsImageWordMatchingActive(false);
   };
 
   const handleWordImageMatchingStart = () => {
+    playSound('button-click')
     setIsWordImageMatchingActive(true);
   };
 
   const handleWordImageMatchingEnd = () => {
+    playSound('button-click')
     setIsWordImageMatchingActive(false);
   };
 
   const handleTowerOfLondonStart = () => {
+    playSound('button-click')
     setIsTowerOfLondonActive(true);
   };
 
   const handleTowerOfLondonEnd = () => {
+    playSound('button-click')
     setIsTowerOfLondonActive(false);
   };
 
   const handleNumberSequenceStart = () => {
+    playSound('button-click')
     setIsNumberSequenceActive(true);
   };
 
   const handleNumberSequenceEnd = () => {
+    playSound('button-click')
     setIsNumberSequenceActive(false);
   };
 
   const handleColorSequenceStart = () => {
+    playSound('button-click')
     setIsColorSequenceActive(true);
   };
 
   const handleColorSequenceEnd = () => {
+    playSound('button-click')
     setIsColorSequenceActive(false);
   };
 
   const handleWordCirclePuzzleStart = () => {
+    playSound('button-click')
     setIsWordCirclePuzzleActive(true);
   };
 
   const handleWordCirclePuzzleEnd = () => {
+    playSound('button-click')
     setIsWordCirclePuzzleActive(false);
   };
 
   const handleLogicSequencesStart = () => {
+    playSound('button-click')
     setIsLogicSequencesActive(true);
   };
 
   const handleLogicSequencesEnd = () => {
+    playSound('button-click')
     setIsLogicSequencesActive(false);
   };
 
@@ -125,6 +143,7 @@ const Index = () => {
       console.log('Index - Page change blocked in client mode:', page)
       return;
     }
+    playSound('button-click')
     console.log('Index - Page changed to:', page)
     setActivePage(page);
   };

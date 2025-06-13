@@ -8,12 +8,14 @@ import { LocalStorageManager, MEMORY_GAME_LEVELS, MemoryGameLevel } from '../uti
 import { ArrowLeft, RotateCcw, Play, Trophy, Star, Clock, Target, Brain, Lightbulb, CheckCircle, Pause, PlayCircle } from 'lucide-react'
 import { toast } from '@/components/ui/sonner'
 import ExerciseHeader from '../components/ExerciseHeader'
+import { useAudio } from '../hooks/useAudio'
 
 interface HafizaOyunuSayfasiProps {
   onBack: () => void
 }
 
 const HafizaOyunuSayfasi: React.FC<HafizaOyunuSayfasiProps> = ({ onBack }) => {
+  const { playSound } = useAudio()
   const [currentLevel, setCurrentLevel] = useState<MemoryGameLevel>(MEMORY_GAME_LEVELS[0])
   const [gamePhase, setGamePhase] = useState<'ready' | 'playing' | 'paused' | 'completed'>('ready')
   const [isPaused, setIsPaused] = useState(false)
@@ -64,9 +66,10 @@ const HafizaOyunuSayfasi: React.FC<HafizaOyunuSayfasiProps> = ({ onBack }) => {
   }
 
   const handleStartGame = useCallback(() => {
+    playSound('exercise-start')
     setGamePhase('playing')
     startGame()
-  }, [startGame])
+  }, [startGame, playSound])
 
   const handlePauseGame = useCallback(() => {
     pauseGame()
@@ -83,12 +86,14 @@ const HafizaOyunuSayfasi: React.FC<HafizaOyunuSayfasiProps> = ({ onBack }) => {
   }, [resumeGame])
 
   const handleResetGame = useCallback(() => {
+    playSound('button-click')
     setGamePhase('ready')
     setIsPaused(false)
     initializeGame()
-  }, [initializeGame])
+  }, [initializeGame, playSound])
 
   const handleBackWithProgress = useCallback(() => {
+    playSound('button-click')
     if (gamePhase === 'playing' && !gameCompleted) {
       // Save partial progress
       const currentProgress = {
@@ -102,11 +107,12 @@ const HafizaOyunuSayfasi: React.FC<HafizaOyunuSayfasiProps> = ({ onBack }) => {
       LocalStorageManager.savePartialProgress('Hafıza Oyunu', currentProgress, duration)
     }
     onBack()
-  }, [gamePhase, gameCompleted, currentLevel.id, moves, incorrectMoves, pairsFound, totalPairs, duration, onBack])
+  }, [gamePhase, gameCompleted, currentLevel.id, moves, incorrectMoves, pairsFound, totalPairs, duration, onBack, playSound])
 
   const handleCardClick = (cardId: string) => {
     if (isPaused || gamePhase !== 'playing') return
     
+    playSound('button-click')
     if (!gameStarted && !showingPreview) {
       handleStartGame()
     }

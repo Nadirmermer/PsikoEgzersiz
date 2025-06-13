@@ -8,6 +8,7 @@ import { toast } from '@/components/ui/sonner'
 import { LocalStorageManager } from '../utils/localStorage'
 import { generateMatchingQuestion, MatchingQuestion, MatchingGameResult, ExerciseItem } from '../utils/matchingExerciseUtils'
 import ExerciseHeader from '../components/ExerciseHeader'
+import { useAudio } from '../hooks/useAudio'
 
 interface KelimeResimEslestirmeSayfasiProps {
   onBack: () => void
@@ -31,6 +32,7 @@ interface GameState {
 }
 
 const KelimeResimEslestirmeSayfasi: React.FC<KelimeResimEslestirmeSayfasiProps> = ({ onBack }) => {
+  const { playSound } = useAudio()
   const [gameState, setGameState] = useState<GameState>({
     phase: 'ready',
     currentQuestion: null,
@@ -117,6 +119,7 @@ const KelimeResimEslestirmeSayfasi: React.FC<KelimeResimEslestirmeSayfasiProps> 
   }, [gameState.pausedTime])
 
   const startGame = useCallback(() => {
+    playSound('exercise-start')
     const now = Date.now()
     setGameState(prev => ({
       ...prev,
@@ -131,7 +134,7 @@ const KelimeResimEslestirmeSayfasi: React.FC<KelimeResimEslestirmeSayfasiProps> 
     }))
     setIsGameActive(true)
     generateNewQuestion()
-  }, [])
+  }, [playSound])
 
   const generateNewQuestion = useCallback(() => {
     const question = generateMatchingQuestion('word-to-emoji')
@@ -149,6 +152,9 @@ const KelimeResimEslestirmeSayfasi: React.FC<KelimeResimEslestirmeSayfasiProps> 
 
     const isCorrect = answer.emoji === gameState.currentQuestion.correctAnswer.emoji
     const responseTime = Date.now() - gameState.questionStartTime
+
+    // Ses efekti
+    playSound(isCorrect ? 'correct-answer' : 'wrong-answer')
 
     setGameState(prev => ({
       ...prev,
@@ -173,12 +179,30 @@ const KelimeResimEslestirmeSayfasi: React.FC<KelimeResimEslestirmeSayfasiProps> 
         generateNewQuestion()
       }
     }, FEEDBACK_DURATION)
-  }, [gameState.showFeedback, gameState.currentQuestion, gameState.questionStartTime, gameState.questionNumber])
+  }, [gameState.showFeedback, gameState.currentQuestion, gameState.questionStartTime, gameState.questionNumber, playSound])
 
   const finishGame = useCallback(async () => {
     const endTime = Date.now()
     const totalDuration = Math.round((endTime - gameState.startTime) / 1000)
     const finalScore = Math.round((gameState.score / TOTAL_QUESTIONS) * 100)
+
+    // Mükemmel skor kontrolü
+    if (gameState.score === TOTAL_QUESTIONS) {
+      playSound('perfect-score')
+      toast.success(`🏆 MÜKEMMEL! Tüm soruları doğru cevapladınız!`)
+    } else {
+      playSound('exercise-complete')
+    }
+
+    // İlk defa tamamlama kontrolü
+    const previousResults = LocalStorageManager.getExerciseResults()
+    const exerciseResults = previousResults.filter(r => r.exerciseName === 'Kelime-Resim Eşleştirme')
+    if (exerciseResults.length === 0) {
+      setTimeout(() => {
+        playSound('achievement')
+        toast.success(`🎖️ BAŞARI: İlk Kelime-Resim Eşleştirme tamamlandı!`)
+      }, 1000)
+    }
 
     const gameResult: MatchingGameResult = {
       exercise_name: 'Kelime-Resim Eşleştirme',
@@ -215,9 +239,10 @@ const KelimeResimEslestirmeSayfasi: React.FC<KelimeResimEslestirmeSayfasiProps> 
 
     setGameState(prev => ({ ...prev, phase: 'completed' }))
     setIsGameActive(false)
-  }, [gameState.startTime, gameState.score, gameState.gameQuestions, gameState.userAnswers, gameState.responseTimes])
+  }, [gameState.startTime, gameState.score, gameState.gameQuestions, gameState.userAnswers, gameState.responseTimes, playSound])
 
   const handleBackWithProgress = useCallback(() => {
+    playSound('button-click')
     if (gameState.phase === 'playing') {
       const currentTime = Date.now()
       const duration = Math.round((currentTime - gameState.startTime) / 1000)
@@ -232,7 +257,7 @@ const KelimeResimEslestirmeSayfasi: React.FC<KelimeResimEslestirmeSayfasiProps> 
       LocalStorageManager.savePartialProgress('Kelime-Resim Eşleştirme', currentProgress, duration)
     }
     onBack()
-  }, [gameState, onBack])
+  }, [gameState, onBack, playSound])
 
   // Ready state
   if (gameState.phase === 'ready') {

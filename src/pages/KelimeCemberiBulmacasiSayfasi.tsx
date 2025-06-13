@@ -7,6 +7,7 @@ import { ArrowLeft, Shuffle, Clock, Target, Eye, Star, Play, RotateCcw, Trophy, 
 import { LocalStorageManager } from '../utils/localStorage'
 import { toast } from '@/components/ui/sonner'
 import ExerciseHeader from '../components/ExerciseHeader'
+import { useAudio } from '../hooks/useAudio'
 import { WORD_CIRCLE_LEVELS, WordCircleLevel, TargetWord } from '../data/wordCircleLevels'
 
 interface KelimeCemberiBulmacasiProps {
@@ -29,6 +30,7 @@ interface GameState {
 }
 
 const KelimeCemberiBulmacasiSayfasi: React.FC<KelimeCemberiBulmacasiProps> = ({ onBack }) => {
+  const { playSound } = useAudio()
   const [gameState, setGameState] = useState<GameState>({
     phase: 'ready',
     currentLevel: 1,
@@ -95,6 +97,7 @@ const KelimeCemberiBulmacasiSayfasi: React.FC<KelimeCemberiBulmacasiProps> = ({ 
   }, [])
 
   const startGame = useCallback(() => {
+    playSound('exercise-start')
     setGameState(prev => ({
       ...prev,
       phase: 'playing',
@@ -108,9 +111,10 @@ const KelimeCemberiBulmacasiSayfasi: React.FC<KelimeCemberiBulmacasiProps> = ({ 
       setCurrentLevelData(levelData)
       initializeGrid(levelData)
     }
-  }, [initializeGrid])
+  }, [initializeGrid, playSound])
 
   const resetGame = useCallback(() => {
+    playSound('button-click')
     setGameState({
       phase: 'ready',
       currentLevel: 1,
@@ -129,7 +133,7 @@ const KelimeCemberiBulmacasiSayfasi: React.FC<KelimeCemberiBulmacasiProps> = ({ 
     setIsDragging(false)
     setAnimatingLetters(new Set())
     setWordAnimation('')
-  }, [])
+  }, [playSound])
 
   const handlePauseGame = useCallback(() => {
     setGameState(prev => ({
@@ -153,6 +157,7 @@ const KelimeCemberiBulmacasiSayfasi: React.FC<KelimeCemberiBulmacasiProps> = ({ 
   }, [gameState.pausedTime])
 
   const handleBackWithProgress = useCallback(async () => {
+    playSound('button-click')
     if (gameState.phase === 'playing' || gameState.phase === 'paused') {
       try {
         const progressData = {
@@ -175,11 +180,12 @@ const KelimeCemberiBulmacasiSayfasi: React.FC<KelimeCemberiBulmacasiProps> = ({ 
       }
     }
     onBack()
-  }, [gameState, currentLevelData, onBack])
+  }, [gameState, currentLevelData, onBack, playSound])
 
   const shuffleLetters = useCallback(() => {
     if (!currentLevelData) return
     
+    playSound('button-click')
     // Karıştırma animasyonu
     setAnimatingLetters(new Set(Array.from({ length: currentLevelData.circleLetters.length }, (_, i) => i)))
     
@@ -197,7 +203,7 @@ const KelimeCemberiBulmacasiSayfasi: React.FC<KelimeCemberiBulmacasiProps> = ({ 
         setAnimatingLetters(new Set())
       }, 300)
     }, 200)
-  }, [currentLevelData])
+  }, [currentLevelData, playSound])
 
   const handleLetterSelect = useCallback((index: number) => {
     if (gameState.phase !== 'playing') return
@@ -294,12 +300,32 @@ const KelimeCemberiBulmacasiSayfasi: React.FC<KelimeCemberiBulmacasiProps> = ({ 
 
   const completeLevel = useCallback(() => {
     const duration = Math.floor(gameState.currentTime / 1000)
+    const totalWords = currentLevelData?.targetWords.length || 0
+    const foundWords = gameState.foundWords.length
+    
+    // Mükemmel skor kontrolü (tüm kelimeleri bulmuşsa)
+    if (foundWords === totalWords && totalWords > 0) {
+      playSound('perfect-score')
+      toast.success(`🏆 MÜKEMMEL! Tüm kelimeleri buldunuz!`)
+    } else {
+      playSound('exercise-complete')
+    }
+
+    // İlk defa tamamlama kontrolü
+    const previousResults = LocalStorageManager.getExerciseResults()
+    const puzzleResults = previousResults.filter(r => r.exerciseName === 'Kelime Çemberi Bulmacası')
+    if (puzzleResults.length === 0) {
+      setTimeout(() => {
+        playSound('achievement')
+        toast.success(`🎖️ BAŞARI: İlk Kelime Çemberi Bulmacası tamamlandı!`)
+      }, 1000)
+    }
     
     const exerciseData = {
       exercise_name: 'Kelime Çemberi Bulmacası',
       level_completed: gameState.currentLevel,
-      words_found_on_level: gameState.foundWords.length,
-      total_words_on_level: currentLevelData?.targetWords.length || 0,
+      words_found_on_level: foundWords,
+      total_words_on_level: totalWords,
       bonus_words_found_on_level: gameState.bonusWords.length,
       time_seconds_for_level: duration,
       score_for_level: gameState.score,
@@ -323,7 +349,7 @@ const KelimeCemberiBulmacasiSayfasi: React.FC<KelimeCemberiBulmacasiProps> = ({ 
     }))
 
     toast.success('Seviye tamamlandı!')
-  }, [gameState, currentLevelData])
+  }, [gameState, currentLevelData, playSound])
 
   const calculateAngle = (index: number, total: number) => {
     return (index * 360) / total - 90 // -90 to start from top

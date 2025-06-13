@@ -8,6 +8,7 @@ import { ArrowLeft, Brain, CheckCircle, X, Trophy, Clock, Target, Zap, Lightbulb
 import { LocalStorageManager } from '../utils/localStorage'
 import { toast } from '@/components/ui/sonner'
 import ExerciseHeader from '../components/ExerciseHeader'
+import { useAudio } from '../hooks/useAudio'
 
 interface MantikDizileriProps {
   onBack: () => void
@@ -65,6 +66,7 @@ const generateSequence = (level: number): { sequence: number[], answer: number }
 }
 
 const MantikDizileriSayfasi: React.FC<MantikDizileriProps> = ({ onBack }) => {
+  const { playSound } = useAudio()
   const [gameState, setGameState] = useState<GameState>({
     phase: 'ready',
     currentLevel: 1,
@@ -118,6 +120,7 @@ const MantikDizileriSayfasi: React.FC<MantikDizileriProps> = ({ onBack }) => {
   }, [gameState.currentQuestion])
 
   const startGame = useCallback(() => {
+    playSound('exercise-start')
     setGameState(prev => ({
       ...prev,
       phase: 'playing',
@@ -138,9 +141,10 @@ const MantikDizileriSayfasi: React.FC<MantikDizileriProps> = ({ onBack }) => {
         currentLevel: 1
       }))
     }, 100)
-  }, [])
+  }, [playSound])
 
   const resetGame = useCallback(() => {
+    playSound('button-click')
     setGameState({
       phase: 'ready',
       currentLevel: 1,
@@ -157,7 +161,7 @@ const MantikDizileriSayfasi: React.FC<MantikDizileriProps> = ({ onBack }) => {
       pausedTime: 0
     })
     setIsGameActive(false)
-  }, [])
+  }, [playSound])
 
   const handlePauseGame = useCallback(() => {
     setGameState(prev => ({
@@ -187,6 +191,7 @@ const MantikDizileriSayfasi: React.FC<MantikDizileriProps> = ({ onBack }) => {
     const points = isCorrect ? gameState.currentLevel * 10 : 0
 
     if (isCorrect) {
+      playSound('correct-answer')
       toast.success(`Doğru! +${points} puan`)
       setGameState(prev => ({
         ...prev,
@@ -194,6 +199,7 @@ const MantikDizileriSayfasi: React.FC<MantikDizileriProps> = ({ onBack }) => {
         correctCount: prev.correctCount + 1
       }))
     } else {
+      playSound('wrong-answer')
       toast.error(`Yanlış! Doğru cevap: ${gameState.correctAnswer}`)
       setGameState(prev => ({
         ...prev,
@@ -238,6 +244,24 @@ const MantikDizileriSayfasi: React.FC<MantikDizileriProps> = ({ onBack }) => {
     const duration = Math.floor(gameState.currentTime / 1000)
     const accuracy = Math.round((gameState.correctCount / gameState.totalQuestions) * 100)
 
+    // Mükemmel skor kontrolü (tüm soruları doğru cevapladıysa)
+    if (gameState.correctCount === gameState.totalQuestions) {
+      playSound('perfect-score')
+      toast.success(`🏆 MÜKEMMEL! Tüm soruları doğru cevapladınız!`)
+    } else {
+      playSound('exercise-complete')
+    }
+
+    // İlk defa tamamlama kontrolü
+    const previousResults = LocalStorageManager.getExerciseResults()
+    const logicResults = previousResults.filter(r => r.exerciseName === 'Mantık Dizileri')
+    if (logicResults.length === 0) {
+      setTimeout(() => {
+        playSound('achievement')
+        toast.success(`🎖️ BAŞARI: İlk Mantık Dizileri tamamlandı!`)
+      }, 1000)
+    }
+
     const exerciseData = {
           exercise_name: 'Mantık Dizileri',
       questions_answered: gameState.totalQuestions,
@@ -260,9 +284,10 @@ const MantikDizileriSayfasi: React.FC<MantikDizileriProps> = ({ onBack }) => {
 
     setGameState(prev => ({ ...prev, phase: 'completed' }))
     setIsGameActive(false)
-  }, [gameState])
+  }, [gameState, playSound])
 
   const handleBackWithProgress = useCallback(() => {
+    playSound('button-click')
     if (gameState.phase === 'playing') {
       const duration = Math.floor(gameState.currentTime / 1000)
       const currentProgress = {
@@ -278,7 +303,7 @@ const MantikDizileriSayfasi: React.FC<MantikDizileriProps> = ({ onBack }) => {
       LocalStorageManager.savePartialProgress('Mantık Dizileri', currentProgress, duration)
     }
     onBack()
-  }, [gameState, onBack])
+  }, [gameState, onBack, playSound])
 
   const generateAnswerOptions = useCallback(() => {
     const correct = gameState.correctAnswer
@@ -305,10 +330,7 @@ const MantikDizileriSayfasi: React.FC<MantikDizileriProps> = ({ onBack }) => {
           onBack={handleBackWithProgress}
           showExitConfirmation={false}
           stats={{
-            phase: 'Hazır',
-            score: 0,
-            progress: 0,
-            timeElapsed: 0
+            progress: 'Hazır'
           }}
         />
 
@@ -440,12 +462,10 @@ const MantikDizileriSayfasi: React.FC<MantikDizileriProps> = ({ onBack }) => {
            isPaused={false}
            isPlaying={true}
            stats={{
-             phase: 'Oynuyor',
              score: gameState.score,
-             progress: Math.round((gameState.currentQuestion / gameState.totalQuestions) * 100),
-             timeElapsed: Math.floor(gameState.currentTime / 1000),
-             currentLevel: gameState.currentQuestion,
-             totalLevels: gameState.totalQuestions
+             progress: `${gameState.currentQuestion}/${gameState.totalQuestions}`,
+             time: `${Math.floor(gameState.currentTime / 1000)}s`,
+             level: gameState.currentQuestion
            }}
            showExitConfirmation={true}
          />
@@ -525,7 +545,10 @@ const MantikDizileriSayfasi: React.FC<MantikDizileriProps> = ({ onBack }) => {
                       className="text-xl font-bold text-center h-16 bg-white/60 dark:bg-gray-800/60 backdrop-blur-sm border-white/20 dark:border-gray-700/20"
                     />
                     <Button
-                      onClick={handleInputSubmit}
+                      onClick={() => {
+                        playSound('button-click')
+                        handleInputSubmit()
+                      }}
                       disabled={gameState.userAnswer !== null || !inputValue.trim()}
                       size="lg"
                       className="h-16 px-8 bg-gradient-to-r from-primary to-purple-600 hover:from-primary/90 hover:to-purple-600/90"
@@ -575,12 +598,10 @@ const MantikDizileriSayfasi: React.FC<MantikDizileriProps> = ({ onBack }) => {
           isPaused={true}
           isPlaying={false}
           stats={{
-            phase: 'Duraklatıldı',
             score: gameState.score,
-            progress: Math.round((gameState.currentQuestion / gameState.totalQuestions) * 100),
-            timeElapsed: Math.floor(gameState.currentTime / 1000),
-            currentLevel: gameState.currentQuestion,
-            totalLevels: gameState.totalQuestions
+            progress: `${gameState.currentQuestion}/${gameState.totalQuestions}`,
+            time: `${Math.floor(gameState.currentTime / 1000)}s`,
+            level: gameState.currentQuestion
           }}
         />
 
@@ -607,10 +628,9 @@ const MantikDizileriSayfasi: React.FC<MantikDizileriProps> = ({ onBack }) => {
         onBack={onBack}
         showExitConfirmation={false}
         stats={{
-          phase: 'Tamamlandı',
           score: gameState.score,
-          progress: 100,
-          timeElapsed: Math.floor(gameState.currentTime / 1000)
+          progress: 'Tamamlandı',
+          time: `${Math.floor(gameState.currentTime / 1000)}s`
         }}
       />
 
@@ -670,7 +690,10 @@ const MantikDizileriSayfasi: React.FC<MantikDizileriProps> = ({ onBack }) => {
             {/* Action Buttons */}
             <div className="flex flex-col sm:flex-row gap-4 justify-center pt-4">
               <Button 
-                onClick={resetGame}
+                onClick={() => {
+                  playSound('button-click')
+                  resetGame()
+                }}
                 variant="outline"
                 size="lg"
                 className="bg-white/40 dark:bg-gray-800/40 backdrop-blur-sm border-white/20 dark:border-gray-700/20 hover:bg-white/60 dark:hover:bg-gray-800/60"
@@ -679,7 +702,10 @@ const MantikDizileriSayfasi: React.FC<MantikDizileriProps> = ({ onBack }) => {
                 Tekrar Oyna
               </Button>
                   <Button 
-                onClick={onBack}
+                onClick={() => {
+                  playSound('button-click')
+                  onBack()
+                }}
                 size="lg"
                 className="bg-gradient-to-r from-primary to-purple-600 hover:from-primary/90 hover:to-purple-600/90 text-white shadow-lg hover:shadow-xl transition-all duration-200"
               >

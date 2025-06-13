@@ -11,6 +11,7 @@ import { toast } from 'sonner'
 import { Users, Settings, Play, Copy, BarChart3, TrendingUp, Clock, Trophy, Target, Brain, CheckCircle, XCircle, Activity, Calendar, Star, Sparkles } from 'lucide-react'
 import ClientList from '../components/dashboard/ClientList'
 import ClientDetail from '../components/dashboard/ClientDetail'
+import { useAudio } from '../hooks/useAudio'
 
 interface ClientInfo {
   client_identifier: string
@@ -24,6 +25,7 @@ interface ClientInfo {
 }
 
 const UzmanDashboardSayfasi: React.FC = () => {
+  const { playSound } = useAudio()
   const { professional, loading: authLoading } = useAuth()
   const [clientName, setClientName] = useState('')
   const [isStartingClientMode, setIsStartingClientMode] = useState(false)
@@ -153,6 +155,7 @@ const UzmanDashboardSayfasi: React.FC = () => {
       return
     }
 
+    playSound('button-click')
     setIsStartingClientMode(true)
 
     // Client mode'u başlat
@@ -187,6 +190,7 @@ const UzmanDashboardSayfasi: React.FC = () => {
   }
 
   const handleCopyId = () => {
+    playSound('button-click')
     if (professional?.id) {
       navigator.clipboard.writeText(professional.id)
       toast.success('Uzman ID kopyalandı!')
@@ -236,7 +240,10 @@ const UzmanDashboardSayfasi: React.FC = () => {
                 <p className="text-muted-foreground mb-6">
                   Bu sayfaya erişmek için uzman hesabınızla giriş yapmanız gerekmektedir.
                 </p>
-                <Button onClick={() => window.location.href = '/ayarlar'} className="rounded-lg">
+                <Button onClick={() => {
+                  playSound('button-click')
+                  window.location.href = '/ayarlar'
+                }} className="rounded-lg">
                   <Settings className="w-4 h-4 mr-2" />
                   Ayarlar Sayfasına Git
                 </Button>
@@ -453,10 +460,11 @@ const UzmanDashboardSayfasi: React.FC = () => {
                           </Button>
                           <Button 
                             variant="outline" 
-                            onClick={() => {
-                              setDialogOpen(false)
-                              setClientName('')
-                            }}
+                                                onClick={() => {
+                      playSound('button-click')
+                      setDialogOpen(false)
+                      setClientName('')
+                    }}
                             className="rounded-lg"
                           >
                             İptal
@@ -517,7 +525,10 @@ const UzmanDashboardSayfasi: React.FC = () => {
                       </div>
                       {clients.length === 0 && (
                         <Button 
-                          onClick={() => setDialogOpen(true)}
+                          onClick={() => {
+                            playSound('button-click')
+                            setDialogOpen(true)
+                          }}
                           className="rounded-lg bg-gradient-to-r from-primary to-purple-600 hover:from-primary/90 hover:to-purple-600/90"
                         >
                           <Play className="w-4 h-4 mr-2" />

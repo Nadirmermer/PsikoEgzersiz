@@ -10,8 +10,10 @@ import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContai
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { BarChart3, TrendingUp, Clock, Trophy, Target, Brain, User, Trash2, Download, Zap, Award, Star, Layers, Filter, Calendar, Gauge, CheckCircle, XCircle } from 'lucide-react'
+import { useAudio } from '../hooks/useAudio'
 
 const IstatistiklerSayfasi: React.FC = () => {
+  const { playSound } = useAudio()
   const [exerciseResults, setExerciseResults] = useState<ExerciseResult[]>([])
   const [selectedExerciseFilter, setSelectedExerciseFilter] = useState<string>('all')
   const [selectedTimeRange, setSelectedTimeRange] = useState<string>('all')
@@ -91,6 +93,7 @@ const IstatistiklerSayfasi: React.FC = () => {
   }
 
   const clearData = () => {
+    playSound('button-click')
     LocalStorageManager.clearExerciseResults()
     setExerciseResults([])
   }
