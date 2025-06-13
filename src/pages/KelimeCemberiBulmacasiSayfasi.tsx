@@ -4,11 +4,11 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Progress } from '@/components/ui/progress'
 import { ArrowLeft, Shuffle, Clock, Target, Eye, Star, Play, RotateCcw, Trophy, Brain, Lightbulb, CheckCircle, Pause, PlayCircle } from 'lucide-react'
-import { LocalStorageManager } from '../utils/localStorage'
+import { LocalStorageManager } from '@/utils/localStorage'
 import { toast } from '@/components/ui/sonner'
-import ExerciseHeader from '../components/ExerciseHeader'
-import { useAudio } from '../hooks/useAudio'
-import { WORD_CIRCLE_LEVELS, WordCircleLevel, TargetWord } from '../data/wordCircleLevels'
+import ExerciseHeader from '@/components/ExerciseHeader'
+import { useAudio } from '@/hooks/useAudio'
+import { WORD_CIRCLE_LEVELS, WordCircleLevel, TargetWord } from '@/data/wordCircleLevels'
 
 interface KelimeCemberiBulmacasiProps {
   onBack: () => void

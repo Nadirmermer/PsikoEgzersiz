@@ -5,10 +5,10 @@ import { Progress } from '@/components/ui/progress'
 import { Badge } from '@/components/ui/badge'
 import { ArrowLeft, CheckCircle, XCircle, Trophy, Clock, Target, Play, RotateCcw, Star, Brain, Pause, PlayCircle } from 'lucide-react'
 import { toast } from 'sonner'
-import { LocalStorageManager } from '../utils/localStorage'
-import { generateMatchingQuestion, MatchingQuestion, MatchingGameResult } from '../utils/matchingExerciseUtils'
-import ExerciseHeader from '../components/ExerciseHeader'
-import { useAudio } from '../hooks/useAudio'
+import { LocalStorageManager } from '@/utils/localStorage'
+import { generateMatchingQuestion, MatchingQuestion, MatchingGameResult } from '@/utils/matchingExerciseUtils'
+import ExerciseHeader from '@/components/ExerciseHeader'
+import { useAudio } from '@/hooks/useAudio'
 
 interface ResimKelimeEslestirmeSayfasiProps {
   onBack: () => void
@@ -195,14 +195,17 @@ const ResimKelimeEslestirmeSayfasi: React.FC<ResimKelimeEslestirmeSayfasiProps> 
     playSound('button-click')
     if (gameState === 'playing' || gameState === 'paused') {
       try {
-        await LocalStorageManager.savePartialProgress({
-          exerciseName: 'Resim-Kelime Eşleştirme',
-          progress: Math.round((questionNumber / TOTAL_QUESTIONS) * 100),
-          currentLevel: questionNumber,
-          score: score,
-          timeSpent: currentTime,
-          date: new Date().toISOString()
-        })
+        await LocalStorageManager.savePartialProgress(
+          'Resim-Kelime Eşleştirme',
+          {
+            progress: Math.round((questionNumber / TOTAL_QUESTIONS) * 100),
+            currentLevel: questionNumber,
+            score: score,
+            timeSpent: currentTime,
+            date: new Date().toISOString()
+          },
+          currentTime
+        )
         toast.success('İlerleme kaydedildi')
       } catch (error) {
         console.error('İlerleme kaydedilirken hata:', error)
@@ -220,10 +223,8 @@ const ResimKelimeEslestirmeSayfasi: React.FC<ResimKelimeEslestirmeSayfasiProps> 
           onBack={onBack}
           showExitConfirmation={false}
           stats={{
-            phase: 'Hazır',
             score: 0,
-            progress: 0,
-            timeElapsed: 0
+            progress: '0%'
           }}
         />
 
@@ -324,12 +325,10 @@ const ResimKelimeEslestirmeSayfasi: React.FC<ResimKelimeEslestirmeSayfasiProps> 
           isPaused={false}
           isPlaying={true}
           stats={{
-            phase: 'Oynuyor',
             score: score,
-            progress: Math.round(((questionNumber - 1) / TOTAL_QUESTIONS) * 100),
-            timeElapsed: currentTime,
-            currentLevel: questionNumber,
-            totalLevels: TOTAL_QUESTIONS
+            progress: `${Math.round(((questionNumber - 1) / TOTAL_QUESTIONS) * 100)}%`,
+            level: `${questionNumber}/${TOTAL_QUESTIONS}`,
+            time: formatTime(currentTime)
           }}
         />
 
@@ -446,12 +445,10 @@ const ResimKelimeEslestirmeSayfasi: React.FC<ResimKelimeEslestirmeSayfasiProps> 
           isPaused={true}
           isPlaying={false}
           stats={{
-            phase: 'Duraklatıldı',
             score: score,
-            progress: Math.round(((questionNumber - 1) / TOTAL_QUESTIONS) * 100),
-            timeElapsed: currentTime,
-            currentLevel: questionNumber,
-            totalLevels: TOTAL_QUESTIONS
+            progress: `${Math.round(((questionNumber - 1) / TOTAL_QUESTIONS) * 100)}%`,
+            level: `${questionNumber}/${TOTAL_QUESTIONS}`,
+            time: formatTime(currentTime)
           }}
         />
 
@@ -504,10 +501,9 @@ const ResimKelimeEslestirmeSayfasi: React.FC<ResimKelimeEslestirmeSayfasiProps> 
         onBack={onBack}
         showExitConfirmation={false}
         stats={{
-          phase: 'Tamamlandı',
           score: score,
-          progress: 100,
-          timeElapsed: currentTime
+          progress: '100%',
+          time: formatTime(currentTime)
         }}
       />
 

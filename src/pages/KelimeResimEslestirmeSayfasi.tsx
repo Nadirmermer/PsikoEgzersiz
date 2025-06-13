@@ -5,10 +5,10 @@ import { Progress } from '@/components/ui/progress'
 import { Badge } from '@/components/ui/badge'
 import { ArrowLeft, CheckCircle, XCircle, Trophy, Clock, Target, Brain, Lightbulb, Star, Play, RotateCcw, Pause, PlayCircle } from 'lucide-react'
 import { toast } from '@/components/ui/sonner'
-import { LocalStorageManager } from '../utils/localStorage'
-import { generateMatchingQuestion, MatchingQuestion, MatchingGameResult, ExerciseItem } from '../utils/matchingExerciseUtils'
-import ExerciseHeader from '../components/ExerciseHeader'
-import { useAudio } from '../hooks/useAudio'
+import { LocalStorageManager } from '@/utils/localStorage'
+import { generateMatchingQuestion, MatchingQuestion, MatchingGameResult, ExerciseItem } from '@/utils/matchingExerciseUtils'
+import ExerciseHeader from '@/components/ExerciseHeader'
+import { useAudio } from '@/hooks/useAudio'
 
 interface KelimeResimEslestirmeSayfasiProps {
   onBack: () => void
