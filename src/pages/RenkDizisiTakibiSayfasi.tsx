@@ -1,442 +1,152 @@
-import React, { useState, useEffect, useCallback } from 'react'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import React, { useEffect } from 'react'
+import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Progress } from '@/components/ui/progress'
-import { ArrowLeft, Play, RotateCcw, Palette, Clock, Target, Eye, Trophy, Star, Brain, Pause, PlayCircle } from 'lucide-react'
-import { LocalStorageManager } from '../utils/localStorage'
+import { CheckCircle, XCircle, Palette, Eye } from 'lucide-react'
+import UniversalGameEngine from '@/components/GameEngine/UniversalGameEngine'
+import { COLOR_SEQUENCE_CONFIG } from '@/components/GameEngine/gameConfigs'
+import { useUniversalGame } from '@/hooks/useUniversalGame'
+import { useColorSequence, colors } from '@/hooks/useColorSequence'
+import { GameResult } from '@/components/GameEngine/types'
 import { toast } from '@/components/ui/sonner'
-import ExerciseHeader from '../components/ExerciseHeader'
-import { useAudio } from '../hooks/useAudio'
+import { useAudio } from '@/hooks/useAudio'
 
-interface RenkDizisiTakibiProps {
+interface RenkDizisiTakibiSayfasiProps {
   onBack: () => void
 }
 
-interface GameState {
-  phase: 'ready' | 'showing' | 'input' | 'feedback' | 'completed' | 'paused'
-  currentLevel: number
-  sequence: number[]
-  userInput: number[]
-  showingIndex: number
-  score: number
-  correctCount: number
-  incorrectCount: number
-  startTime: number
-  currentTime: number
-  pausedTime: number
-}
-
-const colors = [
-  { id: 0, name: 'Kırmızı', bg: 'bg-red-500', hover: 'hover:bg-red-600', active: 'bg-red-600' },
-  { id: 1, name: 'Yeşil', bg: 'bg-green-500', hover: 'hover:bg-green-600', active: 'bg-green-600' },
-  { id: 2, name: 'Mavi', bg: 'bg-blue-500', hover: 'hover:bg-blue-600', active: 'bg-blue-600' },
-  { id: 3, name: 'Sarı', bg: 'bg-yellow-500', hover: 'hover:bg-yellow-600', active: 'bg-yellow-600' }
-]
-
-const RenkDizisiTakibiSayfasi: React.FC<RenkDizisiTakibiProps> = ({ onBack }) => {
+const RenkDizisiTakibiSayfasi: React.FC<RenkDizisiTakibiSayfasiProps> = ({ onBack }) => {
   const { playSound } = useAudio()
-  const [gameState, setGameState] = useState<GameState>({
-    phase: 'ready',
-    currentLevel: 1,
-    sequence: [],
-    userInput: [],
-    showingIndex: 0,
-    score: 0,
-    correctCount: 0,
-    incorrectCount: 0,
-    startTime: 0,
-    currentTime: 0,
-    pausedTime: 0
+  const FEEDBACK_DURATION = 3000
+
+  // Universal game hook
+  const universalGame = useUniversalGame({
+    exerciseName: 'Renk Dizisi Takibi',
+    onComplete: (result: GameResult) => {
+      console.log('Color sequence completed:', result)
+    }
   })
 
-  const [isGameActive, setIsGameActive] = useState(false)
-  const [highlightedColor, setHighlightedColor] = useState<number | null>(null)
+  // Color sequence specific logic
+  const sequenceGame = useColorSequence()
 
-  // Zamanlayıcı
+  // Initialize game on mount
   useEffect(() => {
-    if (!isGameActive) return
-
-    const interval = setInterval(() => {
-      setGameState(prev => ({
-        ...prev,
-        currentTime: Date.now() - prev.startTime
-      }))
-    }, 1000)
-
-    return () => clearInterval(interval)
-  }, [isGameActive])
-
-  const formatTime = (ms: number) => {
-    const seconds = Math.floor(ms / 1000)
-    const mins = Math.floor(seconds / 60)
-    const secs = seconds % 60
-    return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`
-  }
-
-  const generateSequence = useCallback((length: number): number[] => {
-    return Array.from({ length }, () => Math.floor(Math.random() * 4))
+    sequenceGame.initializeGame()
   }, [])
 
-  const startGame = useCallback(() => {
-    playSound('exercise-start')
-    const newSequence = generateSequence(1 + gameState.currentLevel)
-    setGameState(prev => ({
-      ...prev,
-      phase: 'showing',
-      sequence: newSequence,
-      userInput: [],
-      showingIndex: 0,
-      startTime: prev.startTime || Date.now()
-    }))
-    setIsGameActive(true)
-  }, [gameState.currentLevel, generateSequence, playSound])
-
-  const resetGame = useCallback(() => {
-    playSound('button-click')
-    setGameState({
-      phase: 'ready',
-      currentLevel: 1,
-      sequence: [],
-      userInput: [],
-      showingIndex: 0,
-      score: 0,
-      correctCount: 0,
-      incorrectCount: 0,
-      startTime: 0,
-      currentTime: 0,
-      pausedTime: 0
-    })
-    setIsGameActive(false)
-    setHighlightedColor(null)
-  }, [playSound])
-
-  const handlePauseGame = useCallback(() => {
-    setGameState(prev => ({
-      ...prev,
-      phase: 'paused',
-      pausedTime: Date.now()
-    }))
-    setIsGameActive(false)
-    toast.info('Oyun duraklatıldı')
-  }, [])
-
-  const handleResumeGame = useCallback(() => {
-    const pauseDuration = Date.now() - gameState.pausedTime
-    setGameState(prev => ({
-      ...prev,
-      phase: 'input',
-      startTime: prev.startTime + pauseDuration
-    }))
-    setIsGameActive(true)
-    toast.info('Oyun devam ediyor')
-  }, [gameState.pausedTime])
-
-  // Dizi gösterimi
+  // Handle game completion (when user makes a mistake or chooses to end)
   useEffect(() => {
-    if (gameState.phase !== 'showing') return
-
-    const showColor = () => {
-      setHighlightedColor(gameState.sequence[gameState.showingIndex])
-    }
-
-    const hideColor = () => {
-      setHighlightedColor(null)
+    if (sequenceGame.isGameCompleted && !universalGame.gameState.isCompleted) {
+      const finalStats = sequenceGame.getFinalStats()
       
-      if (gameState.showingIndex < gameState.sequence.length - 1) {
-        setGameState(prev => ({
-          ...prev,
-          showingIndex: prev.showingIndex + 1
-        }))
-      } else {
-        setGameState(prev => ({
-          ...prev,
-          phase: 'input',
-          showingIndex: 0
-        }))
+      const result: GameResult = {
+        exerciseName: 'Renk Dizisi Takibi',
+        score: finalStats.score,
+        duration: universalGame.gameState.duration,
+        completed: true,
+        accuracy: finalStats.correctCount > 0 ? (finalStats.correctCount / (finalStats.correctCount + finalStats.incorrectCount)) * 100 : 0,
+        details: {
+          exercise_name: 'Renk Dizisi Takibi',
+          max_level_reached: finalStats.maxLevelReached,
+          total_correct_sequences: finalStats.correctCount,
+          total_incorrect_sequences: finalStats.incorrectCount,
+          session_duration_seconds: universalGame.gameState.duration,
+          score: finalStats.score,
+          timestamp: new Date().toISOString()
+        },
+        timestamp: new Date().toISOString()
+      }
+      
+      universalGame.gameActions.onComplete(result)
+    }
+  }, [sequenceGame.isGameCompleted, universalGame.gameState.isCompleted])
+
+  // Update game stats
+  useEffect(() => {
+    universalGame.updateGameStats({
+      score: sequenceGame.score,
+      level: sequenceGame.currentLevel,
+      accuracy: sequenceGame.correctCount > 0 ? (sequenceGame.correctCount / (sequenceGame.correctCount + sequenceGame.incorrectCount)) * 100 : 0
+    })
+  }, [sequenceGame.score, sequenceGame.currentLevel, sequenceGame.correctCount, sequenceGame.incorrectCount])
+
+  // Handle feedback progression
+  useEffect(() => {
+    if (sequenceGame.phase === 'feedback') {
+      const timer = setTimeout(() => {
+        // Check if it was correct or incorrect
+        if (sequenceGame.userInput.length === sequenceGame.sequence.length && 
+            sequenceGame.userInput.every((input, index) => input === sequenceGame.sequence[index])) {
+          // Level completed successfully - move to next level
+          sequenceGame.nextLevel()
+        } else {
+          // Mistake made - retry same level
+          sequenceGame.retryLevel()
+        }
+      }, FEEDBACK_DURATION)
+      
+      return () => clearTimeout(timer)
+    }
+  }, [sequenceGame.phase])
+
+  // Custom game hook
+  const gameHook = () => ({
+    ...universalGame,
+    gameActions: {
+      ...universalGame.gameActions,
+      onStart: () => {
+        universalGame.gameActions.onStart()
+        sequenceGame.startNextLevel()
+      },
+      onRestart: () => {
+        sequenceGame.initializeGame()
+        universalGame.gameActions.onRestart()
       }
     }
+  })
 
-    const showTimer = setTimeout(showColor, 500)
-    const hideTimer = setTimeout(hideColor, 1250)
-
-    return () => {
-      clearTimeout(showTimer)
-      clearTimeout(hideTimer)
-    }
-  }, [gameState.phase, gameState.showingIndex, gameState.sequence])
-
-  const handleColorInput = useCallback((colorId: number) => {
-    if (gameState.phase !== 'input') return
-
-    const newUserInput = [...gameState.userInput, colorId]
-    const isCorrect = newUserInput[newUserInput.length - 1] === gameState.sequence[newUserInput.length - 1]
-
-    if (!isCorrect) {
-      // Hatalı giriş
-      playSound('wrong-answer')
-      setGameState(prev => ({
-        ...prev,
-        phase: 'feedback',
-        userInput: newUserInput,
-        incorrectCount: prev.incorrectCount + 1
-      }))
-      
+  // Handle color input
+  const handleColorInput = (colorId: number) => {
+    if (!universalGame.gameState.isPlaying || universalGame.gameState.isPaused) return
+    
+    playSound('button-click')
+    const result = sequenceGame.handleColorInput(colorId)
+    
+    if (result === 'incorrect') {
       toast.error('Yanlış! Aynı seviyeyi tekrar deneyin.')
-      
-      setTimeout(() => {
-        const newSequence = generateSequence(1 + gameState.currentLevel)
-        setGameState(prev => ({
-          ...prev,
-          phase: 'showing',
-          sequence: newSequence,
-          userInput: [],
-          showingIndex: 0
-        }))
-        setHighlightedColor(null)
-      }, 3000)
-      return
+    } else if (result === 'level_complete') {
+      toast.success(`Harika! Seviye ${sequenceGame.currentLevel - 1} tamamlandı!`)
     }
-
-    if (newUserInput.length === gameState.sequence.length) {
-      // Seviye tamamlandı
-      playSound('correct-answer')
-      const newScore = gameState.score + (gameState.currentLevel * 10)
-      setGameState(prev => ({
-        ...prev,
-        phase: 'feedback',
-        userInput: newUserInput,
-        score: newScore,
-        correctCount: prev.correctCount + 1,
-        currentLevel: prev.currentLevel + 1
-      }))
-
-      toast.success(`Harika! Seviye ${gameState.currentLevel} tamamlandı!`)
-
-      setTimeout(() => {
-        const newSequence = generateSequence(2 + gameState.currentLevel)
-        setGameState(prev => ({
-          ...prev,
-          phase: 'showing',
-          sequence: newSequence,
-          userInput: [],
-          showingIndex: 0
-        }))
-        setHighlightedColor(null)
-      }, 3000)
-    } else {
-      setGameState(prev => ({
-        ...prev,
-        userInput: newUserInput
-      }))
-    }
-  }, [gameState, generateSequence, playSound])
-
-  const handleGameEnd = useCallback(() => {
-    const duration = Math.floor(gameState.currentTime / 1000)
-    const maxLevel = gameState.currentLevel - 1
-
-    // Mükemmel skor kontrolü (hiç yanlış cevap yoksa)
-    if (gameState.incorrectCount === 0 && gameState.correctCount > 0) {
-      playSound('perfect-score')
-      toast.success(`🏆 MÜKEMMEL! Hiç hata yapmadınız!`)
-    } else {
-      playSound('exercise-complete')
-    }
-
-    // İlk defa tamamlama kontrolü
-    const previousResults = LocalStorageManager.getExerciseResults()
-    const colorResults = previousResults.filter(r => r.exerciseName === 'Renk Dizisi Takibi')
-    if (colorResults.length === 0) {
-      setTimeout(() => {
-        playSound('achievement')
-        toast.success(`🎖️ BAŞARI: İlk Renk Dizisi Takibi tamamlandı!`)
-      }, 1000)
-    }
-
-    const exerciseData = {
-      exercise_name: 'Renk Dizisi Takibi',
-      max_level_reached: maxLevel,
-      total_correct_sequences: gameState.correctCount,
-      total_incorrect_sequences: gameState.incorrectCount,
-      session_duration_seconds: duration,
-      score: gameState.score,
-      timestamp: new Date().toISOString()
-    }
-
-    LocalStorageManager.saveExerciseResult({
-      exerciseName: 'Renk Dizisi Takibi',
-      score: gameState.score,
-      duration,
-      date: new Date().toISOString(),
-      details: exerciseData,
-      completed: true,
-      exitedEarly: false
-    })
-
-    toast.success(`Oyun bitti! En yüksek seviye: ${maxLevel}`)
-    setIsGameActive(false)
-  }, [gameState, playSound])
-
-  const handleBackWithProgress = useCallback(() => {
-    playSound('button-click')
-    if (gameState.phase === 'showing' || gameState.phase === 'input') {
-      const duration = Math.floor(gameState.currentTime / 1000)
-      const currentProgress = {
-        currentLevel: gameState.currentLevel,
-        sequence: gameState.sequence,
-        userInput: gameState.userInput,
-        correctCount: gameState.correctCount,
-        incorrectCount: gameState.incorrectCount,
-        score: gameState.score,
-        phase: gameState.phase,
-        showingIndex: gameState.showingIndex
-      }
-      LocalStorageManager.savePartialProgress('Renk Dizisi Takibi', currentProgress, duration)
-    }
-    onBack()
-  }, [gameState, onBack, playSound])
-
-  if (gameState.phase === 'ready') {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/30 to-indigo-50/50 dark:from-slate-950 dark:via-blue-950/30 dark:to-indigo-950/50">
-        <ExerciseHeader
-          title="Renk Dizisi Takibi"
-          onBack={handleBackWithProgress}
-          showExitConfirmation={false}
-        />
-
-        {/* Content */}
-        <div className="container mx-auto px-4 py-8 pb-28 max-w-4xl">
-          <Card className="bg-white/60 dark:bg-gray-900/60 backdrop-blur-sm border-white/20 dark:border-gray-800/20 shadow-xl">
-            <CardHeader className="text-center pb-6">
-              <div className="w-20 h-20 bg-gradient-to-br from-primary to-primary/70 rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-lg">
-                <Palette className="w-10 h-10 text-white" />
-              </div>
-              <CardTitle className="text-2xl sm:text-3xl lg:text-4xl mb-4 bg-gradient-to-r from-primary via-purple-600 to-pink-600 bg-clip-text text-transparent">
-                Renk Dizisi Takibi
-              </CardTitle>
-              <CardDescription className="text-base sm:text-lg text-gray-600 dark:text-gray-300 max-w-2xl mx-auto">
-                Gösterilen renk dizisini hatırlayın ve aynı sırayla tekrarlayın. Her seviyede dizi uzunluğu artar.
-              </CardDescription>
-            </CardHeader>
-            
-            <CardContent className="space-y-8">
-              {/* Stats Grid */}
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                <div className="bg-white/40 dark:bg-gray-800/40 backdrop-blur-sm rounded-xl p-4 text-center border border-white/20 dark:border-gray-700/20">
-                  <div className="w-12 h-12 bg-primary/10 rounded-xl flex items-center justify-center mx-auto mb-3">
-                    <Target className="w-6 h-6 text-primary" />
-                  </div>
-                  <h3 className="font-semibold text-gray-700 dark:text-gray-300 mb-1">Başlangıç Seviyesi</h3>
-                  <p className="text-2xl font-bold text-primary">1</p>
-                </div>
-                <div className="bg-white/40 dark:bg-gray-800/40 backdrop-blur-sm rounded-xl p-4 text-center border border-white/20 dark:border-gray-700/20">
-                  <div className="w-12 h-12 bg-primary/10 rounded-xl flex items-center justify-center mx-auto mb-3">
-                    <Eye className="w-6 h-6 text-primary" />
-                  </div>
-                  <h3 className="font-semibold text-gray-700 dark:text-gray-300 mb-1">Gösterim Süresi</h3>
-                  <p className="text-2xl font-bold text-primary">0.75s/renk</p>
-                </div>
-                <div className="bg-white/40 dark:bg-gray-800/40 backdrop-blur-sm rounded-xl p-4 text-center border border-white/20 dark:border-gray-700/20">
-                  <div className="w-12 h-12 bg-primary/10 rounded-xl flex items-center justify-center mx-auto mb-3">
-                    <Trophy className="w-6 h-6 text-primary" />
-                  </div>
-                  <h3 className="font-semibold text-gray-700 dark:text-gray-300 mb-1">Zorluk</h3>
-                  <p className="text-2xl font-bold text-primary">Artan</p>
-                </div>
-              </div>
-
-              {/* Color Preview */}
-              <div className="bg-gradient-to-r from-blue-50/50 to-indigo-50/50 dark:from-blue-950/20 dark:to-indigo-950/20 backdrop-blur-sm rounded-xl p-6 border border-blue-200/20 dark:border-blue-800/20">
-                <h4 className="font-bold mb-4 flex items-center gap-2 text-gray-800 dark:text-gray-200">
-                  <Palette className="w-5 h-5 text-primary" />
-                  Renkler
-                </h4>
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-                  {colors.map((color) => (
-                    <div key={color.id} className="text-center">
-                      <div className={`w-16 h-16 ${color.bg} rounded-xl mx-auto mb-2 shadow-lg`} />
-                      <span className="text-sm text-gray-600 dark:text-gray-300">{color.name}</span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              {/* Instructions */}
-              <div className="bg-gradient-to-r from-green-50/50 to-emerald-50/50 dark:from-green-950/20 dark:to-emerald-950/20 backdrop-blur-sm rounded-xl p-6 border border-green-200/20 dark:border-green-800/20">
-                <h4 className="font-bold mb-4 flex items-center gap-2 text-gray-800 dark:text-gray-200">
-                  <Brain className="w-5 h-5 text-primary" />
-                  Nasıl Oynanır?
-                </h4>
-                <ul className="space-y-3 text-sm text-gray-600 dark:text-gray-300">
-                  <li className="flex items-start gap-3">
-                    <span className="flex-shrink-0 w-6 h-6 bg-primary/10 rounded-full flex items-center justify-center text-primary font-semibold text-xs">1</span>
-                    <span>Ekranda renkler sırayla yanıp sönecek</span>
-                  </li>
-                  <li className="flex items-start gap-3">
-                    <span className="flex-shrink-0 w-6 h-6 bg-primary/10 rounded-full flex items-center justify-center text-primary font-semibold text-xs">2</span>
-                    <span>Renkleri hatırlayın ve aynı sırayla tıklayın</span>
-                  </li>
-                  <li className="flex items-start gap-3">
-                    <span className="flex-shrink-0 w-6 h-6 bg-primary/10 rounded-full flex items-center justify-center text-primary font-semibold text-xs">3</span>
-                    <span>Her seviyede dizi uzunluğu artar</span>
-                  </li>
-                  <li className="flex items-start gap-3">
-                    <span className="flex-shrink-0 w-6 h-6 bg-primary/10 rounded-full flex items-center justify-center text-primary font-semibold text-xs">4</span>
-                    <span>Hata yaparsanız aynı seviyeyi tekrar denersiniz</span>
-                  </li>
-                </ul>
-              </div>
-
-              {/* Start Button */}
-              <div className="text-center pt-4">
-                <Button 
-                  onClick={startGame}
-                  size="lg"
-                  className="bg-gradient-to-r from-primary to-purple-600 hover:from-primary/90 hover:to-purple-600/90 text-white px-8 py-3 rounded-xl shadow-lg hover:shadow-xl transition-all duration-200 text-base font-semibold"
-                >
-                  <Play className="w-5 h-5 mr-2" />
-                  Egzersizi Başlat
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-      </div>
-    )
   }
 
-  if (gameState.phase === 'showing') {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/30 to-indigo-50/50 dark:from-slate-950 dark:via-blue-950/30 dark:to-indigo-950/50">
-                 <ExerciseHeader
-           title="Renk Dizisi Takibi"
-           onBack={handleBackWithProgress}
-           onPause={handlePauseGame}
-           onRestart={resetGame}
-           isPaused={false}
-           isPlaying={true}
-           stats={{
-             time: formatTime(gameState.currentTime),
-             level: gameState.currentLevel,
-             score: gameState.score,
-             progress: `Gösteriliyor...`
-           }}
-           showExitConfirmation={true}
-         />
+  return (
+    <UniversalGameEngine
+      gameConfig={COLOR_SEQUENCE_CONFIG}
+      gameHook={gameHook}
+      onBack={onBack}
+    >
+      {/* Game Content - Only show when playing */}
+      {universalGame.gameState.phase === 'playing' && (
+        <div className="w-full max-w-4xl mx-auto space-y-6">
 
-        {/* Content */}
-        <div className="container mx-auto px-4 py-8 pb-28 max-w-4xl">
-          <Card className="bg-white/60 dark:bg-gray-900/60 backdrop-blur-sm border-white/20 dark:border-gray-800/20 shadow-xl">
-            <CardContent className="p-8">
-              <div className="text-center">
-                <h2 className="text-2xl font-bold mb-4 text-gray-800 dark:text-gray-200">
-                  Seviye {gameState.currentLevel}
-                </h2>
-                <p className="text-lg text-gray-600 dark:text-gray-300 mb-8">
-                  Renkleri hatırlayın
-                </p>
+          {/* Showing Phase */}
+          {sequenceGame.phase === 'showing' && (
+            <Card className="bg-white/70 dark:bg-gray-900/70 backdrop-blur-sm border-white/30 dark:border-gray-800/30 shadow-xl">
+              <CardContent className="p-6 sm:p-8 text-center">
+                
+                {/* Level Badge */}
+                <div className="mb-4">
+                  <Badge variant="secondary" className="text-sm px-3 py-1 bg-primary/10 text-primary border-primary/20">
+                    <Palette className="w-4 h-4 mr-1" />
+                    Seviye {sequenceGame.currentLevel}
+                  </Badge>
+                </div>
+
+                <h3 className="text-xl sm:text-2xl font-semibold mb-6 text-gray-700 dark:text-gray-300">
+                  Renkleri Hatırlayın
+                </h3>
                 
                 {/* Color Display */}
                 <div className="flex justify-center mb-8">
@@ -445,10 +155,10 @@ const RenkDizisiTakibiSayfasi: React.FC<RenkDizisiTakibiProps> = ({ onBack }) =>
                       <div
                         key={color.id}
                         className={`
-                          w-24 h-24 rounded-xl transition-all duration-300 shadow-lg
-                          ${highlightedColor === color.id 
+                          w-24 h-24 sm:w-28 sm:h-28 rounded-xl transition-all duration-300 shadow-lg
+                          ${sequenceGame.highlightedColor === color.id 
                             ? `${color.bg} scale-110 ring-4 ring-white shadow-2xl` 
-                            : `${color.bg} opacity-50`
+                            : `${color.bg} opacity-30`
                           }
                         `}
                       />
@@ -457,60 +167,49 @@ const RenkDizisiTakibiSayfasi: React.FC<RenkDizisiTakibiProps> = ({ onBack }) =>
                 </div>
 
                 <Progress 
-                  value={(gameState.showingIndex + 1) / gameState.sequence.length * 100} 
-                  className="h-2 bg-white/40 dark:bg-gray-800/40 backdrop-blur-sm max-w-md mx-auto"
+                  value={(sequenceGame.showingIndex + 1) / sequenceGame.sequence.length * 100} 
+                  className="h-3 bg-white/40 dark:bg-gray-800/40 backdrop-blur-sm max-w-md mx-auto"
                 />
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-      </div>
-    )
-  }
+                
+                <p className="text-sm text-gray-600 dark:text-gray-400 mt-4">
+                  {sequenceGame.showingIndex + 1} / {sequenceGame.sequence.length}
+                </p>
+              </CardContent>
+            </Card>
+          )}
 
-  if (gameState.phase === 'input') {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/30 to-indigo-50/50 dark:from-slate-950 dark:via-blue-950/30 dark:to-indigo-950/50">
-        <ExerciseHeader
-          title="Renk Dizisi Takibi"
-          onBack={handleBackWithProgress}
-          onPause={handlePauseGame}
-          onRestart={resetGame}
-          isPaused={false}
-          isPlaying={true}
-          stats={{
-            time: formatTime(gameState.currentTime),
-            level: gameState.currentLevel,
-            score: gameState.score,
-            progress: `${gameState.userInput.length}/${gameState.sequence.length}`
-          }}
-          showExitConfirmation={true}
-        />
+          {/* Input Phase */}
+          {sequenceGame.phase === 'input' && (
+            <Card className="bg-white/70 dark:bg-gray-900/70 backdrop-blur-sm border-white/30 dark:border-gray-800/30 shadow-xl">
+              <CardContent className="p-6 sm:p-8 text-center">
+                
+                {/* Level Badge */}
+                <div className="mb-4">
+                  <Badge variant="secondary" className="text-sm px-3 py-1 bg-primary/10 text-primary border-primary/20">
+                    <Eye className="w-4 h-4 mr-1" />
+                    Seviye {sequenceGame.currentLevel} - Seçim
+                  </Badge>
+                </div>
 
-        {/* Content */}
-        <div className="container mx-auto px-4 py-8 pb-28 max-w-4xl">
-          <Card className="bg-white/60 dark:bg-gray-900/60 backdrop-blur-sm border-white/20 dark:border-gray-800/20 shadow-xl">
-            <CardContent className="p-8">
-              <div className="text-center">
-                <h2 className="text-2xl font-bold mb-4 text-gray-800 dark:text-gray-200">
+                <h3 className="text-xl sm:text-2xl font-semibold mb-2 text-gray-700 dark:text-gray-300">
                   Renkleri Seçin
-                </h2>
-                <p className="text-lg text-gray-600 dark:text-gray-300 mb-8">
-                  Gördüğünüz sırayla renkleri tıklayın ({gameState.userInput.length}/{gameState.sequence.length})
+                </h3>
+                <p className="text-base text-gray-600 dark:text-gray-400 mb-6">
+                  Gördüğünüz sırayla renkleri tıklayın ({sequenceGame.userInput.length}/{sequenceGame.sequence.length})
                 </p>
                 
-                {/* User Input Display */}
-                <div className="flex justify-center items-center gap-4 mb-8">
-                  {gameState.sequence.map((colorId, index) => (
+                {/* User Input Progress */}
+                <div className="flex justify-center items-center gap-2 mb-8 flex-wrap">
+                  {sequenceGame.sequence.map((_, index) => (
                     <div
                       key={index}
                       className={`
-                        w-16 h-16 rounded-xl transition-all duration-300 border-4
-                        ${index < gameState.userInput.length
-                          ? `${colors[colorId].bg} border-white shadow-lg`
-                          : index === gameState.userInput.length
-                            ? 'bg-gray-200 dark:bg-gray-700 border-primary border-dashed'
-                            : 'bg-gray-100 dark:bg-gray-800 border-gray-300 dark:border-gray-600'
+                        w-8 h-8 rounded-lg transition-all duration-300
+                        ${index < sequenceGame.userInput.length
+                          ? `${colors[sequenceGame.userInput[index]].bg}`
+                          : index === sequenceGame.userInput.length
+                            ? 'bg-primary/20 border-2 border-primary border-dashed animate-pulse'
+                            : 'bg-gray-200 dark:bg-gray-700'
                         }
                       `}
                     />
@@ -519,184 +218,118 @@ const RenkDizisiTakibiSayfasi: React.FC<RenkDizisiTakibiProps> = ({ onBack }) =>
 
                 {/* Color Buttons */}
                 <div className="flex justify-center">
-                  <div className="grid grid-cols-2 gap-6 w-fit">
+                  <div className="grid grid-cols-2 gap-4 w-fit">
                     {colors.map((color) => (
                       <Button
                         key={color.id}
                         variant="outline"
-                        size="lg"
-                                                  onClick={() => {
-                            playSound('button-click')
-                            handleColorInput(color.id)
-                          }}
+                        onClick={() => handleColorInput(color.id)}
                         className={`
-                          w-24 h-24 rounded-xl border-4 border-white/20 dark:border-gray-700/20 
-                          ${color.bg} ${color.hover} hover:scale-105 transition-all duration-200 shadow-lg hover:shadow-xl
+                          w-24 h-24 sm:w-28 sm:h-28 ${color.bg} ${color.hover} 
+                          border-2 border-white/30 hover:border-white/60 
+                          shadow-lg hover:shadow-xl hover:scale-105 
+                          transition-all duration-200 rounded-xl
                         `}
+                        aria-label={color.name}
                       />
                     ))}
                   </div>
                 </div>
 
+                {/* Color Names */}
+                <div className="grid grid-cols-2 gap-4 max-w-xs mx-auto mt-4">
+                  {colors.map((color) => (
+                    <p key={color.id} className="text-sm text-gray-600 dark:text-gray-400 text-center">
+                      {color.name}
+                    </p>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+          )}
 
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-      </div>
-    )
-  }
+          {/* Feedback Phase */}
+          {sequenceGame.phase === 'feedback' && (
+            <Card className="bg-white/70 dark:bg-gray-900/70 backdrop-blur-sm border-white/30 dark:border-gray-800/30 shadow-xl">
+              <CardContent className="p-6 sm:p-8 text-center">
+                
+                {/* Success/Failure Display */}
+                <div className="mb-6">
+                  {sequenceGame.userInput.length === sequenceGame.sequence.length && 
+                   sequenceGame.userInput.every((input, index) => input === sequenceGame.sequence[index]) ? (
+                    <div className="text-green-600 dark:text-green-400">
+                      <CheckCircle className="w-16 h-16 mx-auto mb-4" />
+                      <h3 className="text-2xl font-bold mb-2">Mükemmel!</h3>
+                      <p className="text-lg">Seviye {sequenceGame.currentLevel - 1} tamamlandı!</p>
+                      <p className="text-sm mt-2">+{(sequenceGame.currentLevel - 1) * 10} puan</p>
+                    </div>
+                  ) : (
+                    <div className="text-red-600 dark:text-red-400">
+                      <XCircle className="w-16 h-16 mx-auto mb-4" />
+                      <h3 className="text-2xl font-bold mb-2">Üzgünüm!</h3>
+                      <p className="text-lg">Tekrar deneyin</p>
+                    </div>
+                  )}
+                </div>
 
-  if (gameState.phase === 'paused') {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/30 to-indigo-50/50 dark:from-slate-950 dark:via-blue-950/30 dark:to-indigo-950/50">
-        <ExerciseHeader
-          title="Renk Dizisi Takibi"
-          onBack={handleBackWithProgress}
-          onResume={handleResumeGame}
-          onRestart={resetGame}
-          isPaused={true}
-          isPlaying={false}
-          stats={{
-            time: formatTime(gameState.currentTime),
-            level: gameState.currentLevel,
-            score: gameState.score,
-            progress: `${gameState.userInput.length}/${gameState.sequence.length}`
-          }}
-          showExitConfirmation={true}
-        />
+                {/* Sequence Comparison */}
+                <div className="space-y-4">
+                  <div className="text-sm text-gray-600 dark:text-gray-400">Doğru Dizi:</div>
+                  <div className="flex justify-center items-center gap-2 mb-4 flex-wrap">
+                    {sequenceGame.sequence.map((colorId, index) => (
+                      <div key={index} className={`w-12 h-12 ${colors[colorId].bg} border border-green-300 dark:border-green-700 rounded-lg shadow-lg`} />
+                    ))}
+                  </div>
+                  
+                  <div className="text-sm text-gray-600 dark:text-gray-400">Sizin Seçiminiz:</div>
+                  <div className="flex justify-center items-center gap-2 flex-wrap">
+                    {sequenceGame.userInput.map((colorId, index) => {
+                      const isCorrect = colorId === sequenceGame.sequence[index]
+                      return (
+                        <div key={index} className={`w-12 h-12 ${colors[colorId].bg} border rounded-lg shadow-lg ${
+                          isCorrect 
+                            ? 'border-green-300 dark:border-green-700'
+                            : 'border-red-300 dark:border-red-700'
+                        }`} />
+                      )
+                    })}
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          )}
 
-        {/* Pause Overlay */}
-        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50">
-          <Card className="bg-white/90 dark:bg-gray-900/90 backdrop-blur-sm border-white/20 dark:border-gray-800/20 shadow-2xl max-w-md mx-4">
-            <CardContent className="p-8 text-center">
-              <div className="w-16 h-16 bg-orange-100 dark:bg-orange-900/20 rounded-2xl flex items-center justify-center mx-auto mb-4">
-                <Pause className="w-8 h-8 text-orange-600 dark:text-orange-400" />
-              </div>
-              <h3 className="text-xl font-bold text-gray-800 dark:text-gray-200 mb-2">Oyun Duraklatıldı</h3>
-              <p className="text-gray-600 dark:text-gray-300 mb-6">Devam etmek için butona tıklayın</p>
-              <div className="flex gap-3 justify-center">
-                <Button onClick={handleResumeGame} className="bg-gradient-to-r from-green-500 to-emerald-600">
-                  <PlayCircle className="w-4 h-4 mr-2" />
-                  Devam Et
-                </Button>
-                <Button onClick={resetGame} variant="outline">
-                  <RotateCcw className="w-4 h-4 mr-2" />
-                  Yeniden Başla
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-      </div>
-    )
-  }
-
-  if (gameState.phase === 'feedback') {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/30 to-indigo-50/50 dark:from-slate-950 dark:via-blue-950/30 dark:to-indigo-950/50">
-        {/* Header */}
-        <div className="bg-white/60 dark:bg-gray-900/60 backdrop-blur-sm border-b border-white/20 dark:border-gray-800/20 sticky top-0 z-10">
-          <div className="container mx-auto px-4 py-4">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-4">
-                <Button 
-                  variant="ghost" 
-                  size="sm"
-                  onClick={handleGameEnd}
-                  className="text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white"
-                >
-                  <ArrowLeft className="w-4 h-4 mr-2" />
-                  Bitir
-                </Button>
-                <div className="h-6 w-px bg-gray-300 dark:bg-gray-600" />
-                <h1 className="text-lg sm:text-xl font-semibold bg-gradient-to-r from-primary via-purple-600 to-pink-600 bg-clip-text text-transparent">
-                  Renk Dizisi Takibi
-                </h1>
-              </div>
-              <div className="flex items-center gap-3">
-                <Badge variant="secondary" className="bg-white/60 dark:bg-gray-800/60 backdrop-blur-sm">
-                  <Clock className="w-3 h-3 mr-1" />
-                  {formatTime(gameState.currentTime)}
-                </Badge>
-                <Badge variant="secondary" className="bg-white/60 dark:bg-gray-800/60 backdrop-blur-sm">
-                  <Star className="w-3 h-3 mr-1" />
-                  Skor: {gameState.score}
-                </Badge>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Content */}
-        <div className="container mx-auto px-4 py-8 pb-28 max-w-4xl">
-          <Card className="bg-white/60 dark:bg-gray-900/60 backdrop-blur-sm border-white/20 dark:border-gray-800/20 shadow-xl">
-            <CardHeader className="text-center pb-6">
-              <div className="w-20 h-20 bg-gradient-to-br from-green-500 to-emerald-600 rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-lg">
-                <Trophy className="w-10 h-10 text-white" />
-              </div>
-              <CardTitle className="text-2xl sm:text-3xl lg:text-4xl mb-4 bg-gradient-to-r from-green-600 via-emerald-600 to-teal-600 bg-clip-text text-transparent">
-                Oyun Devam Ediyor!
-              </CardTitle>
-              <CardDescription className="text-base sm:text-lg text-gray-600 dark:text-gray-300">
-                En yüksek seviye: {gameState.currentLevel - 1}
-              </CardDescription>
-            </CardHeader>
+          {/* Stats */}
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <Card className="bg-white/60 dark:bg-gray-900/60 backdrop-blur-sm border-white/20 dark:border-gray-800/20">
+              <CardContent className="p-4 text-center">
+                <div className="text-2xl font-bold text-primary">{sequenceGame.currentLevel}</div>
+                <div className="text-sm text-gray-600 dark:text-gray-300">Mevcut Seviye</div>
+              </CardContent>
+            </Card>
             
-            <CardContent className="space-y-8">
-              {/* Results Grid */}
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                <div className="bg-white/40 dark:bg-gray-800/40 backdrop-blur-sm rounded-xl p-4 text-center border border-white/20 dark:border-gray-700/20">
-                  <div className="w-12 h-12 bg-green-100 dark:bg-green-900/20 rounded-xl flex items-center justify-center mx-auto mb-3">
-                    <Target className="w-6 h-6 text-green-600 dark:text-green-400" />
-                  </div>
-                  <h3 className="font-semibold text-gray-700 dark:text-gray-300 mb-1">Doğru Diziler</h3>
-                  <p className="text-2xl font-bold text-green-600 dark:text-green-400">{gameState.correctCount}</p>
+            <Card className="bg-white/60 dark:bg-gray-900/60 backdrop-blur-sm border-white/20 dark:border-gray-800/20">
+              <CardContent className="p-4 text-center">
+                <div className="text-2xl font-bold text-primary">{sequenceGame.score}</div>
+                <div className="text-sm text-gray-600 dark:text-gray-300">Skor</div>
+              </CardContent>
+            </Card>
+            
+            <Card className="bg-white/60 dark:bg-gray-900/60 backdrop-blur-sm border-white/20 dark:border-gray-800/20">
+              <CardContent className="p-4 text-center">
+                <div className="flex justify-center gap-3">
+                  <span className="text-green-600 dark:text-green-400 font-semibold">✓ {sequenceGame.correctCount}</span>
+                  <span className="text-red-600 dark:text-red-400 font-semibold">✗ {sequenceGame.incorrectCount}</span>
                 </div>
-                <div className="bg-white/40 dark:bg-gray-800/40 backdrop-blur-sm rounded-xl p-4 text-center border border-white/20 dark:border-gray-700/20">
-                  <div className="w-12 h-12 bg-blue-100 dark:bg-blue-900/20 rounded-xl flex items-center justify-center mx-auto mb-3">
-                    <Clock className="w-6 h-6 text-blue-600 dark:text-blue-400" />
-                  </div>
-                  <h3 className="font-semibold text-gray-700 dark:text-gray-300 mb-1">Süre</h3>
-                  <p className="text-2xl font-bold text-blue-600 dark:text-blue-400">{formatTime(gameState.currentTime)}</p>
-                </div>
-                <div className="bg-white/40 dark:bg-gray-800/40 backdrop-blur-sm rounded-xl p-4 text-center border border-white/20 dark:border-gray-700/20">
-                  <div className="w-12 h-12 bg-purple-100 dark:bg-purple-900/20 rounded-xl flex items-center justify-center mx-auto mb-3">
-                    <Star className="w-6 h-6 text-purple-600 dark:text-purple-400" />
-                  </div>
-                  <h3 className="font-semibold text-gray-700 dark:text-gray-300 mb-1">Skor</h3>
-                  <p className="text-2xl font-bold text-purple-600 dark:text-purple-400">{gameState.score}</p>
-                </div>
-              </div>
+                <div className="text-sm text-gray-600 dark:text-gray-300">Doğru/Yanlış</div>
+              </CardContent>
+            </Card>
+          </div>
 
-              {/* Action Buttons */}
-              <div className="flex flex-col sm:flex-row gap-4 justify-center pt-4">
-                <Button 
-                  onClick={handleGameEnd}
-                  variant="outline"
-                  size="lg"
-                  className="bg-white/40 dark:bg-gray-800/40 backdrop-blur-sm border-white/20 dark:border-gray-700/20 hover:bg-white/60 dark:hover:bg-gray-800/60"
-                >
-                  <Trophy className="w-5 h-5 mr-2" />
-                  Oyunu Bitir
-                </Button>
-                <Button 
-                  onClick={onBack}
-                  size="lg"
-                  className="bg-gradient-to-r from-primary to-purple-600 hover:from-primary/90 hover:to-purple-600/90 text-white shadow-lg hover:shadow-xl transition-all duration-200"
-                >
-                  <ArrowLeft className="w-5 h-5 mr-2" />
-                  Egzersizlere Dön
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
         </div>
-      </div>
-    )
-  }
-
-  return null
+      )}
+    </UniversalGameEngine>
+  )
 }
 
 export default RenkDizisiTakibiSayfasi
