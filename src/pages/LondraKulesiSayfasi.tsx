@@ -392,7 +392,7 @@ const TowerOfLondonGame: React.FC = () => {
 
   const towerLabels = ['Sol Kule', 'Orta Kule', 'Sağ Kule']
 
-  return (
+    return (
     <div className="w-full max-w-4xl mx-auto space-y-6">
       
       {/* Standart Oyun Başlığı */}
@@ -405,7 +405,7 @@ const TowerOfLondonGame: React.FC = () => {
               <Building className="w-4 h-4 mr-1" />
               Seviye {currentLevel} - Londra Kulesi
             </Badge>
-          </div>
+              </div>
 
           {/* Standart Başlık */}
           <h3 className="text-xl sm:text-2xl font-semibold mb-2 text-gray-700 dark:text-gray-300">
@@ -420,7 +420,7 @@ const TowerOfLondonGame: React.FC = () => {
             <span>Hamle: <strong className="text-primary">{moves}</strong></span>
             <span>Optimal: <strong className="text-green-600">{currentConfig.minMoves}</strong></span>
             <span>Seviye: <strong className="text-blue-600">{currentLevel}/25</strong></span>
-          </div>
+                  </div>
         </CardContent>
       </Card>
 
@@ -482,9 +482,9 @@ const TowerOfLondonGame: React.FC = () => {
                 </div>
               </div>
             ))}
-          </div>
-        </CardContent>
-      </Card>
+            </div>
+            </CardContent>
+          </Card>
 
       {/* Hedef Durum */}
       <Card className="bg-green-50/50 dark:bg-green-950/20 backdrop-blur-sm border-green-200/20 dark:border-green-800/20">
@@ -496,7 +496,7 @@ const TowerOfLondonGame: React.FC = () => {
                 {/* Kule Etiketi */}
                 <div className="font-medium px-4 py-2 rounded-full bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300 text-sm">
                   {towerLabels[index]}
-                </div>
+          </div>
 
                 {/* Kule ve Toplar */}
                 <div className="relative flex flex-col items-center">
@@ -508,22 +508,22 @@ const TowerOfLondonGame: React.FC = () => {
                     {tower.map((ballColor, ballIndex) => (
                       <div
                         key={ballIndex}
-                        className={`
+                      className={`
                           w-8 h-8 rounded-full mb-1 border-2 border-white/50 opacity-80
                           ${getBallStyle(ballColor)}
                         `}
-                      />
-                    ))}
-                  </div>
-
+                          />
+                        ))}
+                    </div>
+                    
                   {/* Base Platform */}
                   <div className="w-16 h-3 rounded-lg bg-green-300 dark:bg-green-600 -mt-1 z-5" />
-                </div>
+                  </div>
               </div>
             ))}
-          </div>
-        </CardContent>
-      </Card>
+              </div>
+            </CardContent>
+          </Card>
 
       {/* Yardım İpuçları - Sadece seçim yapıldığında */}
       {selectedTower !== null && (
@@ -563,7 +563,7 @@ const TowerOfLondonGame: React.FC = () => {
                 }`}>
                   {moves === currentConfig.minMoves ? '🏆 Mükemmel!' : moves <= currentConfig.minMoves + 2 ? '👍 İyi!' : '💪 Denemeye devam!'}
                 </div>
-              </div>
+                </div>
 
               {/* Seviye geçiş bilgisi */}
               <div className="text-sm text-yellow-600 dark:text-yellow-400">
@@ -572,7 +572,7 @@ const TowerOfLondonGame: React.FC = () => {
                 ) : (
                   <p>🏆 Tüm seviyeler tamamlandı!</p>
                 )}
-              </div>
+        </div>
 
               {/* Sadece yeniden oynama butonu */}
               <div className="flex gap-3 justify-center">
