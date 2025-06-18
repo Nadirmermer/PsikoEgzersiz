@@ -116,11 +116,6 @@ export const useMemoryGame = ({ level }: UseMemoryGameProps) => {
       interval = setInterval(() => {
         const newDuration = Math.floor((Date.now() - startTime) / 1000)
         setDuration(newDuration)
-        
-        // Her 10 saniyede bir timer-tick sesi çal
-        if (newDuration > 0 && newDuration % 10 === 0) {
-          playSound('timer-tick')
-        }
       }, 1000)
     }
     

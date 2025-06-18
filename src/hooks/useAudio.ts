@@ -240,6 +240,33 @@ export const useAudio = () => {
     importantSounds.forEach(preloadSound)
   }, [preloadSound])
 
+  // Sayfa arka plana geçtiğinde sesleri durdur
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      if (document.hidden) {
+        // Sayfa arka plana geçti, tüm sesleri durdur
+        stopAllSounds()
+      }
+    }
+
+    const handleBlur = () => {
+      // Pencere focus kaybetti, sesleri durdur
+      stopAllSounds()
+    }
+
+    // Event listener'ları ekle
+    document.addEventListener('visibilitychange', handleVisibilityChange)
+    window.addEventListener('blur', handleBlur)
+    window.addEventListener('pagehide', stopAllSounds)
+
+    return () => {
+      // Event listener'ları temizle
+      document.removeEventListener('visibilitychange', handleVisibilityChange)
+      window.removeEventListener('blur', handleBlur)
+      window.removeEventListener('pagehide', stopAllSounds)
+    }
+  }, [stopAllSounds])
+
   // Cleanup
   useEffect(() => {
     return () => {
