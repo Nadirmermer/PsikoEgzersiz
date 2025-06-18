@@ -1,7 +1,7 @@
 {
-  "name": "Bilişsel Egzersiz Uygulaması",
-  "short_name": "Bilişsel Egzersiz",
-  "description": "Ruh sağlığı uzmanları için bilişsel egzersiz ve analiz platformu",
+  "name": "PsikoEgzersiz",
+  "short_name": "PsikoEgzersiz",
+  "description": "Bilişsel egzersizler ile zihin sağlığınızı geliştiren modern uygulama",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#ffffff",

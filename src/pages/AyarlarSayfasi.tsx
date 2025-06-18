@@ -806,6 +806,16 @@ const AyarlarSayfasi: React.FC = () => {
 
         <Card className="text-center">
           <CardContent className="pt-6">
+            <Shield className="w-8 h-8 text-primary mx-auto mb-2" />
+            <h3 className="font-semibold mb-1">Yapımcı</h3>
+            <p className="text-sm text-muted-foreground">
+              Nadir Mermer Tarafından yapılmıştır.
+            </p>
+          </CardContent>
+        </Card>
+
+        <Card className="text-center">
+          <CardContent className="pt-6">
             <Users className="w-8 h-8 text-primary mx-auto mb-2" />
             <h3 className="font-semibold mb-1">Veri Paylaşımı</h3>
             <p className="text-sm text-muted-foreground">

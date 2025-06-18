@@ -1,21 +1,22 @@
 
-# Bilişsel Egzersiz Uygulaması
+# PsikoEgzersiz
 
-![Bilişsel Egzersiz Uygulaması](https://via.placeholder.com/800x400/6366f1/ffffff?text=Bilişsel+Egzersiz+Uygulaması)
+![PsikoEgzersiz](https://via.placeholder.com/800x400/6366f1/ffffff?text=PsikoEgzersiz)
 
 ## Proje Hakkında
 
-Bilişsel Egzersiz Uygulaması, beyin sağlığını desteklemek ve bilişsel yetenekleri geliştirmek amacıyla tasarlanmış modern bir web uygulamasıdır. Tablet ve mobil cihazlarda kullanım için optimize edilmiş olan bu platform, ruh sağlığı uzmanları ve bireysel kullanıcılar için kapsamlı bilişsel egzersiz çözümleri sunar.
+PsikoEgzersiz, beyin sağlığını desteklemek ve bilişsel yetenekleri geliştirmek amacıyla tasarlanmış modern bir cross-platform uygulamasıdır. Web, Windows, macOS ve Linux platformlarında çalışabilen bu uygulama, ruh sağlığı uzmanları ve bireysel kullanıcılar için kapsamlı bilişsel egzersiz çözümleri sunar.
 
 Uygulama, bilimsel araştırmalara dayalı egzersizler sunarak hafıza, dikkat, problem çözme ve mantıksal düşünme becerilerini geliştirmeyi hedefler. Uzman-danışan etkileşimi ve detaylı ilerleme takibi ile profesyonel kullanım için de uygundur.
 
 ## Öne Çıkan Özellikler
 
-### 🧠 8 Farklı Bilişsel Egzersiz
+### 🧠 9 Farklı Bilişsel Egzersiz
 - **Hafıza Oyunu**: Kart eşleştirme ile görsel hafızayı güçlendirme
 - **Resim-Kelime Eşleştirme**: Görsel-dil bağlantısını geliştirme
 - **Kelime-Resim Eşleştirme**: Kavramsal anlayışı artırma
 - **Londra Kulesi Testi**: Planlama ve problem çözme becerileri
+- **Hanoi Kuleleri**: Algoritma ve strateji geliştirme (18 seviye)
 - **Sayı Dizisi Takibi**: Çalışan hafıza ve konsantrasyon
 - **Renk Dizisi Takibi**: Görsel hafıza ve dikkati geliştirme
 - **Kelime Çemberi Bulmacası**: Dil becerileri ve kelime bilgisi
@@ -69,7 +70,8 @@ Uygulama, bilimsel araştırmalara dayalı egzersizler sunarak hafıza, dikkat, 
 - **Recharts** - Veri görselleştirme
 - **Lucide React** - İkon kütüphanesi
 
-### Mobile & Deployment
+### Desktop & Deployment  
+- **Electron** - Cross-platform masaüstü uygulaması
 - **Capacitor** - Cross-platform mobil uygulama
 - **Netlify** - Web hosting ve deployment
 
@@ -82,8 +84,8 @@ Uygulama, bilimsel araştırmalara dayalı egzersizler sunarak hafıza, dikkat, 
 
 ### 1. Projeyi Klonlayın
 ```bash
-git clone https://github.com/your-username/cognitive-exercise-app.git
-cd cognitive-exercise-app
+git clone https://github.com/your-username/psikoegzersiz.git
+cd psikoegzersiz
 ```
 
 ### 2. Bağımlılıkları Yükleyin
@@ -123,6 +125,21 @@ Uygulama `http://localhost:5173` adresinde çalışacaktır.
 4. Deploy butonuna tıklayın
 
 Netlify otomatik olarak `netlify.toml` yapılandırmasını kullanacaktır.
+
+### Masaüstü Uygulaması (Electron)
+```bash
+# Electron bağımlılıklarını yükleyin
+npm install
+
+# Geliştirme modunda çalıştırın
+npm run electron:dev
+
+# Production build oluşturun
+npm run electron:build
+
+# Dağıtım paketleri oluşturun
+npm run electron:dist
+```
 
 ### Mobil Uygulama (Capacitor)
 ```bash
