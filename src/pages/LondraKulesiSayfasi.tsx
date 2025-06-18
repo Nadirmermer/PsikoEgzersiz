@@ -267,7 +267,7 @@ const TOWER_PROBLEMS = [
   }
 ]
 
-// Tower Komponenti - Mobile-First Responsive Tasarım
+// Tower Komponenti - Kapasiteye Göre Boyutlanan Responsive Tasarım
 const Tower: React.FC<{
   index: number
   balls: string[]
@@ -296,11 +296,46 @@ const Tower: React.FC<{
     }
   }
 
-  // Mobile-first responsive boyutlar
-  const ballSize = 'w-7 h-7 sm:w-9 sm:h-9 md:w-11 md:h-11'
-  const towerHeight = 'h-28 sm:h-36 md:h-44'
-  const towerWidth = 'w-2 sm:w-3 md:w-4'
-  const baseWidth = 'w-14 sm:w-18 md:w-22'
+  // Kapasiteye göre boyutlama - Kule yüksekliği = top kapasitesi × top yüksekliği
+  const ballBaseHeight = 10 // Her topun temel yüksekliği (w-10 h-10 için)
+  
+  const getTowerSizes = (capacity: number) => {
+    // Kule yüksekliği tam olarak kaç top alabileceği kadar olacak
+    const towerHeightInBalls = capacity
+    
+    switch(capacity) {
+      case 3: // 3 top kapasiteli - 3 top yüksekliğinde çubuk
+        return {
+          ballSize: 'w-10 h-10 sm:w-12 sm:h-12 md:w-14 md:h-14',
+          towerHeight: 'h-[120px] sm:h-[144px] md:h-[168px]', // 3 × top boyutu
+          towerWidth: 'w-3 sm:w-4 md:w-5',
+          baseWidth: 'w-20 sm:w-24 md:w-28'
+        }
+      case 2: // 2 top kapasiteli - 2 top yüksekliğinde çubuk
+        return {
+          ballSize: 'w-10 h-10 sm:w-12 sm:h-12 md:w-14 md:h-14',
+          towerHeight: 'h-[80px] sm:h-[96px] md:h-[112px]', // 2 × top boyutu
+          towerWidth: 'w-2.5 sm:w-3 md:w-4',
+          baseWidth: 'w-16 sm:w-20 md:w-24'
+        }
+      case 1: // 1 top kapasiteli - 1 top yüksekliğinde çubuk
+        return {
+          ballSize: 'w-10 h-10 sm:w-12 sm:h-12 md:w-14 md:h-14',
+          towerHeight: 'h-[40px] sm:h-[48px] md:h-[56px]', // 1 × top boyutu
+          towerWidth: 'w-2 sm:w-2.5 md:w-3',
+          baseWidth: 'w-12 sm:w-16 md:w-20'
+        }
+      default:
+        return {
+          ballSize: 'w-10 h-10 sm:w-12 sm:h-12 md:w-14 md:h-14',
+          towerHeight: 'h-[80px] sm:h-[96px] md:h-[112px]',
+          towerWidth: 'w-2.5 sm:w-3 md:w-4',
+          baseWidth: 'w-16 sm:w-20 md:w-24'
+        }
+    }
+  }
+
+  const { ballSize, towerHeight, towerWidth, baseWidth } = getTowerSizes(maxHeight)
 
   return (
     <div className="flex flex-col items-center space-y-2 sm:space-y-3">
@@ -315,12 +350,18 @@ const Tower: React.FC<{
         {label}
       </div>
 
-      {/* Maksimum kapasite göstergesi */}
-      <div className="text-xs text-gray-500">
+      {/* Maksimum kapasite göstergesi - Kapasiteye göre renkli */}
+      <div className={`text-xs font-semibold ${
+        maxHeight === 3 
+          ? 'text-blue-600' 
+          : maxHeight === 2 
+          ? 'text-orange-600' 
+          : 'text-red-600'
+      }`}>
         Max: {maxHeight} top
       </div>
 
-      {/* Kule Yapısı */}
+      {/* Kule Yapısı - Kapasiteye göre boyutlanan */}
       <div 
         className={`
           relative transition-all duration-300 cursor-pointer flex flex-col items-center
@@ -328,18 +369,22 @@ const Tower: React.FC<{
         `}
         onClick={onClick}
       >
-        {/* Ana Çubuk */}
+        {/* Ana Çubuk - Kapasiteye göre boyutlanan */}
         <div className={`
           ${towerWidth} ${towerHeight} rounded-t-lg transition-all duration-300 shadow-lg z-10
           ${isSelected 
             ? 'bg-gradient-to-t from-primary to-primary/80 shadow-primary/50' 
             : isTarget
             ? 'bg-gradient-to-t from-green-500 to-emerald-400 shadow-green-500/50'
-            : 'bg-gradient-to-t from-gray-400 to-gray-300 dark:from-gray-600 dark:to-gray-500 hover:from-gray-500 hover:to-gray-400'
+            : maxHeight === 3
+            ? 'bg-gradient-to-t from-blue-500 to-blue-400 shadow-blue-500/30 hover:from-blue-600 hover:to-blue-500'
+            : maxHeight === 2
+            ? 'bg-gradient-to-t from-orange-500 to-orange-400 shadow-orange-500/30 hover:from-orange-600 hover:to-orange-500'
+            : 'bg-gradient-to-t from-red-500 to-red-400 shadow-red-500/30 hover:from-red-600 hover:to-red-500'
           }
         `} />
 
-        {/* Toplar - Perfect centering with mobile optimization */}
+        {/* Toplar - Kapasiteye göre boyutlanan */}
         <div className="absolute bottom-1 sm:bottom-2 left-1/2 transform -translate-x-1/2 flex flex-col-reverse items-center z-20">
           {balls.map((ballColor, ballIndex) => (
             <div
@@ -359,14 +404,18 @@ const Tower: React.FC<{
           ))}
         </div>
 
-        {/* Base Platform */}
+        {/* Base Platform - Kapasiteye göre boyutlanan */}
         <div className={`
           ${baseWidth} h-2 sm:h-3 rounded-lg transition-all duration-300 -mt-1 z-5
           ${isSelected 
             ? 'bg-primary/20 shadow-lg shadow-primary/30' 
             : isTarget
             ? 'bg-green-400/30 shadow-lg shadow-green-400/30'
-            : 'bg-gray-300 dark:bg-gray-600'
+            : maxHeight === 3
+            ? 'bg-blue-400/30 shadow-lg shadow-blue-400/30'
+            : maxHeight === 2
+            ? 'bg-orange-400/30 shadow-lg shadow-orange-400/30'
+            : 'bg-red-400/30 shadow-lg shadow-red-400/30'
           }
         `} />
       </div>
@@ -512,59 +561,25 @@ const TowerOfLondonGame: React.FC = () => {
     }
   }
 
-  const towerLabels = ['Sol Kule (3)', 'Orta Kule (2)', 'Sağ Kule (1)']
+  const towerLabels = ['Büyük Kule', 'Orta Kule', 'Küçük Kule']
 
-  return (
+    return (
     <div className="w-full max-w-4xl mx-auto space-y-4 sm:space-y-6 p-2 sm:p-4">
       
-      {/* Standart Oyun Başlığı - Mobile First */}
-      <Card className="bg-white/70 dark:bg-gray-900/70 backdrop-blur-sm border-white/30 dark:border-gray-800/30 shadow-xl">
-        <CardContent className="p-4 sm:p-6 text-center">
-          
-          {/* Level Badge */}
-          <div className="mb-3 sm:mb-4">
-            <Badge variant="secondary" className="text-xs sm:text-sm px-2 py-1 sm:px-3 bg-primary/10 text-primary border-primary/20">
-              <Building className="w-3 h-3 sm:w-4 sm:h-4 mr-1" />
-              Seviye {currentLevel} - {currentProblem.difficulty}
-            </Badge>
-          </div>
-
-          {/* Başlık */}
-          <h3 className="text-lg sm:text-xl md:text-2xl font-semibold mb-2 text-gray-700 dark:text-gray-300">
-            {currentProblem.description}
-          </h3>
-          <p className="text-sm sm:text-base text-gray-600 dark:text-gray-400 mb-4 sm:mb-6">
-            Topları hedefteki konuma getirin. Her kule farklı kapasiteye sahip.
-          </p>
-
-          {/* İstatistikler - Mobile Grid */}
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-4 text-xs sm:text-sm text-gray-600 dark:text-gray-400">
-            <div className="flex items-center justify-center gap-1">
-              <Move className="w-3 h-3 sm:w-4 sm:h-4" />
-              <span>Hamle: <strong className="text-primary">{moves}</strong></span>
-            </div>
-            <div className="flex items-center justify-center gap-1">
-              <Target className="w-3 h-3 sm:w-4 sm:h-4" />
-              <span>Optimal: <strong className="text-green-600">{currentProblem.minMoves}</strong></span>
-            </div>
-            <div className="flex items-center justify-center gap-1">
-              <Timer className="w-3 h-3 sm:w-4 sm:h-4" />
-              <span>Süre: <strong className="text-blue-600">{planningTime}s</strong></span>
-            </div>
-            <div className="flex items-center justify-center gap-1">
-              <MapPin className="w-3 h-3 sm:w-4 sm:h-4" />
-              <span>İlerleme: <strong className="text-purple-600">{currentLevel}/30</strong></span>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
+      {/* Sadece Seviye Badge'ı - Temiz tasarım */}
+      <div className="text-center mb-4">
+        <Badge variant="secondary" className="text-sm sm:text-base px-3 py-2 sm:px-4 bg-primary/10 text-primary border-primary/20">
+          <Building className="w-4 h-4 sm:w-5 sm:h-5 mr-2" />
+          Seviye {currentLevel} - {currentProblem.difficulty}
+        </Badge>
+              </div>
 
       {/* Mevcut Durum - Mobile Optimized */}
       <Card className="bg-white/70 dark:bg-gray-900/70 backdrop-blur-sm border-white/30 dark:border-gray-800/30 shadow-xl">
         <CardContent className="p-4 sm:p-6">
           <h4 className="text-center text-base sm:text-lg font-semibold mb-3 sm:mb-4 text-gray-700 dark:text-gray-300">
             Mevcut Durum
-          </h4>
+                </h4>
           <div className="flex justify-center items-end space-x-4 sm:space-x-8 md:space-x-12">
             {towers.map((tower, index) => (
               <Tower
@@ -577,9 +592,9 @@ const TowerOfLondonGame: React.FC = () => {
                 maxHeight={maxTowerHeights[index]}
               />
             ))}
-          </div>
-        </CardContent>
-      </Card>
+            </div>
+            </CardContent>
+          </Card>
 
       {/* Hedef Durum - Mobile Optimized */}
       <Card className="bg-green-50/50 dark:bg-green-950/20 backdrop-blur-sm border-green-200/20 dark:border-green-800/20">
@@ -598,11 +613,11 @@ const TowerOfLondonGame: React.FC = () => {
                 label={towerLabels[index]}
                 isTarget={true}
                 maxHeight={maxTowerHeights[index]}
-              />
-            ))}
-          </div>
-        </CardContent>
-      </Card>
+                          />
+                        ))}
+              </div>
+            </CardContent>
+          </Card>
 
       {/* Yardım İpuçları */}
       {selectedTower !== null && (
@@ -644,7 +659,7 @@ const TowerOfLondonGame: React.FC = () => {
                 }`}>
                   {moves === currentProblem.minMoves ? '🏆 Mükemmel!' : moves <= currentProblem.minMoves + 2 ? '👍 İyi!' : '💪 Gelişiyor!'}
                 </div>
-              </div>
+                </div>
 
               {/* Seviye geçiş bilgisi */}
               <div className="text-xs sm:text-sm text-yellow-600 dark:text-yellow-400">
@@ -653,7 +668,7 @@ const TowerOfLondonGame: React.FC = () => {
                 ) : (
                   <p>🏆 Tüm seviyeler tamamlandı!</p>
                 )}
-              </div>
+        </div>
 
               {/* Yeniden oynama butonu */}
               <div className="flex gap-3 justify-center">
@@ -684,4 +699,4 @@ const LondraKulesiSayfasi: React.FC<LondraKulesiSayfasiProps> = ({ onBack }) => 
   )
 }
 
-export default LondraKulesiSayfasi 
+export default LondraKulesiSayfasi

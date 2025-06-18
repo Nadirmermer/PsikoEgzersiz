@@ -9,6 +9,12 @@ export default {
 		"./app/**/*.{ts,tsx}",
 		"./src/**/*.{ts,tsx}",
 	],
+	safelist: [
+		// Tower of London oyunu için dinamik yükseklik sınıfları
+		'h-[40px]', 'h-[48px]', 'h-[56px]',    // 1 top kapasiteli kule
+		'h-[80px]', 'h-[96px]', 'h-[112px]',   // 2 top kapasiteli kule  
+		'h-[120px]', 'h-[144px]', 'h-[168px]', // 3 top kapasiteli kule
+	],
 	prefix: "",
 	theme: {
 		container: {
