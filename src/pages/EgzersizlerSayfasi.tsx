@@ -16,6 +16,7 @@ interface EgzersizlerSayfasiProps {
   onColorSequenceStart: () => void
   onWordCirclePuzzleStart: () => void
   onLogicSequencesStart: () => void
+  onHanoiTowersStart: () => void
 }
 
 const EgzersizlerSayfasi: React.FC<EgzersizlerSayfasiProps> = ({ 
@@ -26,7 +27,8 @@ const EgzersizlerSayfasi: React.FC<EgzersizlerSayfasiProps> = ({
   onNumberSequenceStart,
   onColorSequenceStart,
   onWordCirclePuzzleStart,
-  onLogicSequencesStart
+  onLogicSequencesStart,
+  onHanoiTowersStart
 }) => {
   const { playSound } = useAudio()
   const currentLevel = LocalStorageManager.getCurrentMemoryGameLevel()
@@ -190,6 +192,25 @@ const EgzersizlerSayfasi: React.FC<EgzersizlerSayfasiProps> = ({
       },
       currentProgress: 'Sonsuz Soru',
       highlights: ['Matematik', 'Örüntü Tanıma']
+    },
+    {
+      id: 'hanoi-towers',
+      title: 'Hanoi Kuleleri',
+      description: 'Stratejik planlama ve problem çözme',
+      motto: 'Kule ustası ol',
+      icon: Layers,
+      iconColor: 'text-teal-600 dark:text-teal-400',
+      bgGradient: 'bg-gradient-to-br from-teal-50 via-emerald-50 to-green-50 dark:from-teal-950/40 dark:via-emerald-900/30 dark:to-green-900/40',
+      bgPattern: 'radial-gradient(circle at 50% 50%, rgba(20, 184, 166, 0.15) 0%, transparent 50%), linear-gradient(225deg, rgba(16, 185, 129, 0.1) 0%, transparent 65%)',
+      borderColor: 'border-teal-200/60 dark:border-teal-800/60',
+      accentColor: 'bg-teal-500',
+      available: true,
+      onStart: () => {
+        playSound('button-click')
+        onHanoiTowersStart()
+      },
+      currentProgress: '18 Seviye',
+      highlights: ['Algoritma', 'Strateji']
     }
   ]
 
@@ -221,7 +242,7 @@ const EgzersizlerSayfasi: React.FC<EgzersizlerSayfasiProps> = ({
                 Bilişsel Egzersizler
               </h1>
               <p className="text-sm sm:text-base text-muted-foreground px-6 leading-relaxed">
-                Beyin gücünüzü artıran <span className="font-medium text-primary">8 bilimsel egzersiz</span>
+                Beyin gücünüzü artıran <span className="font-medium text-primary">9 bilimsel egzersiz</span>
               </p>
             </div>
 
@@ -229,7 +250,7 @@ const EgzersizlerSayfasi: React.FC<EgzersizlerSayfasiProps> = ({
             <div className="flex flex-wrap items-center justify-center gap-2 px-4">
               <div className="flex items-center gap-1.5 bg-success/10 text-success px-3 py-1.5 rounded-full text-xs font-medium">
                 <CheckCircle className="w-3 h-3" />
-                <span>8 Egzersiz</span>
+                <span>9 Egzersiz</span>
               </div>
               <div className="flex items-center gap-1.5 bg-primary/10 text-primary px-3 py-1.5 rounded-full text-xs font-medium">
                 <Sparkles className="w-3 h-3" />
@@ -264,6 +285,7 @@ const EgzersizlerSayfasi: React.FC<EgzersizlerSayfasiProps> = ({
                     category.bgGradient.includes('orange') ? 'rgba(251, 146, 60, 0.03)' :
                     category.bgGradient.includes('pink') ? 'rgba(236, 72, 153, 0.03)' :
                     category.bgGradient.includes('indigo') ? 'rgba(99, 102, 241, 0.03)' :
+                    category.bgGradient.includes('teal') ? 'rgba(20, 184, 166, 0.03)' :
                     'rgba(245, 158, 11, 0.03)'} 0%, transparent 100%)`
                 }}
                 role="button"
@@ -403,7 +425,7 @@ const EgzersizlerSayfasi: React.FC<EgzersizlerSayfasiProps> = ({
               <div className="flex items-center justify-center gap-4 text-sm">
                 <div className="flex items-center gap-1.5 text-success">
                   <div className="w-2 h-2 bg-success rounded-full animate-pulse" />
-                  <span className="font-medium">8 Aktif Egzersiz</span>
+                  <span className="font-medium">9 Aktif Egzersiz</span>
                 </div>
                 <div className="w-px h-4 bg-border" />
                 <div className="flex items-center gap-1.5 text-primary">

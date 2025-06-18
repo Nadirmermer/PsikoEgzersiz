@@ -11,6 +11,7 @@ import SayiDizisiTakibiSayfasi from "./SayiDizisiTakibiSayfasi";
 import RenkDizisiTakibiSayfasi from "./RenkDizisiTakibiSayfasi";
 import KelimeCemberiBulmacasiSayfasi from "./KelimeCemberiBulmacasiSayfasi";
 import MantikDizileriSayfasi from "./MantikDizileriSayfasi";
+import HanoiKuleleriSayfasi from "./HanoiKuleleriSayfasi";
 import BottomNavigation from "../components/BottomNavigation";
 import ClientModeHandler from "../components/ClientModeHandler";
 import SkipNavigation from "../components/SkipNavigation";
@@ -30,6 +31,7 @@ const Index = () => {
   const [isColorSequenceActive, setIsColorSequenceActive] = useState(false);
   const [isWordCirclePuzzleActive, setIsWordCirclePuzzleActive] = useState(false);
   const [isLogicSequencesActive, setIsLogicSequencesActive] = useState(false);
+  const [isHanoiTowersActive, setIsHanoiTowersActive] = useState(false);
   const { isClientMode, exitClientMode } = useClientMode();
   const { user, professional, loading: authLoading } = useAuth();
 
@@ -136,6 +138,16 @@ const Index = () => {
   const handleLogicSequencesEnd = () => {
     playSound('button-click')
     setIsLogicSequencesActive(false);
+  };
+
+  const handleHanoiTowersStart = () => {
+    playSound('button-click')
+    setIsHanoiTowersActive(true);
+  };
+
+  const handleHanoiTowersEnd = () => {
+    playSound('button-click')
+    setIsHanoiTowersActive(false);
   };
 
   const handlePageChange = (page: string) => {
@@ -260,6 +272,20 @@ const Index = () => {
     );
   }
 
+  // Render Hanoi Towers game
+  if (isHanoiTowersActive) {
+    return (
+      <>
+        <SkipNavigation />
+        <HanoiKuleleriSayfasi onBack={handleHanoiTowersEnd} />
+        <ClientModeHandler 
+          isClientMode={isClientMode}
+          onExitClientMode={exitClientMode}
+        />
+      </>
+    );
+  }
+
   const renderActivePage = () => {
     switch (activePage) {
       case "egzersizler":
@@ -273,6 +299,7 @@ const Index = () => {
             onColorSequenceStart={handleColorSequenceStart}
             onWordCirclePuzzleStart={handleWordCirclePuzzleStart}
             onLogicSequencesStart={handleLogicSequencesStart}
+            onHanoiTowersStart={handleHanoiTowersStart}
           />
         );
       case "istatistikler":
@@ -292,6 +319,7 @@ const Index = () => {
             onColorSequenceStart={handleColorSequenceStart}
             onWordCirclePuzzleStart={handleWordCirclePuzzleStart}
             onLogicSequencesStart={handleLogicSequencesStart}
+            onHanoiTowersStart={handleHanoiTowersStart}
           />
         );
     }

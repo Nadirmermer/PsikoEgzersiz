@@ -285,4 +285,42 @@ export const WORD_IMAGE_MATCHING_CONFIG: GameConfig = {
     { key: 'estimatedTime', label: 'Tahmini Süre', icon: 'clock', color: 'primary' },
     { key: 'difficulty', label: 'Zorluk', icon: 'trophy', color: 'primary' }
   ]
+}
+
+// Hanoi Kuleleri Konfigürasyonu
+export const HANOI_TOWERS_CONFIG: GameConfig = {
+  id: 'hanoi-towers',
+  title: 'Hanoi Kuleleri',
+  description: 'Klasik Hanoi Kuleleri bulmacası. Diskleri minimum hamle ile hedefe taşıyın ve rekürsif düşünme becerilerinizi geliştirin.',
+  difficulty: 'Artan',
+  estimatedTime: '10-30 dk',
+  hasLevels: true,
+  maxLevel: 18,
+  instructions: [
+    {
+      step: 1,
+      title: 'Hedef Düzenlemeyi İnceleyin',
+      description: 'Disklerin hangi kule düzenlemesinde olması gerektiğini görün'
+    },
+    {
+      step: 2,
+      title: 'Kuralları Hatırlayın',
+      description: 'Büyük disk küçük diskin üzerine konulamaz'
+    },
+    {
+      step: 3,
+      title: 'Stratejinizi Planlayın',
+      description: 'Minimum hamle ile hedefe ulaşmak için plan yapın'
+    },
+    {
+      step: 4,
+      title: 'Diskleri Taşıyın',
+      description: 'Sırayla kulelere tıklayarak diskleri taşıyın'
+    }
+  ],
+  stats: [
+    { key: 'maxLevel', label: 'Toplam Seviye', icon: 'target', color: 'primary' },
+    { key: 'estimatedTime', label: 'Tahmini Süre', icon: 'clock', color: 'primary' },
+    { key: 'difficulty', label: 'Zorluk', icon: 'trophy', color: 'primary' }
+  ]
 } 

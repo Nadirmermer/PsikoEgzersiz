@@ -335,6 +335,7 @@ const IstatistiklerSayfasi: React.FC = () => {
                 <SelectItem value="Renk Dizisi Takibi">Renk Dizisi Takibi</SelectItem>
                 <SelectItem value="Kelime Çemberi Bulmacası">Kelime Çemberi Bulmacası</SelectItem>
                 <SelectItem value="Mantık Dizileri">Mantık Dizileri</SelectItem>
+                <SelectItem value="Hanoi Kuleleri">Hanoi Kuleleri</SelectItem>
               </SelectContent>
             </Select>
           </CardContent>
