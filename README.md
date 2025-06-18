@@ -11,7 +11,7 @@
 [![License](https://img.shields.io/badge/license-MIT-green)](LICENSE)
 [![Platform](https://img.shields.io/badge/platform-Web%20%7C%20Android%20%7C%20Desktop-orange)](#)
 
-[🚀 Hızlı Başlangıç](#-hızlı-başlangıç) • [📱 İndir](#-platform-desteği) • [📖 Dokümantasyon](#-i̇çindekiler) • [🐛 Hata Bildir](https://github.com/nadir-mermer/psikoegzersiz/issues)
+[🚀 Hızlı Başlangıç](#-hızlı-başlangıç) • [📱 İndir](#-platform-desteği) • [📖 Dokümantasyon](#-i̇çindekiler) • [🐛 Hata Bildir](https://github.com/Nadirmermer/PsikoEgzersiz/issues)
 
 </div>
 
@@ -137,8 +137,8 @@ Bilimsel araştırmalara dayalı egzersizler sunarak **hafıza**, **dikkat**, **
 
 ```bash
 # 1. Klonla ve kur
-git clone https://github.com/nadir-mermer/psikoegzersiz.git
-cd psikoegzersiz && npm install
+git clone https://github.com/Nadirmermer/PsikoEgzersiz.git
+cd PsikoEgzersiz && npm install
 
 # 2. Environment ayarla (.env dosyası oluştur)
 VITE_SUPABASE_URL=your-supabase-url
@@ -157,7 +157,7 @@ npm run dev
 <div align="center">
 
 ### 🌐 **Web Uygulaması**
-**Canlı Demo:** [psikoegzersiz.netlify.app](#)
+**Canlı Demo:** [PsikoEgzersiz.netlify.app](#)
 
 **Tarayıcı Desteği:**  
 Chrome 90+ • Firefox 88+ • Safari 14+ • Edge 90+
@@ -313,12 +313,12 @@ npm update
 **Nadir Mermer**
 
 [![Email](https://img.shields.io/badge/📧%20Email-1nadirmermer@gmail.com-red?style=for-the-badge)](mailto:1nadirmermer@gmail.com)
-[![GitHub](https://img.shields.io/badge/💻%20GitHub-nadir--mermer-black?style=for-the-badge&logo=github)](https://github.com/nadir-mermer)
+[![GitHub](https://img.shields.io/badge/💻%20GitHub-nadir--mermer-black?style=for-the-badge&logo=github)](https://github.com/Nadirmermer)
 
 ### 🐛 **Destek ve Geri Bildirim**
 
-[![Issues](https://img.shields.io/badge/🐛%20Bug%20Report-GitHub%20Issues-orange?style=for-the-badge)](https://github.com/nadir-mermer/psikoegzersiz/issues)
-[![Feature Request](https://img.shields.io/badge/💡%20Feature%20Request-Discussions-blue?style=for-the-badge)](https://github.com/nadir-mermer/psikoegzersiz/discussions)
+[![Issues](https://img.shields.io/badge/🐛%20Bug%20Report-GitHub%20Issues-orange?style=for-the-badge)](https://github.com/Nadirmermer/PsikoEgzersiz/issues)
+[![Feature Request](https://img.shields.io/badge/💡%20Feature%20Request-Discussions-blue?style=for-the-badge)](https://github.com/Nadirmermer/PsikoEgzersiz/discussions)
 
 </div>
 
