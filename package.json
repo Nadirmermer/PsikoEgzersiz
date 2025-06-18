@@ -132,10 +132,15 @@
       "target": "dmg"
     },
     "win": {
-      "target": "nsis"
+      "target": "portable",
+      "sign": false
     },
     "linux": {
       "target": "AppImage"
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true
     }
   }
 }

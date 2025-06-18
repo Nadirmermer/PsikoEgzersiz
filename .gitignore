@@ -69,9 +69,12 @@ lerna-debug.log*
 /android/.gradle/
 /android/captures/
 /android/local.properties
-*.apk
+/android/app/build/outputs/apk/
 *.aab
 *.ipa
+
+# Large binary files (GitHub 100MB limit)
+releases/
 
 # Cache ve geçici dosyalar
 .eslintcache

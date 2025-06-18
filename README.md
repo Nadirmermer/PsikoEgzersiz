@@ -157,31 +157,87 @@ npm run dev
 <div align="center">
 
 ### 🌐 **Web Uygulaması**
-**Canlı Demo:** [PsikoEgzersiz.netlify.app](#)
+**Canlı Demo:** [PsikoEgzersiz Live](https://psikoegzersiz.netlify.app) *(Netlify otomatik deploy)*
 
 **Tarayıcı Desteği:**  
 Chrome 90+ • Firefox 88+ • Safari 14+ • Edge 90+
 
 ---
 
-### 📱 **Mobil**
+### 📱 **Android APK**
 
-| Platform | Durum | İndir |
-|:--------:|:-----:|:-----:|
-| 🤖 **Android** | ✅ Hazır | [APK İndir](#) |
-| 🍎 **iOS** | 🔄 Geliştiriliyor | Yakında |
+| Dosya | Boyut | Durum |
+|:------|:-----:|:-----:|
+| **PsikoEgzersiz.apk** | 9.8MB | ✅ **Hazır** |
+
+**📧 APK İndirmek İçin:** [1nadirmermer@gmail.com](mailto:1nadirmermer@gmail.com) adresine mail atın
+
+**Kurulum:**
+1. APK dosyasını indirin
+2. Telefon ayarlarında "Bilinmeyen kaynaklardan kurulum"u açın
+3. APK'yi çalıştırıp kurun
 
 ---
 
-### 🖥️ **Masaüstü**
+### 🖥️ **Masaüstü Uygulamaları**
 
-| Platform | Durum | İndir |
-|:--------:|:-----:|:-----:|
-| 🪟 **Windows** | ✅ Hazır | [EXE İndir](#) |
-| 🍎 **macOS** | ✅ Hazır | [DMG İndir](#) |
-| 🐧 **Linux** | ✅ Hazır | [AppImage İndir](#) |
+| Platform | Dosya | Boyut | Durum |
+|:--------:|:------|:-----:|:-----:|
+| 🪟 **Windows** | PsikoEgzersiz.exe | 169MB | ✅ **Hazır** |
+| 🍎 **macOS** | PsikoEgzersiz.dmg | ~150MB | 🔄 **İstek Üzerine** |
+| 🐧 **Linux** | PsikoEgzersiz.AppImage | ~150MB | 🔄 **İstek Üzerine** |
+
+**📧 Masaüstü Uygulaması İçin:** [1nadirmermer@gmail.com](mailto:1nadirmermer@gmail.com) adresine mail atın
+
+**Not:** İlk çalıştırmada Windows Defender uyarısı normal, "Daha fazla bilgi" → "Yine de çalıştır" diyebilirsiniz.
 
 </div>
+
+---
+
+## 🚀 **Manuel Build Talimatları**
+
+### 📱 **Android APK Oluşturma**
+
+```bash
+# 1. Web build
+npm run build
+
+# 2. Android assets kopyala
+npx cap copy android
+
+# 3. Android Studio aç
+npx cap open android
+
+# 4. Android Studio'da:
+# Build → Build Bundle(s) / APK(s) → Build APK(s)
+# APK konumu: android/app/build/outputs/apk/debug/app-debug.apk
+```
+
+**Java Sorunu Yaşıyorsanız:**
+1. Android Studio'da File → Settings → Build → Gradle
+2. Gradle JDK: "Embedded JDK" seçin
+3. Sync Now
+
+### 🖥️ **Masaüstü Build**
+
+```bash
+# Windows/macOS/Linux için tüm paketler
+npm run electron:dist
+
+# Sadece geliştirme
+npm run electron:dev
+
+# Dosya konumu: dist/ klasörü
+```
+
+### 🌐 **Web Deploy**
+
+```bash
+# Manuel deploy (otomatik olan Netlify)
+npm run build
+# dist/ klasörünü herhangi bir hosting'e yükleyin
+```
 
 ---
 
