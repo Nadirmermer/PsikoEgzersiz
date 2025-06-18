@@ -3,12 +3,14 @@ import UniversalGameEngine from '../components/GameEngine/UniversalGameEngine'
 import { TOWER_OF_LONDON_CONFIG } from '../components/GameEngine/gameConfigs'
 import { useTowerOfLondonGame, getDiskStyle } from '../hooks/useTowerOfLondon'
 import { Target, Move } from 'lucide-react'
+import { toast } from '@/components/ui/sonner'
+import { useAudio } from '@/hooks/useAudio'
 
 interface LondraKulesiSayfasiProps {
   onBack: () => void
 }
 
-// Tower Komponenti - Çok daha güzel tasarım
+// Tower Komponenti - Disk hizalaması düzeltildi
 const Tower: React.FC<{
   index: number
   disks: number[]
@@ -32,14 +34,14 @@ const Tower: React.FC<{
       {/* Kule Tabanı - Geliştirilmiş */}
       <div 
         className={`
-          relative transition-all duration-300 cursor-pointer
+          relative transition-all duration-300 cursor-pointer flex flex-col items-center
           ${isSelected ? 'scale-105' : 'hover:scale-102'}
         `}
         onClick={onClick}
       >
         {/* Ana Çubuk - Çok daha güzel */}
         <div className={`
-          w-4 h-40 rounded-t-lg transition-all duration-300 shadow-lg
+          w-4 h-40 rounded-t-lg transition-all duration-300 shadow-lg z-10
           ${isSelected 
             ? 'bg-gradient-to-t from-primary to-primary/80 shadow-primary/50' 
             : isTarget
@@ -48,8 +50,8 @@ const Tower: React.FC<{
           }
         `} />
 
-        {/* Diskler - Stack container */}
-        <div className="absolute bottom-2 left-1/2 transform -translate-x-1/2 flex flex-col-reverse items-center">
+        {/* Diskler - Stack container - MUTLAK ORTALANMIŞ */}
+        <div className="absolute bottom-2 left-1/2 transform -translate-x-1/2 flex flex-col-reverse items-center z-20">
           {disks.map((diskSize, diskIndex) => {
             const diskStyle = getDiskStyle(diskSize, maxDiskCount, isSelected && diskIndex === disks.length - 1)
             return (
@@ -73,7 +75,7 @@ const Tower: React.FC<{
 
         {/* Base Platform - Güzel platform */}
         <div className={`
-          w-20 h-3 rounded-lg mx-auto -mt-1 transition-all duration-300
+          w-20 h-3 rounded-lg transition-all duration-300 -mt-1 z-5
           ${isSelected 
             ? 'bg-primary/20 shadow-lg shadow-primary/30' 
             : isTarget
@@ -84,7 +86,7 @@ const Tower: React.FC<{
 
         {/* Selection Ring */}
         {isSelected && (
-          <div className="absolute inset-0 rounded-lg border-4 border-primary/50 animate-pulse pointer-events-none" />
+          <div className="absolute inset-0 rounded-lg border-4 border-primary/50 animate-pulse pointer-events-none z-30" />
         )}
       </div>
     </div>
@@ -93,21 +95,70 @@ const Tower: React.FC<{
 
 // Ana Oyun Komponenti
 const TowerOfLondonGame: React.FC = () => {
-  // Şimdilik basit state kullanıyorum
-  const [towers, setTowers] = React.useState<number[][]>([[3, 2, 1], [], []])
+  const [currentLevel, setCurrentLevel] = React.useState(1)
+  const [towers, setTowers] = React.useState<number[][]>([[], [], []])
   const [selectedTower, setSelectedTower] = React.useState<number | null>(null)
   const [moves, setMoves] = React.useState(0)
   const [isCompleted, setIsCompleted] = React.useState(false)
-  const minMoves = 7 // 3 disk için minimum hamle
-  const diskCount = 3
-  const currentLevel = 1
+  const { playSound } = useAudio()
+  
+  // Seviye bazlı hesaplamalar
+  const diskCount = Math.min(2 + currentLevel, 6) // Seviye 1: 3 disk, Seviye 4: 6 disk
+  const minMoves = Math.pow(2, diskCount) - 1 // Hanoi Tower minimum hamle formülü
 
-  // Seviye tamamlama kontrolü
+  // Seviye başlatma
+  const initializeLevel = React.useCallback((level: number) => {
+    const newDiskCount = Math.min(2 + level, 6)
+    const initialTower = Array.from({ length: newDiskCount }, (_, i) => newDiskCount - i) // En büyük disk altta
+    
+    setCurrentLevel(level)
+    setTowers([initialTower, [], []])
+    setSelectedTower(null)
+    setMoves(0)
+    setIsCompleted(false)
+  }, [])
+
+  // İlk seviyeyi başlat
   React.useEffect(() => {
-    if (towers[2].length === diskCount && !isCompleted) {
+    initializeLevel(1)
+  }, [initializeLevel])
+
+  // Seviye tamamlama kontrolü - Otomatik seviye geçişi
+  React.useEffect(() => {
+    if (towers[2].length === diskCount && diskCount > 0 && !isCompleted) {
       setIsCompleted(true)
+      
+      // Tamamlama sesi ve mesajı
+      playSound('level-up')
+      
+      // Performans değerlendirmesi
+      if (moves === minMoves) {
+        toast.success('🏆 Mükemmel! Optimal çözüm!')
+      } else if (moves <= minMoves + 2) {
+        toast.success('👍 Harika! Çok iyi bir çözüm!')
+      } else {
+        toast.success('🎉 Tebrikler! Seviye tamamlandı!')
+      }
+      
+      // 3 saniye sonra otomatik olarak sonraki seviyeye geç
+      setTimeout(() => {
+        if (currentLevel >= 10) {
+          // Tüm seviyeler tamamlandı
+          toast.success('🏆 Tebrikler! Tüm seviyeleri tamamladınız!')
+        } else {
+          // Sonraki seviyeye geç
+          const nextLevelNum = currentLevel + 1
+          toast.success(`🚀 Seviye ${nextLevelNum} başlıyor!`)
+          initializeLevel(nextLevelNum)
+        }
+      }, 3000)
     }
-  }, [towers, diskCount, isCompleted])
+  }, [towers, diskCount, isCompleted, moves, minMoves, currentLevel, playSound, initializeLevel])
+
+  // Seviyeyi sıfırla
+  const restartLevel = () => {
+    initializeLevel(currentLevel)
+  }
 
   // Kule tıklama mantığı
   const handleTowerClick = (towerIndex: number) => {
@@ -117,12 +168,14 @@ const TowerOfLondonGame: React.FC = () => {
       // Kule seçimi - sadece disk varsa seçilebilir
       if (towers[towerIndex].length > 0) {
         setSelectedTower(towerIndex)
+        playSound('button-click')
       }
     } else {
       // Disk hareketi
       if (selectedTower === towerIndex) {
         // Aynı kuleye tıklandı, seçimi iptal et
         setSelectedTower(null)
+        playSound('button-click')
       } else {
         // Farklı kuleye tıklandı, disk taşımaya çalış
         const from = towers[selectedTower]
@@ -137,9 +190,12 @@ const TowerOfLondonGame: React.FC = () => {
           setTowers(newTowers)
           setMoves(prev => prev + 1)
           setSelectedTower(null)
+          playSound('correct-answer')
         } else {
           // Geçersiz hamle
           setSelectedTower(null)
+          playSound('wrong-answer')
+          toast.error('Büyük disk küçük diskin üzerine konulamaz!')
         }
       }
     }
@@ -197,17 +253,49 @@ const TowerOfLondonGame: React.FC = () => {
         </div>
       )}
 
-      {/* Tamamlanma mesajı */}
+      {/* Tamamlanma mesajı - 3 saniye gösterilir */}
       {isCompleted && (
         <div className="bg-gradient-to-r from-yellow-100/80 to-orange-100/80 dark:from-yellow-900/40 dark:to-orange-900/40 backdrop-blur-sm rounded-2xl p-6 border-2 border-yellow-400 dark:border-yellow-600">
-          <div className="text-center">
+          <div className="text-center space-y-4">
             <div className="text-4xl mb-2">🎉</div>
             <h3 className="text-xl font-bold text-yellow-800 dark:text-yellow-200 mb-2">
-              Tebrikler! Seviye Tamamlandı!
+              Seviye {currentLevel} Tamamlandı!
             </h3>
-            <p className="text-yellow-700 dark:text-yellow-300">
-              {moves} hamle ile tamamladınız (En az: {minMoves} hamle)
+            <p className="text-yellow-700 dark:text-yellow-300 mb-4">
+              {moves} hamle ile tamamladınız (Optimal: {minMoves} hamle)
             </p>
+            
+            {/* Verimlilik gösterici */}
+            <div className="mb-4">
+              <div className={`inline-flex items-center px-4 py-2 rounded-full text-sm font-semibold ${
+                moves === minMoves 
+                  ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300'
+                  : moves <= minMoves + 2
+                  ? 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300'
+                  : 'bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-300'
+              }`}>
+                {moves === minMoves ? '🏆 Mükemmel!' : moves <= minMoves + 2 ? '👍 İyi!' : '💪 Denemeye devam!'}
+              </div>
+            </div>
+
+            {/* Seviye geçiş bilgisi */}
+            <div className="text-sm text-yellow-600 dark:text-yellow-400">
+              {currentLevel < 10 ? (
+                <p>3 saniye sonra Seviye {currentLevel + 1} başlayacak...</p>
+              ) : (
+                <p>🏆 Tüm seviyeler tamamlandı!</p>
+              )}
+            </div>
+
+            {/* Sadece yeniden oynama butonu */}
+            <div className="flex gap-3 justify-center">
+              <button
+                onClick={restartLevel}
+                className="px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-lg font-medium transition-colors"
+              >
+                🔄 Bu Seviyeyi Tekrar Oyna
+              </button>
+            </div>
           </div>
         </div>
       )}
