@@ -425,22 +425,26 @@ const IstatistiklerSayfasi: React.FC = () => {
         </Card>
       ) : (
         <Tabs defaultValue="overview" className="space-y-8">
-          <TabsList className="grid w-full grid-cols-4 p-1 bg-muted/50 h-12">
-            <TabsTrigger value="overview" className="font-semibold">
-              <BarChart3 className="w-4 h-4 mr-2" />
-              Genel Bakış
+          <TabsList className="grid w-full grid-cols-2 sm:grid-cols-4 p-1 bg-muted/50 h-auto sm:h-12">
+            <TabsTrigger value="overview" className="font-semibold text-xs sm:text-sm p-2 sm:p-3">
+              <BarChart3 className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
+              <span className="hidden sm:inline">Genel Bakış</span>
+              <span className="sm:hidden">Genel</span>
             </TabsTrigger>
-            <TabsTrigger value="specific" className="font-semibold">
-              <Gauge className="w-4 h-4 mr-2" />
-              Özel Analizler
+            <TabsTrigger value="specific" className="font-semibold text-xs sm:text-sm p-2 sm:p-3">
+              <Gauge className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
+              <span className="hidden sm:inline">Özel Analizler</span>
+              <span className="sm:hidden">Analiz</span>
             </TabsTrigger>
-            <TabsTrigger value="charts" className="font-semibold">
-              <TrendingUp className="w-4 h-4 mr-2" />
-              Grafikler
+            <TabsTrigger value="charts" className="font-semibold text-xs sm:text-sm p-2 sm:p-3">
+              <TrendingUp className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
+              <span className="hidden sm:inline">Grafikler</span>
+              <span className="sm:hidden">Grafik</span>
             </TabsTrigger>
-            <TabsTrigger value="details" className="font-semibold">
-              <Target className="w-4 h-4 mr-2" />
-              Detaylar
+            <TabsTrigger value="details" className="font-semibold text-xs sm:text-sm p-2 sm:p-3">
+              <Target className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
+              <span className="hidden sm:inline">Detaylar</span>
+              <span className="sm:hidden">Detay</span>
             </TabsTrigger>
           </TabsList>
 
@@ -460,40 +464,86 @@ const IstatistiklerSayfasi: React.FC = () => {
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <div className="grid md:grid-cols-2 gap-6">
-                    <ChartContainer config={chartConfig} className="h-[300px]">
-                      <ResponsiveContainer width="100%" height="100%">
-                        <PieChart>
-                          <Pie
-                            data={exerciseDistribution}
-                            cx="50%"
-                            cy="50%"
-                            innerRadius={60}
-                            outerRadius={120}
-                            paddingAngle={2}
-                            dataKey="count"
-                          >
-                            {exerciseDistribution.map((entry, index) => (
-                              <Cell key={`cell-${index}`} fill={entry.color} />
-                            ))}
-                          </Pie>
-                          <ChartTooltip content={<ChartTooltipContent />} />
-                        </PieChart>
-                      </ResponsiveContainer>
-                    </ChartContainer>
-                    <div className="space-y-3">
-                      {exerciseDistribution.map((item, index) => (
-                        <div key={index} className="flex items-center justify-between p-3 bg-muted/20 rounded-lg">
-                          <div className="flex items-center gap-3">
-                            <div 
-                              className="w-4 h-4 rounded-full" 
-                              style={{ backgroundColor: item.color }}
-                            />
-                            <span className="font-medium">{item.name}</span>
+                  <div className="flex flex-col space-y-6">
+                    {/* Mobile ve Desktop için farklı düzen */}
+                    <div className="block lg:hidden">
+                      {/* Mobile: Liste üstte, chart altta */}
+                      <div className="space-y-2 mb-6">
+                        {exerciseDistribution.map((item, index) => (
+                          <div key={index} className="flex items-center justify-between p-2 bg-muted/20 rounded-lg">
+                            <div className="flex items-center gap-2 min-w-0 flex-1">
+                              <div 
+                                className="w-3 h-3 rounded-full flex-shrink-0" 
+                                style={{ backgroundColor: item.color }}
+                              />
+                              <span className="font-medium text-sm truncate">{item.name}</span>
+                            </div>
+                            <Badge variant="outline" className="text-xs flex-shrink-0">{item.count} oyun</Badge>
                           </div>
-                          <Badge variant="outline">{item.count} oyun</Badge>
-                        </div>
-                      ))}
+                        ))}
+                      </div>
+                      <div className="flex justify-center">
+                        <ChartContainer config={chartConfig} className="h-[200px] w-[200px]">
+                          <ResponsiveContainer width="100%" height="100%">
+                            <PieChart>
+                              <Pie
+                                data={exerciseDistribution}
+                                cx="50%"
+                                cy="50%"
+                                innerRadius={30}
+                                outerRadius={60}
+                                paddingAngle={2}
+                                dataKey="count"
+                              >
+                                {exerciseDistribution.map((entry, index) => (
+                                  <Cell key={`cell-${index}`} fill={entry.color} />
+                                ))}
+                              </Pie>
+                              <ChartTooltip content={<ChartTooltipContent />} />
+                            </PieChart>
+                          </ResponsiveContainer>
+                        </ChartContainer>
+                      </div>
+                    </div>
+
+                    {/* Desktop: Yan yana */}
+                    <div className="hidden lg:grid lg:grid-cols-2 gap-6">
+                      <div>
+                        <ChartContainer config={chartConfig} className="h-[300px]">
+                          <ResponsiveContainer width="100%" height="100%">
+                            <PieChart>
+                              <Pie
+                                data={exerciseDistribution}
+                                cx="50%"
+                                cy="50%"
+                                innerRadius={50}
+                                outerRadius={100}
+                                paddingAngle={2}
+                                dataKey="count"
+                              >
+                                {exerciseDistribution.map((entry, index) => (
+                                  <Cell key={`cell-${index}`} fill={entry.color} />
+                                ))}
+                              </Pie>
+                              <ChartTooltip content={<ChartTooltipContent />} />
+                            </PieChart>
+                          </ResponsiveContainer>
+                        </ChartContainer>
+                      </div>
+                      <div className="space-y-3">
+                        {exerciseDistribution.map((item, index) => (
+                          <div key={index} className="flex items-center justify-between p-3 bg-muted/20 rounded-lg">
+                            <div className="flex items-center gap-3">
+                              <div 
+                                className="w-4 h-4 rounded-full" 
+                                style={{ backgroundColor: item.color }}
+                              />
+                              <span className="font-medium">{item.name}</span>
+                            </div>
+                            <Badge variant="outline" className="text-xs">{item.count} oyun</Badge>
+                          </div>
+                        ))}
+                      </div>
                     </div>
                   </div>
                 </CardContent>
@@ -516,33 +566,33 @@ const IstatistiklerSayfasi: React.FC = () => {
               <CardContent>
                 <div className="space-y-4">
                   {filteredResults.slice(-5).reverse().map((result, index) => (
-                    <div key={index} className="flex justify-between items-center p-4 bg-gradient-to-r from-muted/20 to-muted/10 rounded-xl border border-border/30 hover:shadow-sm transition-all duration-300">
-                      <div className="flex items-center gap-4">
-                        <div className="p-2 bg-primary/10 rounded-lg">
-                          {result.exerciseName === 'Hafıza Oyunu' && <Brain className="w-5 h-5 text-blue-600" />}
-                          {result.exerciseName === 'Londra Kulesi Testi' && <Layers className="w-5 h-5 text-purple-600" />}
-                          {typeof result.exerciseName === 'string' && result.exerciseName.includes('Eşleştirme') && <Target className="w-5 h-5 text-emerald-600" />}
-                          {typeof result.exerciseName === 'string' && result.exerciseName.includes('Dizisi') && <TrendingUp className="w-5 h-5 text-orange-600" />}
-                          {typeof result.exerciseName === 'string' && result.exerciseName.includes('Çemberi') && <Award className="w-5 h-5 text-lime-600" />}
-                          {typeof result.exerciseName === 'string' && result.exerciseName.includes('Mantık') && <Gauge className="w-5 h-5 text-red-600" />}
+                    <div key={index} className="flex flex-col sm:flex-row sm:justify-between sm:items-center p-3 sm:p-4 bg-gradient-to-r from-muted/20 to-muted/10 rounded-xl border border-border/30 hover:shadow-sm transition-all duration-300 gap-3 sm:gap-4">
+                      <div className="flex items-center gap-3 sm:gap-4 min-w-0 flex-1">
+                        <div className="p-2 bg-primary/10 rounded-lg flex-shrink-0">
+                          {result.exerciseName === 'Hafıza Oyunu' && <Brain className="w-4 h-4 sm:w-5 sm:h-5 text-blue-600" />}
+                          {result.exerciseName === 'Londra Kulesi Testi' && <Layers className="w-4 h-4 sm:w-5 sm:h-5 text-purple-600" />}
+                          {typeof result.exerciseName === 'string' && result.exerciseName.includes('Eşleştirme') && <Target className="w-4 h-4 sm:w-5 sm:h-5 text-emerald-600" />}
+                          {typeof result.exerciseName === 'string' && result.exerciseName.includes('Dizisi') && <TrendingUp className="w-4 h-4 sm:w-5 sm:h-5 text-orange-600" />}
+                          {typeof result.exerciseName === 'string' && result.exerciseName.includes('Çemberi') && <Award className="w-4 h-4 sm:w-5 sm:h-5 text-lime-600" />}
+                          {typeof result.exerciseName === 'string' && result.exerciseName.includes('Mantık') && <Gauge className="w-4 h-4 sm:w-5 sm:h-5 text-red-600" />}
                         </div>
-                        <div>
-                          <div className="font-semibold text-base">
+                        <div className="min-w-0 flex-1">
+                          <div className="font-semibold text-sm sm:text-base truncate">
                             {typeof result.exerciseName === 'string' 
                               ? result.exerciseName 
                               : (result.exerciseName as any)?.exerciseName || 'Bilinmeyen Egzersiz'
                             }
                           </div>
-                          <div className="text-sm text-muted-foreground flex items-center gap-3">
+                          <div className="text-xs sm:text-sm text-muted-foreground flex items-center gap-2 sm:gap-3">
                             <span>{new Date(result.date).toLocaleDateString('tr-TR')}</span>
                             <span>•</span>
-                            <span>{result.details?.level_identifier || 'Detay Yok'}</span>
+                            <span className="truncate">{result.details?.level_identifier || 'Detay Yok'}</span>
                           </div>
                         </div>
                       </div>
-                      <div className="text-right">
-                        <div className="font-bold text-lg text-primary">{result.score} puan</div>
-                        <div className="text-sm text-muted-foreground">
+                      <div className="text-right sm:text-right flex-shrink-0">
+                        <div className="font-bold text-base sm:text-lg text-primary">{result.score} puan</div>
+                        <div className="text-xs sm:text-sm text-muted-foreground">
                           {formatTime(result.duration)}
                         </div>
                       </div>
@@ -569,12 +619,12 @@ const IstatistiklerSayfasi: React.FC = () => {
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <ChartContainer config={chartConfig} className="h-[400px] mb-6">
+                  <ChartContainer config={chartConfig} className="h-[300px] sm:h-[400px] mb-6">
                     <ResponsiveContainer width="100%" height="100%">
                       <BarChart data={memoryAnalytics}>
                         <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
-                        <XAxis dataKey="level" stroke="hsl(var(--muted-foreground))" fontSize={12} />
-                        <YAxis stroke="hsl(var(--muted-foreground))" fontSize={12} />
+                        <XAxis dataKey="level" stroke="hsl(var(--muted-foreground))" fontSize={10} tick={{ fontSize: 10 }} />
+                        <YAxis stroke="hsl(var(--muted-foreground))" fontSize={10} tick={{ fontSize: 10 }} />
                         <ChartTooltip content={<ChartTooltipContent />} />
                         <Legend />
                         <Bar dataKey="avgScore" fill="#3B82F6" name="Ortalama Skor" />
@@ -582,20 +632,20 @@ const IstatistiklerSayfasi: React.FC = () => {
                       </BarChart>
                     </ResponsiveContainer>
                   </ChartContainer>
-                  <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-                    {memoryAnalytics.map((level, index) => (
-                      <div key={index} className="p-4 bg-blue-50/30 dark:bg-blue-950/20 rounded-xl border border-border/50">
-                        <div className="font-semibold text-blue-700 dark:text-blue-300 mb-2">{level.level}</div>
-                        <div className="space-y-2 text-sm">
-                          <div>Ortalama Skor: <span className="font-bold">{level.avgScore}</span></div>
-                          <div>Ortalama Süre: <span className="font-bold">{level.avgTime}s</span></div>
-                          <div>Ortalama Hamle: <span className="font-bold">{level.avgMoves}</span></div>
-                          <div>Hata Oranı: <span className="font-bold">{level.avgIncorrectMoves}</span></div>
-                          <Badge variant="outline" className="text-xs">{level.playCount} oyun</Badge>
+                  <div className="grid gap-3 sm:gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
+                                          {memoryAnalytics.map((level, index) => (
+                        <div key={index} className="p-3 sm:p-4 bg-blue-50/30 dark:bg-blue-950/20 rounded-xl border border-border/50">
+                          <div className="font-semibold text-blue-700 dark:text-blue-300 mb-2 text-sm sm:text-base">{level.level}</div>
+                          <div className="space-y-1 sm:space-y-2 text-xs sm:text-sm">
+                            <div>Ortalama Skor: <span className="font-bold">{level.avgScore}</span></div>
+                            <div>Ortalama Süre: <span className="font-bold">{level.avgTime}s</span></div>
+                            <div>Ortalama Hamle: <span className="font-bold">{level.avgMoves}</span></div>
+                            <div>Hata Oranı: <span className="font-bold">{level.avgIncorrectMoves}</span></div>
+                            <Badge variant="outline" className="text-xs mt-2">{level.playCount} oyun</Badge>
+                          </div>
                         </div>
-                      </div>
-                    ))}
-                  </div>
+                      ))}
+                    </div>
                 </CardContent>
               </Card>
             )}
@@ -752,25 +802,25 @@ const IstatistiklerSayfasi: React.FC = () => {
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                <div className="rounded-xl border border-border/50 overflow-hidden">
+                <div className="rounded-xl border border-border/50 overflow-x-auto">
                   <Table>
                     <TableHeader>
                       <TableRow className="bg-muted/30">
-                        <TableHead className="font-semibold">Tarih</TableHead>
-                        <TableHead className="font-semibold">Egzersiz</TableHead>
-                        <TableHead className="font-semibold">Seviye</TableHead>
-                        <TableHead className="font-semibold">Skor</TableHead>
-                        <TableHead className="font-semibold">Süre</TableHead>
-                        <TableHead className="font-semibold">Detay</TableHead>
+                        <TableHead className="font-semibold text-xs sm:text-sm min-w-[80px]">Tarih</TableHead>
+                        <TableHead className="font-semibold text-xs sm:text-sm min-w-[120px]">Egzersiz</TableHead>
+                        <TableHead className="font-semibold text-xs sm:text-sm min-w-[80px]">Seviye</TableHead>
+                        <TableHead className="font-semibold text-xs sm:text-sm min-w-[60px]">Skor</TableHead>
+                        <TableHead className="font-semibold text-xs sm:text-sm min-w-[60px]">Süre</TableHead>
+                        <TableHead className="font-semibold text-xs sm:text-sm min-w-[150px]">Detay</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
                       {filteredResults.slice().reverse().map((result, index) => (
                         <TableRow key={index} className="hover:bg-muted/20 transition-colors">
-                          <TableCell className="text-sm font-medium">
+                          <TableCell className="text-xs sm:text-sm font-medium">
                             {new Date(result.date).toLocaleDateString('tr-TR')}
                           </TableCell>
-                          <TableCell className="font-semibold">
+                          <TableCell className="font-semibold text-xs sm:text-sm">
                           {typeof result.exerciseName === 'string' 
                             ? result.exerciseName 
                             : (result.exerciseName as any)?.exerciseName || 'Bilinmeyen Egzersiz'
@@ -782,10 +832,10 @@ const IstatistiklerSayfasi: React.FC = () => {
                             </Badge>
                           </TableCell>
                           <TableCell>
-                            <span className="font-bold text-primary text-lg">{result.score}</span>
+                            <span className="font-bold text-primary text-sm sm:text-lg">{result.score}</span>
                           </TableCell>
-                          <TableCell className="font-medium">{formatTime(result.duration)}</TableCell>
-                          <TableCell className="text-sm">
+                          <TableCell className="font-medium text-xs sm:text-sm">{formatTime(result.duration)}</TableCell>
+                          <TableCell className="text-xs sm:text-sm">
                             {result.exerciseName === 'Hafıza Oyunu' && (
                               <span>Hamle: {result.details?.moves_count || '-'}, Hata: {result.details?.incorrect_moves_count || '-'}</span>
                             )}
@@ -828,25 +878,25 @@ const IstatistiklerSayfasi: React.FC = () => {
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="grid md:grid-cols-2 gap-6">
-              <div className="space-y-4">
+            <div className="grid gap-4 sm:gap-6 lg:grid-cols-2">
+              <div className="space-y-3 sm:space-y-4">
                 <div>
-                  <label className="text-sm font-semibold text-muted-foreground">Uzman ID</label>
-                  <div className="font-mono text-sm bg-background/60 p-3 rounded-lg border border-border/30 mt-1">
+                  <label className="text-xs sm:text-sm font-semibold text-muted-foreground">Uzman ID</label>
+                  <div className="font-mono text-xs sm:text-sm bg-background/60 p-2 sm:p-3 rounded-lg border border-border/30 mt-1 break-all">
                     {professional.id}
                   </div>
                 </div>
                 <div>
-                  <label className="text-sm font-semibold text-muted-foreground">Ad Soyad</label>
-                  <div className="font-semibold text-lg mt-1">{professional.display_name}</div>
+                  <label className="text-xs sm:text-sm font-semibold text-muted-foreground">Ad Soyad</label>
+                  <div className="font-semibold text-base sm:text-lg mt-1">{professional.display_name}</div>
                 </div>
               </div>
-              <div className="flex items-center justify-center p-6 bg-background/40 rounded-xl border border-border/30">
+              <div className="flex items-center justify-center p-4 sm:p-6 bg-background/40 rounded-xl border border-border/30">
                 <div className="text-center">
-                  <div className="w-12 h-12 bg-blue-500/10 rounded-xl flex items-center justify-center mx-auto mb-3">
-                    <User className="w-6 h-6 text-blue-600" />
+                  <div className="w-10 h-10 sm:w-12 sm:h-12 bg-blue-500/10 rounded-xl flex items-center justify-center mx-auto mb-2 sm:mb-3">
+                    <User className="w-5 h-5 sm:w-6 sm:h-6 text-blue-600" />
                   </div>
-                  <p className="text-sm text-muted-foreground max-w-xs">
+                  <p className="text-xs sm:text-sm text-muted-foreground max-w-xs">
                     Danışanlarınız bu ID'yi kullanarak verilerini sizinle paylaşabilir.
                   </p>
                 </div>
@@ -870,21 +920,21 @@ const IstatistiklerSayfasi: React.FC = () => {
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="flex flex-col sm:flex-row gap-4">
+            <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
               <Button 
                 variant="destructive" 
                 onClick={clearData}
-                className="flex-1 font-semibold"
+                className="flex-1 font-semibold text-sm sm:text-base py-2 sm:py-3"
               >
-                <Trash2 className="w-4 h-4 mr-2" />
+                <Trash2 className="w-3 h-3 sm:w-4 sm:h-4 mr-2" />
                 Tüm Verileri Temizle
               </Button>
               <Button 
                 variant="outline" 
-                className="flex-1 font-semibold"
+                className="flex-1 font-semibold text-sm sm:text-base py-2 sm:py-3"
                 disabled
               >
-                <Download className="w-4 h-4 mr-2" />
+                <Download className="w-3 h-3 sm:w-4 sm:h-4 mr-2" />
                 Verileri Dışa Aktar (Yakında)
               </Button>
             </div>

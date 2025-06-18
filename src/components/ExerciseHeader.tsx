@@ -85,7 +85,7 @@ const ExerciseHeader: React.FC<ExerciseHeaderProps> = ({
                     <Badge variant="secondary" className="bg-white/60 dark:bg-gray-800/60 backdrop-blur-sm text-xs whitespace-nowrap">
                       <Target className="w-3 h-3 mr-1" />
                       <span className="hidden sm:inline">
-                        {typeof stats.level === 'number' ? `Seviye ${stats.level}` : stats.level}
+                      {typeof stats.level === 'number' ? `Seviye ${stats.level}` : stats.level}
                       </span>
                       <span className="sm:hidden">
                         {typeof stats.level === 'number' ? `${stats.level}` : stats.level}

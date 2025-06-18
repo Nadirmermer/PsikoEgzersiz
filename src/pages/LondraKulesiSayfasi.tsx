@@ -12,48 +12,48 @@ interface LondraKulesiSayfasiProps {
   onBack: () => void
 }
 
-// Gerçek Londra Kulesi Test Problemleri - Bilimsel temelli, kolaydan zora
+// Gerçek Londra Kulesi Test Problemleri - Kule kapasitelerine uygun düzenlenmiş
 const TOWER_PROBLEMS = [
-  // Seviye 1-5: Temel Seviyeler (1-3 hamle)
+  // Seviye 1-5: Temel Seviyeler (1-3 hamle) - KAPASİTE KURALI: [3,2,1]
   { 
     id: 1,
-    initial: [['K'], ['Y'], ['M']], 
-    target: [['K'], ['Y', 'M'], []], 
+    initial: [['K'], ['Y'], []], 
+    target: [['K'], [], ['Y']], 
     minMoves: 1,
     difficulty: 'Çok Kolay',
-    description: "Mavi topu yeşilin üzerine koyun"
+    description: "Yeşil topu sağ kuleye taşıyın"
   },
   { 
     id: 2,
-    initial: [['K'], ['Y'], ['M']], 
-    target: [['K', 'Y'], [], ['M']], 
-    minMoves: 2,
+    initial: [['K'], ['Y'], []], 
+    target: [['K', 'Y'], [], []], 
+    minMoves: 1,
     difficulty: 'Kolay',
     description: "Yeşili kırmızının üzerine taşıyın"
   },
   { 
     id: 3,
-    initial: [['K'], ['Y', 'M'], []], 
-    target: [['K'], [], ['Y', 'M']], 
-    minMoves: 2,
+    initial: [['K'], [], ['M']], 
+    target: [[], ['K'], ['M']], 
+    minMoves: 1,
     difficulty: 'Kolay',
-    description: "Yeşil-mavi ikilisini sağa taşıyın"
+    description: "Kırmızıyı orta kuleye taşıyın"
   },
   { 
     id: 4,
-    initial: [['K', 'Y'], ['M'], []], 
-    target: [[], ['K'], ['Y', 'M']], 
-    minMoves: 3,
+    initial: [['K', 'Y'], [], []], 
+    target: [[], ['K'], ['Y']], 
+    minMoves: 2,
     difficulty: 'Kolay-Orta',
-    description: "Kırmızıyı ortaya, yeşil-maviyi sağa"
+    description: "İki topu ayrı kulelere yerleştirin"
   },
   { 
     id: 5,
-    initial: [['K'], ['Y'], ['M']], 
-    target: [[], ['K'], ['Y', 'M']], 
-    minMoves: 3,
+    initial: [['K'], ['Y'], []], 
+    target: [[], ['Y'], ['K']], 
+    minMoves: 2,
     difficulty: 'Orta',
-    description: "Kırmızıyı ortaya yerleştirin"
+    description: "Topları yer değiştirin"
   },
 
   // Seviye 6-10: Orta Seviyeler (3-4 hamle)
@@ -61,39 +61,39 @@ const TOWER_PROBLEMS = [
     id: 6,
     initial: [['K', 'Y'], [], ['M']], 
     target: [['M'], ['K'], ['Y']], 
-    minMoves: 4,
+    minMoves: 3,
     difficulty: 'Orta',
     description: "Topları yeniden düzenleyin"
   },
   { 
     id: 7,
-    initial: [[], ['K', 'Y'], ['M']], 
-    target: [['Y'], ['M'], ['K']], 
-    minMoves: 4,
+    initial: [[], ['K', 'Y'], []], 
+    target: [['Y'], [], ['K']], 
+    minMoves: 2,
     difficulty: 'Orta',
     description: "Döngüsel değiştirme"
   },
   { 
     id: 8,
-    initial: [['K'], ['Y', 'M'], []], 
-    target: [[], ['M'], ['K', 'Y']], 
-    minMoves: 4,
+    initial: [['K'], ['Y'], ['M']], 
+    target: [[], ['M'], ['K']], 
+    minMoves: 3,
     difficulty: 'Orta-Zor',
     description: "Karmaşık yeniden düzenleme"
   },
   { 
     id: 9,
-    initial: [['K', 'Y'], ['M'], []], 
-    target: [['Y'], [], ['M', 'K']], 
-    minMoves: 4,
+    initial: [['K', 'Y'], [], []], 
+    target: [['Y'], [], ['K']], 
+    minMoves: 2,
     difficulty: 'Zor',
     description: "Ters sıralama hamlesi"
   },
   { 
     id: 10,
-    initial: [[], ['K'], ['Y', 'M']], 
-    target: [['K', 'Y'], [], ['M']], 
-    minMoves: 3,
+    initial: [[], ['K'], ['Y']], 
+    target: [['K'], [], ['Y']], 
+    minMoves: 1,
     difficulty: 'Zor',
     description: "Strateji planlama"
   },
@@ -103,39 +103,39 @@ const TOWER_PROBLEMS = [
     id: 11,
     initial: [['K'], ['Y'], ['M']], 
     target: [['M'], ['K'], ['Y']], 
-    minMoves: 6,
+    minMoves: 3,
     difficulty: 'Zor',
     description: "Tam döngüsel değişim"
   },
   { 
     id: 12,
     initial: [['K', 'Y', 'M'], [], []], 
-    target: [[], [], ['K', 'Y', 'M']], 
-    minMoves: 7,
+    target: [[], ['K'], ['M']], 
+    minMoves: 3,
     difficulty: 'Çok Zor',
-    description: "Üçlü yığını taşıma"
+    description: "Üçlü yığını dağıtma"
   },
   { 
     id: 13,
-    initial: [[], ['K', 'Y'], ['M']], 
-    target: [['M', 'Y'], [], ['K']], 
-    minMoves: 5,
+    initial: [[], ['K', 'Y'], []], 
+    target: [['M'], [], ['K']], 
+    minMoves: 2,
     difficulty: 'Çok Zor',
     description: "Karmaşık kombinasyon"
   },
   { 
     id: 14,
-    initial: [['K'], ['Y', 'M'], []], 
-    target: [['Y'], ['M', 'K'], []], 
-    minMoves: 5,
+    initial: [['K'], ['Y'], []], 
+    target: [['Y'], ['K'], []], 
+    minMoves: 2,
     difficulty: 'Uzman',
     description: "Uzman seviye strateji"
   },
   { 
     id: 15,
     initial: [['K', 'Y'], [], ['M']], 
-    target: [[], ['Y', 'M'], ['K']], 
-    minMoves: 5,
+    target: [[], ['Y'], ['K']], 
+    minMoves: 2,
     difficulty: 'Uzman',
     description: "Çok boyutlu planlama"
   },
@@ -143,41 +143,41 @@ const TOWER_PROBLEMS = [
   // Seviye 16-20: Uzman Seviyeler (5-6 hamle)
   { 
     id: 16,
-    initial: [[], ['K', 'Y', 'M'], []], 
+    initial: [[], ['K', 'Y'], ['M']], 
     target: [['M'], ['Y'], ['K']], 
-    minMoves: 6,
+    minMoves: 3,
     difficulty: 'Profesyonel',
     description: "Üçlü ayrıştırma"
   },
   { 
     id: 17,
     initial: [['K'], ['Y'], ['M']], 
-    target: [['Y', 'M'], [], ['K']], 
-    minMoves: 5,
+    target: [['Y'], [], ['K']], 
+    minMoves: 3,
     difficulty: 'Profesyonel',
     description: "Çapraz geçiş uzman"
   },
   { 
     id: 18,
-    initial: [['K', 'Y'], ['M'], []], 
-    target: [[], ['K'], ['M', 'Y']], 
-    minMoves: 6,
+    initial: [['K', 'Y'], [], ['M']], 
+    target: [[], ['K'], ['M']], 
+    minMoves: 2,
     difficulty: 'Master',
     description: "Master seviye problem"
   },
   { 
     id: 19,
-    initial: [[], ['K'], ['Y', 'M']], 
-    target: [['M', 'K'], ['Y'], []], 
-    minMoves: 6,
+    initial: [[], ['K'], ['Y']], 
+    target: [['M'], ['Y'], []], 
+    minMoves: 2,
     difficulty: 'Master',
     description: "Karmaşık master çözümü"
   },
   { 
     id: 20,
     initial: [['K', 'Y'], [], ['M']], 
-    target: [['M'], ['K', 'Y'], []], 
-    minMoves: 5,
+    target: [['M'], ['K'], []], 
+    minMoves: 3,
     difficulty: 'Grandmaster',
     description: "🏆 GRANDMASTER 🏆"
   },
@@ -185,89 +185,89 @@ const TOWER_PROBLEMS = [
   // Seviye 21-30: Legendary Seviyeler (6+ hamle)
   { 
     id: 21,
-    initial: [[], ['K', 'Y'], ['M']], 
-    target: [['K'], ['M'], ['Y']], 
-    minMoves: 6,
+    initial: [[], ['K', 'Y'], []], 
+    target: [['K'], [], ['Y']], 
+    minMoves: 2,
     difficulty: 'Legendary',
     description: "Legendary seviye başlangıç"
   },
   { 
     id: 22,
-    initial: [['K'], ['Y', 'M'], []], 
-    target: [[], ['K'], ['M', 'Y']], 
-    minMoves: 7,
+    initial: [['K'], ['Y'], ['M']], 
+    target: [[], ['K'], ['M']], 
+    minMoves: 2,
     difficulty: 'Legendary',
     description: "7-hamle legendary"
   },
   { 
     id: 23,
-    initial: [['K', 'Y', 'M'], [], []], 
-    target: [['M'], ['K'], ['Y']], 
-    minMoves: 8,
+    initial: [['K', 'Y'], [], ['M']], 
+    target: [['M'], ['K'], []], 
+    minMoves: 3,
     difficulty: 'Legendary',
     description: "Maksimum karmaşıklık"
   },
   { 
     id: 24,
-    initial: [[], ['K'], ['Y', 'M']], 
-    target: [['Y'], ['M', 'K'], []], 
-    minMoves: 7,
+    initial: [[], ['K'], ['Y']], 
+    target: [['Y'], ['K'], []], 
+    minMoves: 2,
     difficulty: 'Ultimate',
     description: "Ultimate challenge"
   },
   { 
     id: 25,
-    initial: [['K', 'Y'], ['M'], []], 
-    target: [['M', 'Y'], [], ['K']], 
-    minMoves: 8,
+    initial: [['K', 'Y'], [], ['M']], 
+    target: [['M'], [], ['K']], 
+    minMoves: 2,
     difficulty: 'Ultimate',
     description: "🎯 ULTIMATE MASTER 🎯"
   },
 
-  // Seviye 26-30: Mythical Levels
+  // Seviye 26-30: Mythical Levels - Kapasiteye uygun
   { 
     id: 26,
-    initial: [[], ['K', 'Y'], ['M']], 
-    target: [['M', 'K'], [], ['Y']], 
-    minMoves: 7,
+    initial: [[], ['K', 'Y'], []], 
+    target: [['M'], [], ['Y']], 
+    minMoves: 2,
     difficulty: 'Impossible',
     description: "Impossible Level 1"
   },
   { 
     id: 27,
-    initial: [['K'], [], ['Y', 'M']], 
-    target: [['Y'], ['K', 'M'], []], 
-    minMoves: 8,
+    initial: [['K'], [], ['Y']], 
+    target: [['Y'], ['K'], []], 
+    minMoves: 2,
     difficulty: 'Impossible',
     description: "Impossible Level 2"
   },
   { 
     id: 28,
-    initial: [['K', 'Y'], ['M'], []], 
-    target: [[], ['Y', 'M'], ['K']], 
-    minMoves: 7,
+    initial: [['K', 'Y'], [], ['M']], 
+    target: [[], ['Y'], ['K']], 
+    minMoves: 2,
     difficulty: 'Mythical',
     description: "Mythical Level 1"
   },
   { 
     id: 29,
-    initial: [[], ['K', 'Y', 'M'], []], 
-    target: [['K'], [], ['M', 'Y']], 
-    minMoves: 9,
+    initial: [[], ['K', 'Y'], []], 
+    target: [['K'], [], ['Y']], 
+    minMoves: 2,
     difficulty: 'Mythical',
     description: "Mythical Level 2"
   },
   { 
     id: 30,
     initial: [['K'], ['Y'], ['M']], 
-    target: [['M', 'Y', 'K'], [], []], 
-    minMoves: 10,
+    target: [['M'], [], ['K']], 
+    minMoves: 3,
     difficulty: 'Divine',
     description: "💎 DIVINE MASTER 💎"
   }
 ]
 
-// Tower Komponenti - Kapasiteye Göre Boyutlanan Responsive Tasarım
+// Tower Komponenti - Kapasiteye Göre Boyutlanan Responsive Tasarım - Optimizasyonlu
 const Tower: React.FC<{
   index: number
   balls: string[]
@@ -276,7 +276,7 @@ const Tower: React.FC<{
   label: string
   isTarget?: boolean
   maxHeight: number
-}> = ({ index, balls, isSelected, onClick, label, isTarget = false, maxHeight }) => {
+}> = React.memo(({ index, balls, isSelected, onClick, label, isTarget = false, maxHeight }) => {
   
   const getBallColor = (color: string) => {
     switch(color) {
@@ -342,7 +342,7 @@ const Tower: React.FC<{
       {/* Kule Etiketi - Responsive */}
       <div className={`font-medium px-2 py-1 sm:px-3 sm:py-2 rounded-full transition-all duration-300 text-xs sm:text-sm ${
         isTarget 
-          ? 'bg-gradient-to-r from-green-400 to-emerald-500 text-white font-bold shadow-lg shadow-green-500/30 animate-pulse'
+          ? 'bg-gradient-to-r from-green-400 to-emerald-500 text-white font-bold shadow-lg shadow-green-500/30'
           : isSelected
           ? 'bg-primary text-white'
           : 'bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300'
@@ -393,7 +393,7 @@ const Tower: React.FC<{
                 ${ballSize} rounded-full mb-0.5 sm:mb-1 border-2 border-white/50 transition-all duration-300 
                 flex items-center justify-center shadow-lg
                 ${getBallColor(ballColor)}
-                ${isSelected && ballIndex === balls.length - 1 ? 'scale-110 animate-pulse' : ''}
+                ${isSelected && ballIndex === balls.length - 1 ? 'scale-110' : ''}
               `}
               title={getBallName(ballColor)}
             >
@@ -421,7 +421,10 @@ const Tower: React.FC<{
       </div>
     </div>
   )
-}
+})
+
+// Performans için displayName ekliyoruz
+Tower.displayName = 'Tower'
 
 // Ana Oyun Komponenti
 const TowerOfLondonGame: React.FC = () => {
@@ -514,8 +517,8 @@ const TowerOfLondonGame: React.FC = () => {
     initializeLevel(currentLevel)
   }
 
-  // Kule tıklama mantığı - Gerçek Londra Kulesi kuralları
-  const handleTowerClick = (towerIndex: number) => {
+  // Kule tıklama mantığı - Gerçek Londra Kulesi kuralları - Optimizasyonlu
+  const handleTowerClick = React.useCallback((towerIndex: number) => {
     if (isCompleted) return
 
     recordFirstMove()
@@ -559,7 +562,7 @@ const TowerOfLondonGame: React.FC = () => {
         }
       }
     }
-  }
+  }, [isCompleted, selectedTower, towers, maxTowerHeights, playSound])
 
   const towerLabels = ['Büyük Kule', 'Orta Kule', 'Küçük Kule']
 
