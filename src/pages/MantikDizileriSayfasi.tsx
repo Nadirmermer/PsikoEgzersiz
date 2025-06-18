@@ -267,41 +267,7 @@ const MantikDizileriSayfasi: React.FC<MantikDizileriSayfasiProps> = ({ onBack })
             </CardContent>
           </Card>
 
-          {/* Progress & Stats */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            {/* Progress */}
-            <Card className="bg-white/60 dark:bg-gray-900/60 backdrop-blur-sm border-white/20 dark:border-gray-800/20">
-              <CardContent className="p-4">
-                <div className="flex justify-between items-center text-sm sm:text-base">
-                  <span className="font-medium text-gray-700 dark:text-gray-300">
-                    Soru {logicGame.questionNumber} / {TOTAL_QUESTIONS}
-                  </span>
-                  <span className="font-semibold text-primary">
-                    Seviye {logicGame.currentQuestion.level}
-                  </span>
-                </div>
-              </CardContent>
-            </Card>
 
-            {/* Score */}
-            <Card className="bg-white/60 dark:bg-gray-900/60 backdrop-blur-sm border-white/20 dark:border-gray-800/20">
-              <CardContent className="p-4">
-                <div className="flex justify-between items-center text-sm sm:text-base">
-                  <span className="font-medium text-gray-700 dark:text-gray-300">
-                    Skor: {logicGame.score}
-                  </span>
-                  <div className="flex gap-2">
-                    <span className="text-green-600 dark:text-green-400 font-semibold">
-                      ✓ {logicGame.correctCount}
-                    </span>
-                    <span className="text-red-600 dark:text-red-400 font-semibold">
-                      ✗ {logicGame.incorrectCount}
-                    </span>
-                  </div>
-                </div>
-          </CardContent>
-        </Card>
-      </div>
 
     </div>
       )}

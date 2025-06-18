@@ -289,32 +289,7 @@ const SayiDizisiTakibiSayfasi: React.FC<SayiDizisiTakibiSayfasiProps> = ({ onBac
             </Card>
           )}
 
-          {/* Stats */}
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-            <Card className="bg-white/60 dark:bg-gray-900/60 backdrop-blur-sm border-white/20 dark:border-gray-800/20">
-              <CardContent className="p-4 text-center">
-                <div className="text-2xl font-bold text-primary">{sequenceGame.currentLevel}</div>
-                <div className="text-sm text-gray-600 dark:text-gray-300">Mevcut Seviye</div>
-              </CardContent>
-            </Card>
-            
-            <Card className="bg-white/60 dark:bg-gray-900/60 backdrop-blur-sm border-white/20 dark:border-gray-800/20">
-              <CardContent className="p-4 text-center">
-                <div className="text-2xl font-bold text-primary">{sequenceGame.score}</div>
-                <div className="text-sm text-gray-600 dark:text-gray-300">Skor</div>
-              </CardContent>
-            </Card>
-            
-            <Card className="bg-white/60 dark:bg-gray-900/60 backdrop-blur-sm border-white/20 dark:border-gray-800/20">
-              <CardContent className="p-4 text-center">
-                <div className="flex justify-center gap-3">
-                  <span className="text-green-600 dark:text-green-400 font-semibold">✓ {sequenceGame.correctCount}</span>
-                  <span className="text-red-600 dark:text-red-400 font-semibold">✗ {sequenceGame.incorrectCount}</span>
-                </div>
-                <div className="text-sm text-gray-600 dark:text-gray-300">Doğru/Yanlış</div>
-            </CardContent>
-          </Card>
-      </div>
+
 
     </div>
       )}
