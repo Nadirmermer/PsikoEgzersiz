@@ -14,7 +14,7 @@ interface ResimKelimeEslestirmeSayfasiProps {
 }
 
 const ResimKelimeEslestirmeSayfasi: React.FC<ResimKelimeEslestirmeSayfasiProps> = ({ onBack }) => {
-  const TOTAL_QUESTIONS = 15
+  const TOTAL_QUESTIONS = 30
   const FEEDBACK_DURATION = 1500
 
   // Universal game hook

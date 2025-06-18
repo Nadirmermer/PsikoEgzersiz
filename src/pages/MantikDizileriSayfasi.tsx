@@ -14,7 +14,7 @@ interface MantikDizileriSayfasiProps {
 }
 
 const MantikDizileriSayfasi: React.FC<MantikDizileriSayfasiProps> = ({ onBack }) => {
-  const TOTAL_QUESTIONS = 10
+  const TOTAL_QUESTIONS = 25
   const FEEDBACK_DURATION = 2000
 
   // Universal game hook
