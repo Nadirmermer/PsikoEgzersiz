@@ -1,7 +1,7 @@
 
 {
-  "appId": "app.lovable.bilisseleg-zersiz",
-  "appName": "Bilişsel Egzersiz",
+  "appId": "com.psikoegzersiz.app",
+  "appName": "PsikoEgzersiz",
   "webDir": "dist",
   "server": {
     "androidScheme": "https"
@@ -9,11 +9,11 @@
   "plugins": {
     "StatusBar": {
       "style": "default",
-      "backgroundColor": "#ffffff"
+      "backgroundColor": "#6366f1"
     },
     "SplashScreen": {
       "launchShowDuration": 2000,
-      "backgroundColor": "#ffffff",
+      "backgroundColor": "#6366f1",
       "androidSplashResourceName": "splash",
       "iosSplashResourceName": "Default"
     },
@@ -28,7 +28,8 @@
     "webContentsDebuggingEnabled": true
   },
   "ios": {
-    "scheme": "Bilişsel Egzersiz",
-    "contentInset": "automatic"
+    "scheme": "PsikoEgzersiz",
+    "contentInset": "automatic",
+    "preferredContentMode": "mobile"
   }
 }

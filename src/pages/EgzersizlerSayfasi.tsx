@@ -225,13 +225,13 @@ const EgzersizlerSayfasi: React.FC<EgzersizlerSayfasiProps> = ({
         <div className="relative px-4 pt-8 pb-6 sm:px-6 lg:px-8">
           {/* Compact Mobile Header */}
           <div className="text-center space-y-4 animate-fade-in">
-            {/* Compact Mobile Mascot */}
-            <div className="relative inline-flex items-center justify-center mb-1">
-              <div className="relative w-12 h-12 sm:w-14 sm:h-14 bg-gradient-to-br from-primary/10 to-purple-500/10 rounded-full border border-primary/20 flex items-center justify-center">
+            {/* Logo Büyütüldü */}
+            <div className="relative inline-flex items-center justify-center mb-2">
+              <div className="relative w-30 h-30 sm:w-35 sm:h-35 md:w-32 md:h-32 bg-gradient-to-br from-primary/10 to-purple-500/10 rounded-full border border-primary/20 flex items-center justify-center shadow-lg">
                 <img 
                   src="/logo.png" 
-                  alt="Bilişsel Asistan" 
-                  className="w-8 h-8 sm:w-10 sm:h-10 object-contain" 
+                  alt="PsikoEgzersiz" 
+                  className="w-12 h-12 sm:w-16 sm:h-16 md:w-20 md:h-20 object-contain drop-shadow-sm" 
                 />
               </div>
             </div>
@@ -239,7 +239,7 @@ const EgzersizlerSayfasi: React.FC<EgzersizlerSayfasiProps> = ({
             {/* Main Title - Mobile Optimized */}
             <div className="space-y-2">
               <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold bg-gradient-to-r from-primary via-purple-600 to-pink-600 bg-clip-text text-transparent leading-tight px-4">
-                Bilişsel Egzersizler
+                PsikoEgzersiz
               </h1>
               <p className="text-sm sm:text-base text-muted-foreground px-6 leading-relaxed">
                 Beyin gücünüzü artıran <span className="font-medium text-primary">9 bilimsel egzersiz</span>
@@ -410,7 +410,7 @@ const EgzersizlerSayfasi: React.FC<EgzersizlerSayfasiProps> = ({
                   </div>
                   <p className="text-sm text-muted-foreground leading-relaxed">
                     Ben sizin <span className="font-semibold text-primary">bilişsel asistanınızım</span>. 
-                    Size 8 farklı egzersiz türü ile beyin gücünüzü geliştirmenizde yardımcı olacağım! 🧠✨
+                    Size 9 farklı egzersiz türü ile beyin gücünüzü geliştirmenizde yardımcı olacağım! 🧠✨
                   </p>
                 </div>
               </div>
