@@ -35,7 +35,7 @@ const HafizaOyunuSayfasi: React.FC<HafizaOyunuSayfasiProps> = ({ onBack }) => {
     const level = MEMORY_GAME_LEVELS[levelIndex] || MEMORY_GAME_LEVELS[0]
     setCurrentLevel(level)
   }, [])
-
+  
   // Memory game'i initialize et
   useEffect(() => {
     memoryGame.initializeGame()
@@ -181,11 +181,11 @@ const HafizaOyunuSayfasi: React.FC<HafizaOyunuSayfasiProps> = ({ onBack }) => {
               <CardContent className="pt-4 sm:pt-6 text-center px-4">
                 <div className="text-xl sm:text-2xl mb-2">👀</div>
                 <p className="text-sm sm:text-base text-yellow-800 dark:text-yellow-200">
-                  Kartları inceleyip konumlarını hatırlamaya çalışın...
-                </p>
-              </CardContent>
-            </Card>
-          )}
+              Kartları inceleyip konumlarını hatırlamaya çalışın...
+            </p>
+          </CardContent>
+        </Card>
+      )}
 
           {/* Oyun Tahtası */}
           <Card className="bg-white/60 dark:bg-gray-900/60 backdrop-blur-sm border-white/20 dark:border-gray-800/20 shadow-xl">
@@ -199,16 +199,16 @@ const HafizaOyunuSayfasi: React.FC<HafizaOyunuSayfasiProps> = ({ onBack }) => {
                     ? 'gap-1 sm:gap-2 max-w-[280px] sm:max-w-lg'
                     : 'gap-1 max-w-[260px] sm:max-w-md' // 20 kart için daha kompakt
                 }`}
-                style={{ 
-                  gridTemplateColumns: `repeat(${currentLevel.gridSize.cols}, 1fr)`,
+            style={{ 
+              gridTemplateColumns: `repeat(${currentLevel.gridSize.cols}, 1fr)`,
                   gridTemplateRows: `repeat(${currentLevel.gridSize.rows}, 1fr)`,
                   aspectRatio: `${currentLevel.gridSize.cols} / ${currentLevel.gridSize.rows}`
-                }}
-              >
+            }}
+          >
                 {memoryGame.cards.map((card) => (
-                  <button
-                    key={card.id}
-                    onClick={() => handleCardClick(card.id)}
+              <button
+                key={card.id}
+                onClick={() => handleCardClick(card.id)}
                     disabled={
                       memoryGame.showingPreview || 
                       card.isFlipped || 
@@ -217,7 +217,7 @@ const HafizaOyunuSayfasi: React.FC<HafizaOyunuSayfasiProps> = ({ onBack }) => {
                       universalGame.gameState.isPaused ||
                       universalGame.gameState.phase === 'ready'
                     }
-                    className={`
+                className={`
                       aspect-square rounded-md sm:rounded-lg font-bold transition-all duration-300 border-2 shadow-lg
                       ${
                         // Dinamik font boyutu: kart sayısına göre
@@ -227,20 +227,20 @@ const HafizaOyunuSayfasi: React.FC<HafizaOyunuSayfasiProps> = ({ onBack }) => {
                           ? 'text-base sm:text-xl md:text-2xl min-h-12 sm:min-h-16'
                           : 'text-sm sm:text-base md:text-lg min-h-10 sm:min-h-12' // 20 kart için küçük
                       }
-                      ${getCardStyle(card)}
+                  ${getCardStyle(card)}
                       ${(memoryGame.showingPreview || card.isFlipped || card.isMatched || memoryGame.flippedCards >= 2 || universalGame.gameState.isPaused || universalGame.gameState.phase === 'ready') ? 'cursor-default' : 'cursor-pointer'}
-                    `}
-                  >
-                    {getCardDisplayContent(card)}
-                  </button>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
+                `}
+              >
+                {getCardDisplayContent(card)}
+              </button>
+            ))}
+          </div>
+        </CardContent>
+      </Card>
         </>
       )}
     </UniversalGameEngine>
   )
 }
 
-export default HafizaOyunuSayfasi 
+export default HafizaOyunuSayfasi

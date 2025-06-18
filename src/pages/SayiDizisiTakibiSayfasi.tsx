@@ -81,7 +81,7 @@ const SayiDizisiTakibiSayfasi: React.FC<SayiDizisiTakibiSayfasiProps> = ({ onBac
             sequenceGame.userInput.every((input, index) => input === sequenceGame.sequence[index])) {
           // Level completed successfully - move to next level
           sequenceGame.nextLevel()
-        } else {
+    } else {
           // Mistake made - retry same level
           sequenceGame.retryLevel()
         }
@@ -142,8 +142,8 @@ const SayiDizisiTakibiSayfasi: React.FC<SayiDizisiTakibiSayfasiProps> = ({ onBac
                     <Brain className="w-4 h-4 mr-1" />
                     Seviye {sequenceGame.currentLevel}
                   </Badge>
-                </div>
-
+              </div>
+              
                 <h3 className="text-xl sm:text-2xl font-semibold mb-6 text-gray-700 dark:text-gray-300">
                   Sayıları Hatırlayın
                 </h3>
@@ -166,9 +166,9 @@ const SayiDizisiTakibiSayfasi: React.FC<SayiDizisiTakibiSayfasiProps> = ({ onBac
                       {index <= sequenceGame.showingIndex ? number : '?'}
                     </div>
                   ))}
-                </div>
+                  </div>
 
-                <Progress 
+                  <Progress 
                   value={(sequenceGame.showingIndex + 1) / sequenceGame.sequence.length * 100} 
                   className="h-3 bg-white/40 dark:bg-gray-800/40 backdrop-blur-sm max-w-md mx-auto"
                 />
@@ -199,8 +199,8 @@ const SayiDizisiTakibiSayfasi: React.FC<SayiDizisiTakibiSayfasiProps> = ({ onBac
                 {/* User Input Display */}
                 <div className="flex justify-center items-center gap-3 sm:gap-4 mb-8 flex-wrap">
                   {sequenceGame.sequence.map((_, index) => (
-                    <div
-                      key={index}
+                      <div
+                        key={index}
                       className={`
                         w-16 h-16 sm:w-20 sm:h-20 rounded-xl flex items-center justify-center text-2xl font-bold transition-all duration-300
                         ${index < sequenceGame.userInput.length
@@ -210,28 +210,28 @@ const SayiDizisiTakibiSayfasi: React.FC<SayiDizisiTakibiSayfasiProps> = ({ onBac
                             : 'bg-gray-100 dark:bg-gray-800 text-gray-300 dark:text-gray-600'
                         }
                       `}
-                    >
+                      >
                       {index < sequenceGame.userInput.length ? sequenceGame.userInput[index] : '?'}
-                    </div>
-                  ))}
-                </div>
+                      </div>
+                    ))}
+                  </div>
 
                 {/* Number Buttons */}
                 <div className="grid grid-cols-5 gap-3 max-w-lg mx-auto">
                   {[0, 1, 2, 3, 4, 5, 6, 7, 8, 9].map((number) => (
-                    <Button
-                      key={number}
-                      variant="outline"
-                      size="lg"
+                      <Button
+                        key={number}
+                        variant="outline"
+                        size="lg"
                       onClick={() => handleNumberInput(number)}
                       className="h-16 text-xl font-bold bg-white/60 dark:bg-gray-800/60 backdrop-blur-sm border-white/20 dark:border-gray-700/20 hover:bg-white/80 dark:hover:bg-gray-800/80 hover:scale-105 transition-all duration-200"
-                    >
-                      {number}
-                    </Button>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
+                      >
+                        {number}
+                      </Button>
+                    ))}
+              </div>
+            </CardContent>
+          </Card>
           )}
 
           {/* Feedback Phase */}
@@ -248,7 +248,7 @@ const SayiDizisiTakibiSayfasi: React.FC<SayiDizisiTakibiSayfasiProps> = ({ onBac
                       <h3 className="text-2xl font-bold mb-2">Mükemmel!</h3>
                       <p className="text-lg">Seviye {sequenceGame.currentLevel - 1} tamamlandı!</p>
                       <p className="text-sm mt-2">+{(sequenceGame.currentLevel - 1) * 10} puan</p>
-                    </div>
+        </div>
                   ) : (
                     <div className="text-red-600 dark:text-red-400">
                       <XCircle className="w-16 h-16 mx-auto mb-4" />
@@ -256,7 +256,7 @@ const SayiDizisiTakibiSayfasi: React.FC<SayiDizisiTakibiSayfasiProps> = ({ onBac
                       <p className="text-lg">Tekrar deneyin</p>
                     </div>
                   )}
-                </div>
+      </div>
 
                 {/* Sequence Comparison */}
                 <div className="space-y-4">
@@ -265,7 +265,7 @@ const SayiDizisiTakibiSayfasi: React.FC<SayiDizisiTakibiSayfasiProps> = ({ onBac
                     {sequenceGame.sequence.map((number, index) => (
                       <div key={index} className="w-12 h-12 bg-green-100 dark:bg-green-900/30 border border-green-300 dark:border-green-700 rounded-lg flex items-center justify-center text-lg font-bold text-green-800 dark:text-green-200">
                         {number}
-                      </div>
+              </div>
                     ))}
                   </div>
                   
@@ -280,7 +280,7 @@ const SayiDizisiTakibiSayfasi: React.FC<SayiDizisiTakibiSayfasiProps> = ({ onBac
                             : 'bg-red-100 dark:bg-red-900/30 border-red-300 dark:border-red-700 text-red-800 dark:text-red-200'
                         }`}>
                           {number}
-                        </div>
+                </div>
                       )
                     })}
                   </div>
@@ -312,14 +312,14 @@ const SayiDizisiTakibiSayfasi: React.FC<SayiDizisiTakibiSayfasiProps> = ({ onBac
                   <span className="text-red-600 dark:text-red-400 font-semibold">✗ {sequenceGame.incorrectCount}</span>
                 </div>
                 <div className="text-sm text-gray-600 dark:text-gray-300">Doğru/Yanlış</div>
-              </CardContent>
-            </Card>
-          </div>
+            </CardContent>
+          </Card>
+      </div>
 
-        </div>
+    </div>
       )}
     </UniversalGameEngine>
   )
 }
 
-export default SayiDizisiTakibiSayfasi 
+export default SayiDizisiTakibiSayfasi

@@ -81,7 +81,7 @@ const RenkDizisiTakibiSayfasi: React.FC<RenkDizisiTakibiSayfasiProps> = ({ onBac
             sequenceGame.userInput.every((input, index) => input === sequenceGame.sequence[index])) {
           // Level completed successfully - move to next level
           sequenceGame.nextLevel()
-        } else {
+    } else {
           // Mistake made - retry same level
           sequenceGame.retryLevel()
         }
@@ -121,7 +121,7 @@ const RenkDizisiTakibiSayfasi: React.FC<RenkDizisiTakibiSayfasiProps> = ({ onBac
     }
   }
 
-  return (
+    return (
     <UniversalGameEngine
       gameConfig={COLOR_SEQUENCE_CONFIG}
       gameHook={gameHook}
@@ -142,7 +142,7 @@ const RenkDizisiTakibiSayfasi: React.FC<RenkDizisiTakibiSayfasiProps> = ({ onBac
                     <Palette className="w-4 h-4 mr-1" />
                     Seviye {sequenceGame.currentLevel}
                   </Badge>
-                </div>
+              </div>
 
                 <h3 className="text-xl sm:text-2xl font-semibold mb-6 text-gray-700 dark:text-gray-300">
                   Renkleri Hatırlayın
@@ -174,8 +174,8 @@ const RenkDizisiTakibiSayfasi: React.FC<RenkDizisiTakibiSayfasiProps> = ({ onBac
                 <p className="text-sm text-gray-600 dark:text-gray-400 mt-4">
                   {sequenceGame.showingIndex + 1} / {sequenceGame.sequence.length}
                 </p>
-              </CardContent>
-            </Card>
+            </CardContent>
+          </Card>
           )}
 
           {/* Input Phase */}
@@ -189,7 +189,7 @@ const RenkDizisiTakibiSayfasi: React.FC<RenkDizisiTakibiSayfasiProps> = ({ onBac
                     <Eye className="w-4 h-4 mr-1" />
                     Seviye {sequenceGame.currentLevel} - Seçim
                   </Badge>
-                </div>
+      </div>
 
                 <h3 className="text-xl sm:text-2xl font-semibold mb-2 text-gray-700 dark:text-gray-300">
                   Renkleri Seçin
@@ -243,9 +243,9 @@ const RenkDizisiTakibiSayfasi: React.FC<RenkDizisiTakibiSayfasiProps> = ({ onBac
                       {color.name}
                     </p>
                   ))}
-                </div>
-              </CardContent>
-            </Card>
+              </div>
+            </CardContent>
+          </Card>
           )}
 
           {/* Feedback Phase */}
@@ -262,15 +262,15 @@ const RenkDizisiTakibiSayfasi: React.FC<RenkDizisiTakibiSayfasiProps> = ({ onBac
                       <h3 className="text-2xl font-bold mb-2">Mükemmel!</h3>
                       <p className="text-lg">Seviye {sequenceGame.currentLevel - 1} tamamlandı!</p>
                       <p className="text-sm mt-2">+{(sequenceGame.currentLevel - 1) * 10} puan</p>
-                    </div>
+              </div>
                   ) : (
                     <div className="text-red-600 dark:text-red-400">
                       <XCircle className="w-16 h-16 mx-auto mb-4" />
                       <h3 className="text-2xl font-bold mb-2">Üzgünüm!</h3>
                       <p className="text-lg">Tekrar deneyin</p>
-                    </div>
+              </div>
                   )}
-                </div>
+        </div>
 
                 {/* Sequence Comparison */}
                 <div className="space-y-4">
@@ -322,14 +322,14 @@ const RenkDizisiTakibiSayfasi: React.FC<RenkDizisiTakibiSayfasiProps> = ({ onBac
                   <span className="text-red-600 dark:text-red-400 font-semibold">✗ {sequenceGame.incorrectCount}</span>
                 </div>
                 <div className="text-sm text-gray-600 dark:text-gray-300">Doğru/Yanlış</div>
-              </CardContent>
-            </Card>
-          </div>
-
+            </CardContent>
+          </Card>
         </div>
+
+      </div>
       )}
     </UniversalGameEngine>
-  )
+    )
 }
 
 export default RenkDizisiTakibiSayfasi

@@ -178,10 +178,10 @@ const KelimeResimEslestirmeSayfasi: React.FC<KelimeResimEslestirmeSayfasiProps> 
             <CardContent className="p-6 sm:p-8 text-center">
               
               {/* Large Word Display */}
-              <div className="mb-6">
+          <div className="mb-6">
                 <div className="text-3xl sm:text-4xl md:text-5xl mb-4 font-bold text-gray-800 dark:text-gray-200 p-6 bg-white/40 dark:bg-gray-800/40 backdrop-blur-sm rounded-2xl border border-white/20 dark:border-gray-700/20">
                   {matchingGame.currentQuestion.correctAnswer.word}
-                </div>
+            </div>
                 <p className="text-base sm:text-lg text-gray-600 dark:text-gray-300 font-medium">
                   Bu kelimeye uygun emojiyi seçin
                 </p>
@@ -262,7 +262,7 @@ const KelimeResimEslestirmeSayfasi: React.FC<KelimeResimEslestirmeSayfasiProps> 
         </div>
       )}
     </UniversalGameEngine>
-  )
+    )
 }
 
-export default KelimeResimEslestirmeSayfasi 
+export default KelimeResimEslestirmeSayfasi

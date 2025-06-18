@@ -84,11 +84,11 @@ const ResimKelimeEslestirmeSayfasi: React.FC<ResimKelimeEslestirmeSayfasiProps> 
         if (matchingGame.questionNumber >= TOTAL_QUESTIONS) {
           // Game will complete, let useEffect handle it
           return
-        } else {
+      } else {
           matchingGame.nextQuestion()
           matchingGame.generateNewQuestion()
-        }
-      }, FEEDBACK_DURATION)
+      }
+    }, FEEDBACK_DURATION)
       
       return () => clearTimeout(timer)
     }
@@ -163,11 +163,11 @@ const ResimKelimeEslestirmeSayfasi: React.FC<ResimKelimeEslestirmeSayfasiProps> 
     return null
   }
 
-  return (
+    return (
     <UniversalGameEngine
       gameConfig={IMAGE_WORD_MATCHING_CONFIG}
       gameHook={gameHook}
-      onBack={onBack}
+          onBack={onBack}
     >
       {/* Game Content - Only show when playing */}
       {universalGame.gameState.phase === 'playing' && matchingGame.currentQuestion && (
@@ -183,22 +183,22 @@ const ResimKelimeEslestirmeSayfasi: React.FC<ResimKelimeEslestirmeSayfasiProps> 
                   {matchingGame.currentQuestion.correctAnswer.emoji}
                 </div>
                 <p className="text-base sm:text-lg text-gray-600 dark:text-gray-300 font-medium">
-                  Bu emojiye uygun kelimeyi seçin
-                </p>
-              </div>
+                    Bu emojiye uygun kelimeyi seçin
+                  </p>
+                </div>
 
               {/* Answer Options - Super Responsive Grid */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
                 {matchingGame.currentQuestion.options.map((option, index) => {
-                  const optionText = typeof option === 'string' ? option : option.word
-                  return (
-                    <Button
-                      key={index}
-                      variant="outline"
-                      size="lg"
-                      onClick={() => handleAnswerSelect(optionText)}
+                     const optionText = typeof option === 'string' ? option : option.word
+                     return (
+                       <Button
+                         key={index}
+                         variant="outline"
+                         size="lg"
+                         onClick={() => handleAnswerSelect(optionText)}
                       disabled={matchingGame.showFeedback || !matchingGame.isAnswering}
-                      className={`
+                         className={`
                         h-14 sm:h-16 text-base sm:text-lg font-semibold border-2 transition-all duration-300
                         ${getButtonStyle(optionText)}
                         ${matchingGame.showFeedback || !matchingGame.isAnswering ? 'cursor-default' : 'cursor-pointer'}
@@ -206,10 +206,10 @@ const ResimKelimeEslestirmeSayfasi: React.FC<ResimKelimeEslestirmeSayfasiProps> 
                     >
                       {getButtonIcon(optionText)}
                       <span className="truncate">{optionText}</span>
-                    </Button>
-                  )
-                })}
-              </div>
+                       </Button>
+                     )
+                   })}
+                 </div>
 
               {/* Feedback Message - Clear & Encouraging */}
               {matchingGame.showFeedback && (
@@ -223,19 +223,19 @@ const ResimKelimeEslestirmeSayfasi: React.FC<ResimKelimeEslestirmeSayfasiProps> 
                       <>
                         <CheckCircle className="w-5 h-5" />
                         🎉 Harika! Doğru cevap!
-                      </>
-                    ) : (
-                      <>
+                        </>
+                      ) : (
+                        <>
                         <XCircle className="w-5 h-5" />
                         💭 Doğru cevap: <strong>{matchingGame.currentQuestion.correctAnswer.word}</strong>
-                      </>
-                    )}
+                        </>
+                      )}
+                    </div>
                   </div>
-                </div>
-              )}
+                )}
 
-            </CardContent>
-          </Card>
+              </CardContent>
+            </Card>
 
           {/* Progress Indicator - Simple & Clear */}
           <Card className="bg-white/60 dark:bg-gray-900/60 backdrop-blur-sm border-white/20 dark:border-gray-800/20">
@@ -257,4 +257,4 @@ const ResimKelimeEslestirmeSayfasi: React.FC<ResimKelimeEslestirmeSayfasiProps> 
   )
 }
 
-export default ResimKelimeEslestirmeSayfasi 
+export default ResimKelimeEslestirmeSayfasi

@@ -165,8 +165,8 @@ const MantikDizileriSayfasi: React.FC<MantikDizileriSayfasiProps> = ({ onBack })
   }
 
   const answerOptions = logicGame.generateAnswerOptions()
-
-  return (
+    
+    return (
     <UniversalGameEngine
       gameConfig={LOGIC_SEQUENCES_CONFIG}
       gameHook={gameHook}
@@ -186,7 +186,7 @@ const MantikDizileriSayfasi: React.FC<MantikDizileriSayfasiProps> = ({ onBack })
                   <Brain className="w-4 h-4 mr-1" />
                   Seviye {logicGame.currentQuestion.level} - {logicGame.currentQuestion.pattern}
                 </Badge>
-              </div>
+          </div>
 
               {/* Sequence Display */}
               <div className="mb-6">
@@ -206,7 +206,7 @@ const MantikDizileriSayfasi: React.FC<MantikDizileriSayfasiProps> = ({ onBack })
                   {/* Question mark */}
                   <div className="w-16 h-16 sm:w-20 sm:h-20 bg-gradient-to-br from-primary/80 to-primary backdrop-blur-sm border-2 border-primary/50 rounded-xl flex items-center justify-center animate-pulse">
                     <span className="text-xl sm:text-2xl font-bold text-white">
-                      ?
+                    ?
                     </span>
                   </div>
                 </div>
@@ -219,10 +219,10 @@ const MantikDizileriSayfasi: React.FC<MantikDizileriSayfasiProps> = ({ onBack })
               {/* Answer Options */}
               <div className="grid grid-cols-2 gap-3 sm:gap-4 max-w-md mx-auto">
                 {answerOptions.map((option, index) => (
-                  <Button
+                    <Button
                     key={index}
                     variant="outline"
-                    size="lg"
+                      size="lg"
                     onClick={() => handleAnswerSelect(option)}
                     disabled={logicGame.showFeedback || !logicGame.isAnswering}
                     className={`
@@ -237,10 +237,10 @@ const MantikDizileriSayfasi: React.FC<MantikDizileriSayfasiProps> = ({ onBack })
                         {getButtonIcon(option)}
                       </div>
                     )}
-                  </Button>
+                    </Button>
                 ))}
-              </div>
-
+                  </div>
+                  
               {/* Feedback Message */}
               {logicGame.showFeedback && (
                 <div className="mt-6">
@@ -251,7 +251,7 @@ const MantikDizileriSayfasi: React.FC<MantikDizileriSayfasiProps> = ({ onBack })
                   }`}>
                     {logicGame.lastAnswerCorrect ? (
                       <>
-                        <CheckCircle className="w-5 h-5" />
+                          <CheckCircle className="w-5 h-5" />
                         🎉 Mükemmel! +{logicGame.currentQuestion.level * 10} puan
                       </>
                     ) : (
@@ -259,8 +259,8 @@ const MantikDizileriSayfasi: React.FC<MantikDizileriSayfasiProps> = ({ onBack })
                         <XCircle className="w-5 h-5" />
                         💭 Doğru cevap: <strong>{logicGame.currentQuestion.answer}</strong>
                       </>
-                    )}
-                  </div>
+                      )}
+                    </div>
                 </div>
               )}
 
@@ -299,14 +299,14 @@ const MantikDizileriSayfasi: React.FC<MantikDizileriSayfasiProps> = ({ onBack })
                     </span>
                   </div>
                 </div>
-              </CardContent>
-            </Card>
-          </div>
+          </CardContent>
+        </Card>
+      </div>
 
-        </div>
+    </div>
       )}
     </UniversalGameEngine>
   )
 }
 
-export default MantikDizileriSayfasi 
+export default MantikDizileriSayfasi
