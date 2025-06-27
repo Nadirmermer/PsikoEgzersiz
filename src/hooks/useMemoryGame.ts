@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useRef } from 'react'
-import { Card, GameStats, generateCards, calculateScore } from '../utils/memoryGameUtils'
+import { Card, GameStats, generateCards, calculateScore, calculateClinicalScore } from '../utils/memoryGameUtils'
 import { LocalStorageManager, MemoryGameLevel, MEMORY_GAME_LEVELS } from '../utils/localStorage'
 import { useAudio } from './useAudio'
 
@@ -75,13 +75,13 @@ export const useMemoryGame = ({ level }: UseMemoryGameProps) => {
     }
   }, [level.gridSize])
 
-  // Kartları başlat - Error handling eklendi
+  // 🧠 CLINICAL ENHANCEMENT: Initialize game with level-appropriate emoji set
   const initializeGame = useCallback(() => {
     try {
-      setIsLoading(true)
       setError(null)
       
-      const newCards = generateCards(level.gridSize)
+      // Pass level ID to generateCards for clinical emoji selection
+      const newCards = generateCards(level.gridSize, level.id)
       
       // Clear all timers
       if (previewTimerRef.current) clearTimeout(previewTimerRef.current)
@@ -103,7 +103,10 @@ export const useMemoryGame = ({ level }: UseMemoryGameProps) => {
       setLevelCompleted(false)
       setNextLevelUnlocked(false)
       
-      // Kart önizlemesini başlat
+      // 🔧 FIX: Immediate start without loading screen
+      setIsLoading(false)
+      
+      // 🔧 FIX: Start preview immediately 
       setShowingPreview(true)
       
       // Önizleme bitiminden 3 saniye önce countdown sesi çal
@@ -115,11 +118,13 @@ export const useMemoryGame = ({ level }: UseMemoryGameProps) => {
         }, level.previewTime - 3000)
       }
       
-      // Safe preview timer
+      // 🔧 FIX: Safe preview timer with proper game start
       previewTimerRef.current = setTimeout(() => {
         if (mountedRef.current) {
           setShowingPreview(false)
-          setIsLoading(false)
+          // 🔧 FIX: Auto-start game after preview ends
+          setGameStarted(true)
+          setStartTime(Date.now())
         }
       }, level.previewTime)
       
@@ -133,10 +138,10 @@ export const useMemoryGame = ({ level }: UseMemoryGameProps) => {
     }
   }, [level.gridSize, level.previewTime, playSound])
 
-  // Oyunu başlat - Error handling eklendi
+  // 🔧 FIX: Simplified start game - only for manual restart
   const startGame = useCallback(() => {
     try {
-      if (!showingPreview && !gameStarted) {
+      if (!gameStarted && !showingPreview) {
         setGameStarted(true)
         setStartTime(Date.now())
       }
@@ -147,7 +152,7 @@ export const useMemoryGame = ({ level }: UseMemoryGameProps) => {
         message: 'Oyun başlatılamadı. Lütfen tekrar deneyin.'
       })
     }
-  }, [showingPreview, gameStarted])
+  }, [gameStarted, showingPreview])
 
   // Oyunu duraklat - Improved pause handling
   const pauseGame = useCallback(() => {
@@ -180,10 +185,18 @@ export const useMemoryGame = ({ level }: UseMemoryGameProps) => {
     }
   }, [gameStarted, gameCompleted, isPaused, startTime, pausedTime])
 
-  // Kart tıklama - Touch-friendly ve error handling
+  // 🔧 FIX: Improved card click with better state validation
   const flipCard = useCallback((cardId: string) => {
     try {
-      if (!gameStarted || gameCompleted || showingPreview || isPaused || isLoading) return
+      // 🔧 FIX: Allow clicking during preview end transition
+      if (gameCompleted || isPaused || isLoading) return
+      if (showingPreview && !gameStarted) return
+      
+      // 🔧 FIX: Auto-start game on first click if not started
+      if (!gameStarted && !showingPreview) {
+        setGameStarted(true)
+        setStartTime(Date.now())
+      }
       
       setCardFlips(prev => prev + 1)
       
@@ -209,7 +222,7 @@ export const useMemoryGame = ({ level }: UseMemoryGameProps) => {
         message: 'Kart çevrilemedi. Lütfen tekrar deneyin.'
       })
     }
-  }, [gameStarted, gameCompleted, showingPreview, isPaused, isLoading])
+  }, [gameCompleted, isPaused, isLoading, showingPreview, gameStarted])
 
   // Süre sayacı - Memory leak önlendi
   useEffect(() => {
@@ -313,11 +326,19 @@ export const useMemoryGame = ({ level }: UseMemoryGameProps) => {
           card_flips_total: cardFlips
         }
         
+        // 🧠 CLINICAL SCORING: Get comprehensive assessment
+        const clinicalAssessment = calculateClinicalScore(stats)
+        
         const finalStats: GameStats = {
           ...stats,
           exercise_name: 'Hafıza Oyunu',
-          score: calculateScore(stats),
-          timestamp: new Date().toISOString()
+          score: clinicalAssessment.totalScore,
+          timestamp: new Date().toISOString(),
+          // 🧠 Clinical enhancements
+          working_memory_span: totalPairs, // Number of pairs successfully remembered
+          attention_span_seconds: firstMatchTime || finalDuration,
+          strategy_type: incorrectMoves < totalPairs ? 'systematic' : 'random',
+          learning_efficiency: Math.round((totalPairs / moves) * 100)
         }
 
         // Mükemmel skor kontrolü (hiç yanlış hamle yoksa)
@@ -338,14 +359,31 @@ export const useMemoryGame = ({ level }: UseMemoryGameProps) => {
           }, 1000)
         }
         
-        // Local storage'a kaydet - Error handling
+        // 🧠 CLINICAL STORAGE: Save comprehensive assessment data
         try {
           LocalStorageManager.saveExerciseResult({
             exerciseName: finalStats.exercise_name,
             score: finalStats.score,
             duration: finalStats.duration_seconds,
             date: finalStats.timestamp,
-            details: finalStats,
+            details: {
+              ...finalStats,
+              // 🧠 Clinical Assessment Results
+              clinical_scores: {
+                total_score: clinicalAssessment.totalScore,
+                accuracy_score: clinicalAssessment.accuracyScore,
+                efficiency_score: clinicalAssessment.efficiencyScore,
+                speed_score: clinicalAssessment.speedScore,
+                working_memory_score: clinicalAssessment.workingMemoryScore
+              },
+              clinical_insights: clinicalAssessment.clinicalInsights,
+              cognitive_profile: {
+                working_memory_capacity: totalPairs,
+                attention_sustainability: firstMatchTime ? 'excellent' : 'good',
+                strategy_preference: incorrectMoves < totalPairs ? 'systematic' : 'exploratory',
+                learning_efficiency: Math.round((totalPairs / moves) * 100)
+              }
+            },
             completed: true,
             exitedEarly: false
           })

@@ -7,6 +7,7 @@ import { toast } from '@/components/ui/sonner'
 import { useAudio } from '@/hooks/useAudio'
 import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
+import { uiStyles } from '@/lib/utils'
 
 interface LondraKulesiSayfasiProps {
   onBack: () => void
@@ -607,7 +608,7 @@ const TowerOfLondonGame: React.FC = () => {
       
       {/* Error Display */}
       {error && (
-        <Card className="mb-4 sm:mb-6 bg-red-50/80 dark:bg-red-900/20 border-red-200 dark:border-red-800 backdrop-blur-sm">
+        <Card className={`mb-4 sm:mb-6 ${uiStyles.statusCard.error}`}>
           <CardContent className="pt-4 sm:pt-6 text-center px-4">
             <div className="flex flex-col items-center gap-3">
               <AlertTriangle className="w-8 h-8 text-red-600 dark:text-red-400" />
@@ -628,7 +629,7 @@ const TowerOfLondonGame: React.FC = () => {
 
       {/* Loading Display */}
       {isLoading && (
-        <Card className="mb-4 sm:mb-6 bg-blue-50/80 dark:bg-blue-900/20 border-blue-200 dark:border-blue-800 backdrop-blur-sm">
+        <Card className={`mb-4 sm:mb-6 ${uiStyles.statusCard.loading}`}>
           <CardContent className="pt-4 sm:pt-6 text-center px-4">
             <div className="flex flex-col items-center gap-3">
               <Loader2 className="w-8 h-8 text-blue-600 dark:text-blue-400 animate-spin" />
@@ -652,8 +653,8 @@ const TowerOfLondonGame: React.FC = () => {
           </div>
 
       {/* Mevcut Durum - Mobile Optimized */}
-      <Card className="bg-white/70 dark:bg-gray-900/70 backdrop-blur-sm border-white/30 dark:border-gray-800/30 shadow-xl">
-        <CardContent className="p-4 sm:p-6">
+      <Card className={uiStyles.gameCard.primary}>
+        <CardContent className={uiStyles.cardContent.compact}>
           <h4 className="text-center text-base sm:text-lg font-semibold mb-3 sm:mb-4 text-gray-700 dark:text-gray-300">
             Mevcut Durum
                 </h4>

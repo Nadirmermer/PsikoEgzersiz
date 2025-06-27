@@ -154,80 +154,74 @@ export const useColorSequence = ({ initialLevel = 1 }: UseColorSequenceProps = {
   }, [state.currentLevel, generateSequence, error, isLoading])
 
   // 🔧 FIX: Unified sequence showing system with single timer
-  const scheduleNextSequenceStep = useCallback(() => {
+  const showSequence = useCallback(() => {
     if (!mountedRef.current || state.phase !== 'showing') return
 
     try {
-      // İlk renk için başlangıç gecikmesi
-      const isFirstColor = state.showingIndex === 0 && state.highlightedColor === null
-      const showDelay = isFirstColor ? TIMING_CONFIG.INITIAL_DELAY : 0
-
-      sequenceTimerRef.current = setTimeout(() => {
-        if (!mountedRef.current) return
-
-        // Şu an gösterilen renk varsa, gizle ve sonraki adıma geç
-        if (state.highlightedColor !== null) {
-          setState(prev => ({ ...prev, highlightedColor: null }))
-          
-          // Gizleme sonrası pause ve sonraki renk/bitiş
-          sequenceTimerRef.current = setTimeout(() => {
-            if (!mountedRef.current) return
-            
-            setState(prev => {
-              if (prev.showingIndex < prev.sequence.length - 1) {
-                // Sonraki renk
-                return {
-                  ...prev,
-                  showingIndex: prev.showingIndex + 1
-                }
-              } else {
-                // Sequence bitti, input phase'e geç
-                return {
-                  ...prev,
-                  phase: 'input',
-                  showingIndex: 0,
-                  highlightedColor: null
-                }
-              }
-            })
-          }, TIMING_CONFIG.HIDE_DURATION)
-        } else {
-          // Renk göster
+      let currentIndex = 0
+      
+      const showNextColor = () => {
+        if (!mountedRef.current || currentIndex >= state.sequence.length) {
+          // Sequence completed, switch to input phase
           setState(prev => ({
             ...prev,
-            highlightedColor: prev.sequence[prev.showingIndex]
+            phase: 'input',
+            highlightedColor: null
           }))
+          return
         }
-      }, showDelay)
+
+        // Show current color
+        setState(prev => ({
+          ...prev,
+          highlightedColor: prev.sequence[currentIndex],
+          showingIndex: currentIndex
+        }))
+
+        // Hide color after SHOW_DURATION and continue
+        sequenceTimerRef.current = setTimeout(() => {
+          if (!mountedRef.current) return
+          
+          setState(prev => ({ ...prev, highlightedColor: null }))
+          
+          // Move to next color after HIDE_DURATION
+          sequenceTimerRef.current = setTimeout(() => {
+            if (!mountedRef.current) return
+            currentIndex++
+            showNextColor()
+          }, TIMING_CONFIG.HIDE_DURATION)
+          
+        }, TIMING_CONFIG.SHOW_DURATION)
+      }
+
+      // Start showing sequence with initial delay
+      sequenceTimerRef.current = setTimeout(() => {
+        if (mountedRef.current) {
+          showNextColor()
+        }
+      }, TIMING_CONFIG.INITIAL_DELAY)
+
     } catch (err) {
-      console.error('Sequence step scheduling error:', err)
+      console.error('Sequence showing error:', err)
       setError({
         type: 'timer',
         message: 'Renk dizisi gösterimi sırasında hata oluştu.'
       })
     }
-  }, [state.phase, state.showingIndex, state.highlightedColor, state.sequence])
+  }, [state.phase, state.sequence])
 
-  // 🔧 FIX: Single effect for sequence showing with proper cleanup
+  // 🔧 FIX: Simple effect to trigger sequence showing
   useEffect(() => {
-    if (state.phase !== 'showing') return
-
-    // Renk gösteriliyorsa, SHOW_DURATION sonra gizle
-    if (state.highlightedColor !== null) {
-      sequenceTimerRef.current = setTimeout(() => {
-        scheduleNextSequenceStep()
-      }, TIMING_CONFIG.SHOW_DURATION)
-    } else {
-      // Renk gösterilmiyorsa, hemen sonraki adıma geç
-      scheduleNextSequenceStep()
+    if (state.phase === 'showing' && state.sequence.length > 0) {
+      showSequence()
     }
-
+    
     return () => {
       if (sequenceTimerRef.current) {
         clearTimeout(sequenceTimerRef.current)
       }
     }
-  }, [state.phase, state.showingIndex, state.highlightedColor, scheduleNextSequenceStep])
+  }, [state.phase, state.sequence.length, showSequence])
 
   const handleColorInput = useCallback((colorId: number) => {
     try {

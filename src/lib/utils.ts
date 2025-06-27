@@ -87,36 +87,79 @@ export const gameProgressions = {
   }
 } as const
 
-// Game timing configurations
+// 🔧 FIX: Unified game timing system for consistency across all games
 export const gameTimings = {
   memoryGame: {
-    previewDuration: gameProgressions.memoryGame.previewDuration,
-    cardFlipDuration: animationTiming.cardFlip,
-    mismatchRevealDuration: 1500,
-    feedbackDuration: gameProgressions.memoryGame.feedbackDuration,
-    autoProgressDelay: gameProgressions.memoryGame.autoProgressDelay
-  },
-  colorSequence: {
-    showDelay: 500,
-    showDuration: animationTiming.colorHighlight,
-    hideDuration: 250,
-    initialDelay: 1000,
-    feedbackDuration: gameProgressions.colorSequence.feedbackDuration,
-    manualProgressTimeout: gameProgressions.colorSequence.manualProgressTimeout
+    previewDuration: 3000,        // Card preview time
+    cardFlipDuration: 300,        // Card flip animation
+    mismatchRevealDuration: 1500, // Time to show mismatched cards
+    feedbackDuration: 2500,       // Success/fail message duration
+    autoProgressDelay: 3000       // Auto progression to next level
   },
   numberSequence: {
-    showDuration: animationTiming.sequenceShow,
-    inputTimeout: 30000,
-    feedbackDuration: gameProgressions.numberSequence.feedbackDuration,
-    manualProgressTimeout: gameProgressions.numberSequence.manualProgressTimeout
+    showDelay: 500,               // Before showing sequence
+    numberDisplayDuration: 800,   // Each number show time
+    feedbackDuration: 2500,       // Success/fail message duration
+    levelCompleteDelay: 1500      // Before allowing next level
+  },
+  colorSequence: {
+    showDelay: 500,               // Before showing sequence  
+    colorDisplayDuration: 750,    // Each color show time
+    feedbackDuration: 2500,       // Success/fail message duration
+    levelCompleteDelay: 1500      // Before allowing next level
   },
   matchingGames: {
-    feedbackDuration: gameProgressions.matchingGames.feedbackDuration,
-    autoProgressDelay: gameProgressions.matchingGames.autoProgressDelay
+    feedbackDuration: 2500,       // Answer feedback duration
+    questionTransition: 800,      // Time between questions
+    gameCompleteDelay: 3000       // Before showing final results
   },
-  puzzleGames: {
-    previewDuration: gameProgressions.puzzleGames.previewDuration,
-    feedbackDuration: gameProgressions.puzzleGames.feedbackDuration,
-    autoProgressDelay: gameProgressions.puzzleGames.autoProgressDelay
+  towerGames: {
+    moveAnimationDuration: 300,   // Disk/ball move animation
+    levelCompleteDelay: 2000,     // Success message duration
+    autoProgressDelay: 3000       // Auto progression to next level
+  },
+  wordGames: {
+    letterSelectionDelay: 200,    // Letter highlight duration
+    wordCheckDelay: 1000,         // Word validation feedback
+    levelCompleteDelay: 2500      // Level completion message
+  }
+} as const
+
+// 🔧 FIX: Standardized UI styling classes for consistency
+export const uiStyles = {
+  // Standardized card backgrounds - using /70 + /30 pattern for better contrast
+  gameCard: {
+    primary: "bg-white/70 dark:bg-gray-900/70 backdrop-blur-sm border-white/30 dark:border-gray-800/30 shadow-xl",
+    secondary: "bg-white/60 dark:bg-gray-900/60 backdrop-blur-sm border-white/20 dark:border-gray-800/20 shadow-lg",
+    accent: "bg-primary/10 dark:bg-primary/20 backdrop-blur-sm border-primary/20 dark:border-primary/30"
+  },
+  
+  // Status/feedback card backgrounds
+  statusCard: {
+    error: "bg-red-50/80 dark:bg-red-900/20 border-red-200 dark:border-red-800 backdrop-blur-sm",
+    loading: "bg-blue-50/80 dark:bg-blue-900/20 border-blue-200 dark:border-blue-800 backdrop-blur-sm",
+    success: "bg-green-50/80 dark:bg-green-900/20 border-green-200 dark:border-green-800 backdrop-blur-sm",
+    warning: "bg-yellow-50/80 dark:bg-yellow-900/20 border-yellow-200 dark:border-yellow-800 backdrop-blur-sm",
+    info: "bg-blue-50/50 dark:bg-blue-950/20 border-blue-200/20 dark:border-blue-800/20 backdrop-blur-sm"
+  },
+  
+  // Standardized containers
+  container: {
+    main: "w-full max-w-4xl mx-auto space-y-6",
+    compact: "w-full max-w-2xl mx-auto space-y-6", 
+    wide: "w-full max-w-6xl mx-auto space-y-6"
+  },
+  
+  // Standardized content padding
+  cardContent: {
+    standard: "p-6 sm:p-8",
+    compact: "p-4 sm:p-6",
+    minimal: "p-3 sm:p-4"
+  },
+  
+  // Badge styling
+  badge: {
+    level: "text-sm px-3 py-1 bg-primary/10 text-primary border-primary/20",
+    status: "text-xs px-2 py-1 bg-secondary/10 text-secondary border-secondary/20"
   }
 } as const

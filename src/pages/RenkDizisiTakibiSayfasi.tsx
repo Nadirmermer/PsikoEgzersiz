@@ -11,7 +11,7 @@ import { useColorSequence, colors } from '@/hooks/useColorSequence'
 import { GameResult } from '@/components/GameEngine/types'
 import { toast } from '@/components/ui/sonner'
 import { useAudio } from '@/hooks/useAudio'
-import { touchTargetClasses, cn, gameTimings } from '@/lib/utils'
+import { touchTargetClasses, cn, gameTimings, uiStyles } from '@/lib/utils'
 
 interface RenkDizisiTakibiSayfasiProps {
   onBack: () => void
@@ -134,7 +134,7 @@ const RenkDizisiTakibiSayfasi: React.FC<RenkDizisiTakibiSayfasiProps> = ({ onBac
     >
       {/* Error State */}
       {sequenceGame.error && (
-        <Card className="mb-4 sm:mb-6 bg-red-50/80 dark:bg-red-900/20 border-red-200 dark:border-red-800 backdrop-blur-sm">
+        <Card className={`mb-4 sm:mb-6 ${uiStyles.statusCard.error}`}>
           <CardContent className="pt-4 sm:pt-6 text-center px-4">
             <div className="flex flex-col items-center gap-3">
               <AlertTriangle className="w-8 h-8 text-red-600 dark:text-red-400" />
@@ -157,7 +157,7 @@ const RenkDizisiTakibiSayfasi: React.FC<RenkDizisiTakibiSayfasiProps> = ({ onBac
 
       {/* Loading State */}
       {sequenceGame.isLoading && (
-        <Card className="mb-4 sm:mb-6 bg-blue-50/80 dark:bg-blue-900/20 border-blue-200 dark:border-blue-800 backdrop-blur-sm">
+        <Card className={`mb-4 sm:mb-6 ${uiStyles.statusCard.loading}`}>
           <CardContent className="pt-4 sm:pt-6 text-center px-4">
             <div className="flex flex-col items-center gap-3">
               <Loader2 className="w-8 h-8 text-blue-600 dark:text-blue-400 animate-spin" />
@@ -175,8 +175,8 @@ const RenkDizisiTakibiSayfasi: React.FC<RenkDizisiTakibiSayfasiProps> = ({ onBac
 
           {/* Showing Phase */}
           {sequenceGame.phase === 'showing' && (
-            <Card className="bg-white/70 dark:bg-gray-900/70 backdrop-blur-sm border-white/30 dark:border-gray-800/30 shadow-xl">
-              <CardContent className="p-6 sm:p-8 text-center">
+            <Card className={uiStyles.gameCard.primary}>
+              <CardContent className={`${uiStyles.cardContent.standard} text-center`}>
                 
                 {/* Level Badge */}
                 <div className="mb-4">
@@ -222,8 +222,8 @@ const RenkDizisiTakibiSayfasi: React.FC<RenkDizisiTakibiSayfasiProps> = ({ onBac
 
           {/* Input Phase */}
           {sequenceGame.phase === 'input' && (
-            <Card className="bg-white/70 dark:bg-gray-900/70 backdrop-blur-sm border-white/30 dark:border-gray-800/30 shadow-xl">
-              <CardContent className="p-6 sm:p-8 text-center">
+            <Card className={uiStyles.gameCard.primary}>
+              <CardContent className={`${uiStyles.cardContent.standard} text-center`}>
                 
                 {/* Level Badge */}
                 <div className="mb-4">
@@ -293,8 +293,8 @@ const RenkDizisiTakibiSayfasi: React.FC<RenkDizisiTakibiSayfasiProps> = ({ onBac
 
           {/* Feedback Phase */}
           {sequenceGame.phase === 'feedback' && (
-            <Card className="bg-white/70 dark:bg-gray-900/70 backdrop-blur-sm border-white/30 dark:border-gray-800/30 shadow-xl">
-              <CardContent className="p-6 sm:p-8 text-center">
+            <Card className={uiStyles.gameCard.primary}>
+              <CardContent className={`${uiStyles.cardContent.standard} text-center`}>
                 
                 {/* Success/Failure Display */}
                 <div className="mb-6">

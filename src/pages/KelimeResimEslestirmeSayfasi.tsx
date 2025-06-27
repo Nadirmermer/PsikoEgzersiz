@@ -8,7 +8,7 @@ import { useUniversalGame } from '@/hooks/useUniversalGame'
 import { useWordImageMatching } from '@/hooks/useWordImageMatching'
 import { GameResult } from '@/components/GameEngine/types'
 import { ExerciseItem } from '@/utils/matchingExerciseUtils'
-import { gameTimings } from '@/lib/utils'
+import { gameTimings, uiStyles } from '@/lib/utils'
 
 interface KelimeResimEslestirmeSayfasiProps {
   onBack: () => void
@@ -174,8 +174,8 @@ const KelimeResimEslestirmeSayfasi: React.FC<KelimeResimEslestirmeSayfasiProps> 
       {/* Error Display */}
       {matchingGame.error && (
         <div className="w-full max-w-2xl mx-auto">
-          <Card className="bg-red-50/80 dark:bg-red-950/20 backdrop-blur-sm border-red-200/20 dark:border-red-800/20">
-            <CardContent className="p-6 text-center">
+          <Card className={uiStyles.statusCard.error}>
+            <CardContent className={`${uiStyles.cardContent.standard} text-center`}>
               <XCircle className="w-12 h-12 text-red-500 mx-auto mb-4" />
               <h3 className="text-lg font-semibold text-red-700 dark:text-red-300 mb-2">
                 Bir Hata Oluştu
@@ -197,8 +197,8 @@ const KelimeResimEslestirmeSayfasi: React.FC<KelimeResimEslestirmeSayfasiProps> 
       {/* Loading Display */}
       {matchingGame.isLoading && (
         <div className="w-full max-w-2xl mx-auto">
-          <Card className="bg-white/70 dark:bg-gray-900/70 backdrop-blur-sm border-white/30 dark:border-gray-800/30">
-            <CardContent className="p-8 text-center">
+          <Card className={uiStyles.statusCard.loading}>
+            <CardContent className={`${uiStyles.cardContent.standard} text-center`}>
               <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
               <p className="text-gray-600 dark:text-gray-400">Oyun yükleniyor...</p>
             </CardContent>
@@ -211,8 +211,8 @@ const KelimeResimEslestirmeSayfasi: React.FC<KelimeResimEslestirmeSayfasiProps> 
         <div className="w-full max-w-2xl mx-auto space-y-6">
           
           {/* Question Card - Super Clean & Obvious */}
-          <Card className="bg-white/70 dark:bg-gray-900/70 backdrop-blur-sm border-white/30 dark:border-gray-800/30 shadow-xl">
-            <CardContent className="p-6 sm:p-8 text-center">
+          <Card className={uiStyles.gameCard.primary}>
+            <CardContent className={`${uiStyles.cardContent.standard} text-center`}>
               
               {/* Large Word Display */}
           <div className="mb-6">
@@ -288,8 +288,8 @@ const KelimeResimEslestirmeSayfasi: React.FC<KelimeResimEslestirmeSayfasiProps> 
           </Card>
 
           {/* Progress Indicator - Simple & Clear */}
-          <Card className="bg-white/60 dark:bg-gray-900/60 backdrop-blur-sm border-white/20 dark:border-gray-800/20">
-            <CardContent className="p-4">
+          <Card className={uiStyles.gameCard.secondary}>
+            <CardContent className={uiStyles.cardContent.compact}>
               <div className="flex justify-between items-center text-sm sm:text-base">
                 <span className="font-medium text-gray-700 dark:text-gray-300">
                   Soru {matchingGame.questionNumber} / {TOTAL_QUESTIONS}

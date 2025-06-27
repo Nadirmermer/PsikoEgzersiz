@@ -8,6 +8,7 @@ import { LOGIC_SEQUENCES_CONFIG } from '@/components/GameEngine/gameConfigs'
 import { useUniversalGame } from '@/hooks/useUniversalGame'
 import { useLogicSequences } from '@/hooks/useLogicSequences'
 import { GameResult } from '@/components/GameEngine/types'
+import { uiStyles } from '@/lib/utils'
 
 interface MantikDizileriSayfasiProps {
   onBack: () => void
@@ -175,8 +176,8 @@ const MantikDizileriSayfasi: React.FC<MantikDizileriSayfasiProps> = ({ onBack })
       {/* Error Display */}
       {logicGame.error && (
         <div className="w-full max-w-3xl mx-auto">
-          <Card className="bg-red-50/80 dark:bg-red-950/20 backdrop-blur-sm border-red-200/20 dark:border-red-800/20">
-            <CardContent className="p-6 text-center">
+          <Card className={uiStyles.statusCard.error}>
+            <CardContent className={`${uiStyles.cardContent.standard} text-center`}>
               <XCircle className="w-12 h-12 text-red-500 mx-auto mb-4" />
               <h3 className="text-lg font-semibold text-red-700 dark:text-red-300 mb-2">
                 Bir Hata Oluştu
@@ -198,8 +199,8 @@ const MantikDizileriSayfasi: React.FC<MantikDizileriSayfasiProps> = ({ onBack })
       {/* Loading Display */}
       {logicGame.isLoading && (
         <div className="w-full max-w-3xl mx-auto">
-          <Card className="bg-white/70 dark:bg-gray-900/70 backdrop-blur-sm border-white/30 dark:border-gray-800/30">
-            <CardContent className="p-8 text-center">
+          <Card className={uiStyles.statusCard.loading}>
+            <CardContent className={`${uiStyles.cardContent.standard} text-center`}>
               <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
               <p className="text-gray-600 dark:text-gray-400">Oyun yükleniyor...</p>
             </CardContent>
@@ -212,8 +213,8 @@ const MantikDizileriSayfasi: React.FC<MantikDizileriSayfasiProps> = ({ onBack })
         <div className="w-full max-w-3xl mx-auto space-y-6">
           
           {/* Question Card */}
-          <Card className="bg-white/70 dark:bg-gray-900/70 backdrop-blur-sm border-white/30 dark:border-gray-800/30 shadow-xl">
-            <CardContent className="p-6 sm:p-8 text-center">
+          <Card className={uiStyles.gameCard.primary}>
+            <CardContent className={`${uiStyles.cardContent.standard} text-center`}>
               
               {/* Level Badge */}
               <div className="mb-4">

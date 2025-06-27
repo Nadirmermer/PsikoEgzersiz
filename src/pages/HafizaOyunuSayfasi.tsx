@@ -11,7 +11,7 @@ import { useAudio } from '@/hooks/useAudio'
 import { LocalStorageManager, MEMORY_GAME_LEVELS, MemoryGameLevel } from '@/utils/localStorage'
 import { GameResult } from '@/components/GameEngine/types'
 import { toast } from '@/components/ui/sonner'
-import { touchTargetClasses, cn, gameTimings } from '@/lib/utils'
+import { touchTargetClasses, cn, gameTimings, uiStyles } from '@/lib/utils'
 
 interface HafizaOyunuSayfasiProps {
   onBack: () => void
@@ -19,6 +19,7 @@ interface HafizaOyunuSayfasiProps {
 
 const HafizaOyunuSayfasi: React.FC<HafizaOyunuSayfasiProps> = ({ onBack }) => {
   const [currentLevel, setCurrentLevel] = useState<MemoryGameLevel>(MEMORY_GAME_LEVELS[0])
+  const [autoProgressionHandled, setAutoProgressionHandled] = useState(false)
   const { playSound } = useAudio()
 
   // Universal game hook'u kullan
@@ -42,6 +43,7 @@ const HafizaOyunuSayfasi: React.FC<HafizaOyunuSayfasiProps> = ({ onBack }) => {
   // Memory game'i initialize et
   useEffect(() => {
     memoryGame.initializeGame()
+    setAutoProgressionHandled(false)
   }, [currentLevel])
 
   // Memory game ile universal game'i senkronize et
@@ -52,8 +54,29 @@ const HafizaOyunuSayfasi: React.FC<HafizaOyunuSayfasiProps> = ({ onBack }) => {
     }
   }, [memoryGame.gameStarted])
 
+  // 🔧 FIX: Manual level progression handler
+  const handleNextLevel = () => {
+    if (autoProgressionHandled) return
+    setAutoProgressionHandled(true)
+    
+    const nextLevelIndex = LocalStorageManager.getCurrentMemoryGameLevel() - 1
+    const nextLevel = MEMORY_GAME_LEVELS[nextLevelIndex]
+    
+    if (nextLevel && nextLevelIndex < MEMORY_GAME_LEVELS.length) {
+      // Seviye geçiş sesi ve mesajı
+      playSound('level-up')
+      toast.success(`🎉 Seviye ${nextLevel.id}: ${nextLevel.name}`)
+      
+      setCurrentLevel(nextLevel)
+      universalGame.gameActions.onRestart()
+    } else {
+      // Tüm seviyeler tamamlandı
+      toast.success('🏆 Tebrikler! Tüm seviyeleri tamamladınız!')
+    }
+  }
+
   useEffect(() => {
-    if (memoryGame.gameCompleted && !universalGame.gameState.isCompleted) {
+    if (memoryGame.gameCompleted && !universalGame.gameState.isCompleted && !autoProgressionHandled) {
       // Memory game tamamlandığında universal game'i de tamamla
       const result: GameResult = {
         exerciseName: 'Hafıza Oyunu',
@@ -77,25 +100,10 @@ const HafizaOyunuSayfasi: React.FC<HafizaOyunuSayfasiProps> = ({ onBack }) => {
       }
       universalGame.gameActions.onComplete(result)
       
-      // 🔧 FIX: Use unified auto-progression timing for consistency
-      setTimeout(() => {
-        const nextLevelIndex = LocalStorageManager.getCurrentMemoryGameLevel() - 1
-        const nextLevel = MEMORY_GAME_LEVELS[nextLevelIndex]
-        if (nextLevel && nextLevelIndex < MEMORY_GAME_LEVELS.length) {
-          // Seviye geçiş sesi ve mesajı
-          playSound('level-up')
-          toast.success(`🎉 Seviye ${nextLevel.id}: ${nextLevel.name}`)
-          
-          setCurrentLevel(nextLevel)
-          memoryGame.initializeGame()
-          universalGame.gameActions.onRestart()
-        } else {
-          // Tüm seviyeler tamamlandı
-          toast.success('🏆 Tebrikler! Tüm seviyeleri tamamladınız!')
-        }
-      }, gameTimings.memoryGame.autoProgressDelay)
+      // 🔧 FIX: Removed automatic progression - now handled by UniversalGameEngine buttons
+      // Level progression will be handled by "Next Level" button in UniversalGameEngine
     }
-  }, [memoryGame.gameCompleted])
+  }, [memoryGame.gameCompleted, autoProgressionHandled])
 
   // Stats'ları güncelle
   useEffect(() => {
@@ -128,7 +136,9 @@ const HafizaOyunuSayfasi: React.FC<HafizaOyunuSayfasiProps> = ({ onBack }) => {
         // Memory game'i yeniden başlat (ready state'e geç)
         memoryGame.initializeGame()
         universalGame.gameActions.onRestart()
-      }
+        setAutoProgressionHandled(false)
+      },
+      onNextLevel: handleNextLevel
     }
   })
 
@@ -136,7 +146,7 @@ const HafizaOyunuSayfasi: React.FC<HafizaOyunuSayfasiProps> = ({ onBack }) => {
   const handleCardClick = (cardId: string) => {
     if (universalGame.gameState.isPaused) return
     
-    // 🔧 FIX: Add card flip sound
+    // �� FIX: Add card flip sound
     playSound('button-click')
     
     // Memory game başlamadıysa ve preview de gösterilmiyorsa başlat
@@ -179,7 +189,7 @@ const HafizaOyunuSayfasi: React.FC<HafizaOyunuSayfasiProps> = ({ onBack }) => {
     >
       {/* Error State */}
       {memoryGame.error && (
-        <Card className="mb-4 sm:mb-6 bg-red-50/80 dark:bg-red-900/20 border-red-200 dark:border-red-800 backdrop-blur-sm">
+        <Card className={`mb-4 sm:mb-6 ${uiStyles.statusCard.error}`}>
           <CardContent className="pt-4 sm:pt-6 text-center px-4">
             <div className="flex flex-col items-center gap-3">
               <AlertTriangle className="w-8 h-8 text-red-600 dark:text-red-400" />
@@ -202,7 +212,7 @@ const HafizaOyunuSayfasi: React.FC<HafizaOyunuSayfasiProps> = ({ onBack }) => {
 
       {/* Loading State */}
       {memoryGame.isLoading && (
-        <Card className="mb-4 sm:mb-6 bg-blue-50/80 dark:bg-blue-900/20 border-blue-200 dark:border-blue-800 backdrop-blur-sm">
+        <Card className={`mb-4 sm:mb-6 ${uiStyles.statusCard.loading}`}>
           <CardContent className="pt-4 sm:pt-6 text-center px-4">
             <div className="flex flex-col items-center gap-3">
               <Loader2 className="w-8 h-8 text-blue-600 dark:text-blue-400 animate-spin" />
@@ -220,7 +230,7 @@ const HafizaOyunuSayfasi: React.FC<HafizaOyunuSayfasiProps> = ({ onBack }) => {
 
           {/* Önizleme Uyarısı */}
           {memoryGame.showingPreview && (
-            <Card className="mb-4 sm:mb-6 bg-yellow-50/80 dark:bg-yellow-900/20 border-yellow-200 dark:border-yellow-800 backdrop-blur-sm">
+            <Card className={`mb-4 sm:mb-6 ${uiStyles.statusCard.warning}`}>
               <CardContent className="pt-4 sm:pt-6 text-center px-4">
                 <div className="text-xl sm:text-2xl mb-2">👀</div>
                 <p className="text-sm sm:text-base text-yellow-800 dark:text-yellow-200">
@@ -231,23 +241,23 @@ const HafizaOyunuSayfasi: React.FC<HafizaOyunuSayfasiProps> = ({ onBack }) => {
       )}
 
           {/* Oyun Tahtası */}
-          <Card className="bg-white/60 dark:bg-gray-900/60 backdrop-blur-sm border-white/20 dark:border-gray-800/20 shadow-xl">
-            <CardContent className="p-2 sm:p-4 md:p-6">
+          <Card className={uiStyles.gameCard.primary}>
+            <CardContent className={uiStyles.cardContent.compact}>
               <div 
                 className={`grid w-full mx-auto ${
-                  // Dinamik boyutlama: kart sayısına göre
+                  // 🔧 FIX: Responsive grid with proper square layout
                   currentLevel.gridSize.rows * currentLevel.gridSize.cols <= 12 
-                    ? 'gap-2 sm:gap-3 max-w-[300px] sm:max-w-md' 
+                    ? 'gap-2 sm:gap-3 max-w-[320px] sm:max-w-[400px]' 
                     : currentLevel.gridSize.rows * currentLevel.gridSize.cols <= 16
-                    ? 'gap-1 sm:gap-2 max-w-[280px] sm:max-w-lg'
-                    : 'gap-1 max-w-[260px] sm:max-w-md' // 20 kart için daha kompakt
+                    ? 'gap-1.5 sm:gap-2 max-w-[300px] sm:max-w-[380px]'
+                    : 'gap-1 sm:gap-1.5 max-w-[280px] sm:max-w-[360px]' // 20+ kart için kompakt
                 }`}
-            style={{ 
-              gridTemplateColumns: `repeat(${currentLevel.gridSize.cols}, 1fr)`,
-                  gridTemplateRows: `repeat(${currentLevel.gridSize.rows}, 1fr)`,
-                  aspectRatio: `${currentLevel.gridSize.cols} / ${currentLevel.gridSize.rows}`
-            }}
-          >
+                style={{ 
+                  gridTemplateColumns: `repeat(${currentLevel.gridSize.cols}, 1fr)`,
+                  gridTemplateRows: `repeat(${currentLevel.gridSize.rows}, 1fr)`
+                  // 🔧 FIX: Removed aspectRatio from container - cards will be square individually
+                }}
+              >
                 {memoryGame.cards.map((card) => (
               <button
                 key={card.id}

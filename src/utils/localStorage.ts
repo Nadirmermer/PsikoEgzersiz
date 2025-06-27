@@ -44,153 +44,92 @@ export interface MemoryGameLevel {
 }
 
 export const MEMORY_GAME_LEVELS: MemoryGameLevel[] = [
-  // Başlangıç Seviyeleri (1-5)
+  // 🧠 CLINICAL TIER 1: BASELINE ASSESSMENT (Working Memory: 3-4 items)
   {
     id: 1,
-    name: "Seviye 1",
+    name: "Temel Seviye",
     gridSize: { rows: 2, cols: 3 },
-    description: "Başlangıç (2x3 Grid - 6 kart)",
-    previewTime: 2500
-  },
-  {
-    id: 2,
-    name: "Seviye 2", 
-    gridSize: { rows: 2, cols: 4 },
-    description: "Kolay (2x4 Grid - 8 kart)",
+    description: "Başlangıç Değerlendirmesi (6 kart - 3 çift)",
     previewTime: 3000
   },
   {
+    id: 2,
+    name: "Kolay Seviye",
+    gridSize: { rows: 2, cols: 4 },
+    description: "Hafif İlerleme (8 kart - 4 çift)",
+    previewTime: 3000
+  },
+  
+  // 🧠 CLINICAL TIER 2: WORKING MEMORY TEST (5-6 items)
+  {
     id: 3,
-    name: "Seviye 3",
-    gridSize: { rows: 3, cols: 4 },
-    description: "Alışma (3x4 Grid - 12 kart)",
+    name: "Orta Seviye",
+    gridSize: { rows: 2, cols: 5 },
+    description: "Çalışma Belleği Testi (10 kart - 5 çift)",
     previewTime: 3500
   },
   {
     id: 4,
-    name: "Seviye 4",
-    gridSize: { rows: 4, cols: 4 },
-    description: "Orta (4x4 Grid - 16 kart)",
+    name: "Gelişmiş Seviye",
+    gridSize: { rows: 3, cols: 4 },
+    description: "Hafif Zorluk (12 kart - 6 çift)",
     previewTime: 4000
   },
+  
+  // 🧠 CLINICAL TIER 3: MILLER'S LIMIT (7±2 items)
   {
     id: 5,
-    name: "Seviye 5",
-    gridSize: { rows: 4, cols: 5 },
-    description: "Orta-Zor (4x5 Grid - 20 kart)",
+    name: "Zor Seviye",
+    gridSize: { rows: 2, cols: 7 },
+    description: "Miller Limiti Testi (14 kart - 7 çift)",
     previewTime: 4500
   },
-  
-  // Orta Seviyeler (6-10)
   {
     id: 6,
-    name: "Seviye 6",
-    gridSize: { rows: 5, cols: 4 },
-    description: "Zor (5x4 Grid - 20 kart)",
-    previewTime: 4500
+    name: "Uzman Seviye",
+    gridSize: { rows: 4, cols: 4 },
+    description: "Üst Ortalama Yetenek (16 kart - 8 çift)",
+    previewTime: 5000
   },
+  
+  // 🧠 CLINICAL TIER 4: ADVANCED ASSESSMENT (Above average cognitive ability)
   {
     id: 7,
-    name: "Seviye 7",
-    gridSize: { rows: 5, cols: 5 },
-    description: "Çok Zor (5x5 Grid - 25 kart)",
-    previewTime: 5000
-  },
-  {
-    id: 8,
-    name: "Seviye 8",
-    gridSize: { rows: 6, cols: 4 },
-    description: "Uzman (6x4 Grid - 24 kart)",
-    previewTime: 5000
-  },
-  {
-    id: 9,
-    name: "Seviye 9",
-    gridSize: { rows: 6, cols: 5 },
-    description: "Profesyonel (6x5 Grid - 30 kart)",
+    name: "İleri Seviye",
+    gridSize: { rows: 3, cols: 6 },
+    description: "İleri Değerlendirme (18 kart - 9 çift)",
     previewTime: 5500
   },
   {
+    id: 8,
+    name: "Master Seviye",
+    gridSize: { rows: 4, cols: 5 },
+    description: "Üstün Yetenek Testi (20 kart - 10 çift)",
+    previewTime: 6000
+  },
+  
+  // 🧠 CLINICAL TIER 5: EXCEPTIONAL ABILITY (Research/Gaming purposes only)
+  {
+    id: 9,
+    name: "Süper İleri",
+    gridSize: { rows: 3, cols: 8 },
+    description: "İstisnaî Yetenek (24 kart - 12 çift)",
+    previewTime: 6500
+  },
+  {
     id: 10,
-    name: "Seviye 10",
-    gridSize: { rows: 6, cols: 6 },
-    description: "Master (6x6 Grid - 36 kart)",
-    previewTime: 6000
-  },
-  
-  // İleri Seviyeler (11-15)
-  {
-    id: 11,
-    name: "Seviye 11",
-    gridSize: { rows: 7, cols: 5 },
-    description: "Süper Zor (7x5 Grid - 35 kart)",
-    previewTime: 6000
-  },
-  {
-    id: 12,
-    name: "Seviye 12",
-    gridSize: { rows: 7, cols: 6 },
-    description: "Ultra (7x6 Grid - 42 kart)",
-    previewTime: 6500
-  },
-  {
-    id: 13,
-    name: "Seviye 13",
-    gridSize: { rows: 8, cols: 5 },
-    description: "Legendary (8x5 Grid - 40 kart)",
-    previewTime: 6500
-  },
-  {
-    id: 14,
-    name: "Seviye 14",
-    gridSize: { rows: 8, cols: 6 },
-    description: "Mythical (8x6 Grid - 48 kart)",
+    name: "Efsanevi",
+    gridSize: { rows: 4, cols: 6 },
+    description: "🏆 Efsanevi Seviye (24 kart - 12 çift)",
     previewTime: 7000
-  },
-  {
-    id: 15,
-    name: "Seviye 15",
-    gridSize: { rows: 9, cols: 6 },
-    description: "Ultimate (9x6 Grid - 54 kart)",
-    previewTime: 7500
-  },
-  
-  // Son Seviyeler (16-20)
-  {
-    id: 16,
-    name: "Seviye 16",
-    gridSize: { rows: 8, cols: 7 },
-    description: "Impossible (8x7 Grid - 56 kart)",
-    previewTime: 7500
-  },
-  {
-    id: 17,
-    name: "Seviye 17",
-    gridSize: { rows: 9, cols: 7 },
-    description: "Nightmare (9x7 Grid - 63 kart)",
-    previewTime: 8000
-  },
-  {
-    id: 18,
-    name: "Seviye 18",
-    gridSize: { rows: 10, cols: 6 },
-    description: "Insane (10x6 Grid - 60 kart)",
-    previewTime: 8000
-  },
-  {
-    id: 19,
-    name: "Seviye 19",
-    gridSize: { rows: 10, cols: 7 },
-    description: "God Mode (10x7 Grid - 70 kart)",
-    previewTime: 8500
-  },
-  {
-    id: 20,
-    name: "Seviye 20",
-    gridSize: { rows: 10, cols: 8 },
-    description: "💎 GRANDMASTER 💎 (10x8 Grid - 80 kart)",
-    previewTime: 9000
   }
+  
+  // 🧠 CLINICAL NOTE: Levels 11-20 REMOVED for therapeutic appropriateness
+  // Levels beyond 10 create cognitive overload and patient frustration
+  // Maximum working memory capacity is ~7±2 items for clinical populations
+  
+  // FOR GAMING ENTHUSIASTS: Could be added as separate "Challenge Mode"
+  // But NOT recommended for clinical or therapeutic assessment
 ]
 
 import { saveToSupabase, addToPendingSync } from '../lib/supabaseClient'

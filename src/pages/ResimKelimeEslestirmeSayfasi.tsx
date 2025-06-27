@@ -8,14 +8,15 @@ import { useUniversalGame } from '@/hooks/useUniversalGame'
 import { useImageWordMatching } from '@/hooks/useImageWordMatching'
 import { GameResult } from '@/components/GameEngine/types'
 import { toast } from '@/components/ui/sonner'
-import { gameTimings } from '@/lib/utils'
+import { gameTimings, uiStyles } from '@/lib/utils'
 
 interface ResimKelimeEslestirmeSayfasiProps {
   onBack: () => void
 }
 
 const ResimKelimeEslestirmeSayfasi: React.FC<ResimKelimeEslestirmeSayfasiProps> = ({ onBack }) => {
-  const TOTAL_QUESTIONS = 30
+  // 🎯 Optimized question count for clinical assessment balance (10 categories × 2 questions each)
+  const TOTAL_QUESTIONS = 20
   // 🔧 FIX: Use unified feedback duration for consistency
   const FEEDBACK_DURATION = gameTimings.matchingGames.feedbackDuration
 
@@ -37,11 +38,12 @@ const ResimKelimeEslestirmeSayfasi: React.FC<ResimKelimeEslestirmeSayfasiProps> 
     matchingGame.initializeGame()
   }, [])
 
-  // Handle game completion
+  // Handle game completion with clinical assessment
   useEffect(() => {
     if (matchingGame.isGameCompleted && !universalGame.gameState.isCompleted) {
       const finalStats = matchingGame.getFinalStats()
       
+      // 🧠 Enhanced result with clinical assessment data
       const result: GameResult = {
         exerciseName: 'Resim-Kelime Eşleştirme',
         score: Math.round((finalStats.score / TOTAL_QUESTIONS) * 100),
@@ -60,15 +62,29 @@ const ResimKelimeEslestirmeSayfasi: React.FC<ResimKelimeEslestirmeSayfasiProps> 
           details: {
             questions: finalStats.gameQuestions,
             user_answers: finalStats.userAnswers,
-            response_times: finalStats.responseTimes
+            response_times: finalStats.responseTimes,
+            
+            // 🧠 Clinical Assessment Data
+            clinicalData: finalStats.clinicalData,
+            categoryPerformance: finalStats.categoryPerformance
           }
         },
         timestamp: new Date().toISOString()
       }
       
+      console.log('🧠 Clinical Assessment Results:', {
+        overallCognition: finalStats.clinicalData.overallCognition,
+        semanticAccuracy: finalStats.clinicalData.semanticAccuracy,
+        processingSpeed: finalStats.clinicalData.processingSpeed,
+        patternRecognition: finalStats.clinicalData.patternRecognition,
+        cognitiveFlexibility: finalStats.clinicalData.cognitiveFlexibility,
+        categoryPerformance: finalStats.clinicalData.categoryPerformance,
+        cognitiveProfile: finalStats.clinicalData.cognitiveProfile
+      })
+      
       universalGame.gameActions.onComplete(result)
     }
-  }, [matchingGame.isGameCompleted, universalGame.gameState.isCompleted])
+  }, [matchingGame.isGameCompleted, universalGame.gameState.isCompleted, TOTAL_QUESTIONS])
 
   // Update game stats
   useEffect(() => {
@@ -174,8 +190,8 @@ const ResimKelimeEslestirmeSayfasi: React.FC<ResimKelimeEslestirmeSayfasiProps> 
       {/* Error Display */}
       {matchingGame.error && (
         <div className="w-full max-w-2xl mx-auto">
-          <Card className="bg-red-50/80 dark:bg-red-950/20 backdrop-blur-sm border-red-200/20 dark:border-red-800/20">
-            <CardContent className="p-6 text-center">
+          <Card className={uiStyles.statusCard.error}>
+            <CardContent className={`${uiStyles.cardContent.standard} text-center`}>
               <div className="flex flex-col items-center gap-3">
                 <AlertTriangle className="w-12 h-12 text-red-500" />
                 <h3 className="text-lg font-semibold text-red-700 dark:text-red-300 mb-2">
@@ -200,8 +216,8 @@ const ResimKelimeEslestirmeSayfasi: React.FC<ResimKelimeEslestirmeSayfasiProps> 
       {/* Loading Display */}
       {matchingGame.isLoading && (
         <div className="w-full max-w-2xl mx-auto">
-          <Card className="bg-white/70 dark:bg-gray-900/70 backdrop-blur-sm border-white/30 dark:border-gray-800/30">
-            <CardContent className="p-8 text-center">
+          <Card className={uiStyles.statusCard.loading}>
+            <CardContent className={`${uiStyles.cardContent.standard} text-center`}>
               <Loader2 className="h-12 w-12 border-b-2 border-primary mx-auto mb-4 animate-spin" />
               <p className="text-gray-600 dark:text-gray-400">Oyun yükleniyor...</p>
             </CardContent>
@@ -214,8 +230,17 @@ const ResimKelimeEslestirmeSayfasi: React.FC<ResimKelimeEslestirmeSayfasiProps> 
         <div className="w-full max-w-2xl mx-auto space-y-6">
           
           {/* Question Card - Super Clean & Obvious */}
-          <Card className="bg-white/70 dark:bg-gray-900/70 backdrop-blur-sm border-white/30 dark:border-gray-800/30 shadow-xl">
-            <CardContent className="p-6 sm:p-8 text-center">
+          <Card className={uiStyles.gameCard.primary}>
+            <CardContent className={`${uiStyles.cardContent.standard} text-center`}>
+              
+              {/* 🏷️ Category Indicator for Clinical Tracking */}
+              {matchingGame.currentCategory && (
+                <div className="mb-4">
+                  <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-primary/10 text-primary border border-primary/20">
+                    📂 {matchingGame.currentCategory}
+                  </span>
+                </div>
+              )}
               
               {/* Large Emoji Display */}
               <div className="mb-6">
@@ -283,8 +308,8 @@ const ResimKelimeEslestirmeSayfasi: React.FC<ResimKelimeEslestirmeSayfasiProps> 
             </Card>
 
           {/* Progress Indicator - Simple & Clear */}
-          <Card className="bg-white/60 dark:bg-gray-900/60 backdrop-blur-sm border-white/20 dark:border-gray-800/20">
-            <CardContent className="p-4">
+          <Card className={uiStyles.gameCard.secondary}>
+            <CardContent className={uiStyles.cardContent.compact}>
               <div className="flex justify-between items-center text-sm sm:text-base">
                 <span className="font-medium text-gray-700 dark:text-gray-300">
                   Soru {matchingGame.questionNumber} / {TOTAL_QUESTIONS}

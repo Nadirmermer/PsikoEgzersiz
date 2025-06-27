@@ -118,13 +118,21 @@ const UniversalGameEngine: React.FC<UniversalGameEngineProps> = ({
           onBack={onBack}
           showNextLevel={gameConfig.hasLevels}
           onNextLevel={() => {
-            // Hafıza oyunu için sonraki seviyeye geç
+            // 🔧 FIX: Proper next level handling for each game
+            playSound('button-click')
+            
             if (gameConfig.id === 'memory-game') {
-              // Manuel buton ile sonraki seviyeye geçiş
-              playSound('level-up')
-              gameActions.onRestart()
+              // Memory Game için özel next level handler
+              if (gameActions.onNextLevel) {
+                gameActions.onNextLevel()
+              } else {
+                console.warn('Memory Game onNextLevel handler not found')
+                gameActions.onRestart()
+              }
             } else {
+              // Diğer oyunlar için varsayılan davranış
               console.log('Next level for:', gameConfig.title)
+              gameActions.onRestart()
             }
           }}
         />

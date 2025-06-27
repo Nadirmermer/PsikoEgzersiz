@@ -121,20 +121,28 @@ export const useAudio = () => {
         audioCache.current.set(soundType, audio)
       }
 
+      // 🔧 FIX: Prevent audio conflicts
+      // Önce mevcut audio'yu tamamen durdur
+      if (!audio.paused) {
+        audio.pause()
+      }
+      
       // Ses ayarları
       audio.volume = (options?.volume ?? settings.volume) * settings.volume
       audio.loop = options?.loop ?? false
 
-      // Önceki çalmayı durdur ve baştan başlat
+      // Baştan başlat
       audio.currentTime = 0
       
-      // Ses çal
+      // 🔧 FIX: Safe audio play with better error handling
       const playPromise = audio.play()
       
-      // Promise destekleyen tarayıcılarda hata yakalama
       if (playPromise !== undefined) {
         playPromise.catch(error => {
-          console.warn('Audio play failed:', error)
+          // Only log if it's not an AbortError (which is expected when interrupting)
+          if (error.name !== 'AbortError') {
+            console.warn('Audio play failed:', soundType, error.name, error.message)
+          }
         })
       }
 

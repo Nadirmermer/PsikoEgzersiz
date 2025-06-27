@@ -9,6 +9,7 @@ import { Button } from '@/components/ui/button'
 import { Progress } from '@/components/ui/progress'
 import { toast } from '@/components/ui/sonner'
 import { useAudio } from '@/hooks/useAudio'
+import { uiStyles } from '@/lib/utils'
 
 interface HanoiKuleleriSayfasiProps {
   onBack: () => void
@@ -145,8 +146,8 @@ const HanoiTowersGame: React.FC = () => {
   if (hanoiGame.isLoading) {
     return (
       <div className="w-full max-w-4xl mx-auto space-y-4 sm:space-y-6 p-2 sm:p-4">
-        <Card className="bg-white/70 dark:bg-gray-900/70 backdrop-blur-sm border-white/30 dark:border-gray-800/30">
-          <CardContent className="p-8 text-center">
+        <Card className={uiStyles.statusCard.loading}>
+          <CardContent className={`${uiStyles.cardContent.standard} text-center`}>
             <Loader2 className="h-12 w-12 border-b-2 border-primary mx-auto mb-4 animate-spin" />
             <p className="text-gray-600 dark:text-gray-400">Oyun yükleniyor...</p>
           </CardContent>
@@ -247,8 +248,8 @@ const HanoiTowersGame: React.FC = () => {
       </div>
 
       {/* Mevcut Durum */}
-      <Card className="bg-white/70 dark:bg-gray-900/70 backdrop-blur-sm border-white/30 dark:border-gray-800/30 shadow-xl">
-        <CardContent className="p-4 sm:p-6">
+      <Card className={uiStyles.gameCard.primary}>
+        <CardContent className={uiStyles.cardContent.compact}>
           <h4 className="text-center text-base sm:text-lg font-semibold mb-3 sm:mb-4 text-gray-700 dark:text-gray-300">
             Mevcut Durum
           </h4>

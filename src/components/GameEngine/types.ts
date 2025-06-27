@@ -75,6 +75,7 @@ export interface GameActions {
   onRestart: () => void
   onComplete: (result: GameResult) => void
   onBack: () => void
+  onNextLevel?: () => void // 🔧 FIX: Optional next level handler for games with levels
 }
 
 // Oyun bileşeni props
