@@ -365,9 +365,14 @@ const Tower: React.FC<{
       <div 
         className={`
           relative transition-all duration-300 cursor-pointer flex flex-col items-center
+          touch-manipulation select-none focus:outline-none focus:ring-4 focus:ring-primary/50
+          active:scale-95 tablet:hover:scale-102 min-h-[44px] min-w-[44px]
+          tablet:min-h-[64px] tablet:min-w-[64px]
           ${isSelected ? 'scale-105' : 'hover:scale-102'}
         `}
         onClick={onClick}
+        onTouchStart={(e) => e.preventDefault()} // Prevent double-tap zoom
+        style={{ touchAction: 'manipulation' }}
       >
         {/* Ana Çubuk - Kapasiteye göre boyutlanan */}
         <div className={`

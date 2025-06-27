@@ -183,13 +183,18 @@ Chrome 90+ • Firefox 88+ • Safari 14+ • Edge 90+
 
 | Platform | Dosya | Boyut | Durum |
 |:--------:|:------|:-----:|:-----:|
-| 🪟 **Windows** | PsikoEgzersiz.exe | 169MB | ✅ **Hazır** |
+| 🪟 **Windows** | PsikoEgzersiz-Windows (klasör) | 641MB | ✅ **Hazır** |
 | 🍎 **macOS** | PsikoEgzersiz.dmg | ~150MB | 🔄 **İstek Üzerine** |
 | 🐧 **Linux** | PsikoEgzersiz.AppImage | ~150MB | 🔄 **İstek Üzerine** |
 
 **📧 Masaüstü Uygulaması İçin:** [1nadirmermer@gmail.com](mailto:1nadirmermer@gmail.com) adresine mail atın
 
-**Not:** İlk çalıştırmada Windows Defender uyarısı normal, "Daha fazla bilgi" → "Yine de çalıştır" diyebilirsiniz.
+**Windows Kurulum:**
+1. ZIP dosyasını indirin ve açın
+2. İçindeki `PsikoEgzersiz.exe` dosyasını çalıştırın
+3. Windows Defender uyarısı: "Daha fazla bilgi" → "Yine de çalıştır"
+
+**⚠️ Önemli:** Sadece .exe dosyasını kopyalamayın, tüm klasörü saklayın!
 
 </div>
 

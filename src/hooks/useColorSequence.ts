@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect } from 'react'
+import { useState, useCallback, useEffect, useRef } from 'react'
 import { useAudio } from './useAudio'
 
 interface UseColorSequenceProps {
@@ -20,6 +20,12 @@ interface ColorSequenceState {
   maxLevelReached: number
 }
 
+// Error handling için
+interface ColorSequenceError {
+  type: 'initialization' | 'gameplay' | 'timer'
+  message: string
+}
+
 // Renk tanımları
 export const colors = [
   { id: 0, name: 'Kırmızı', bg: 'bg-red-500', hover: 'hover:bg-red-600', active: 'bg-red-600' },
@@ -30,6 +36,13 @@ export const colors = [
 
 export const useColorSequence = ({ initialLevel = 1 }: UseColorSequenceProps = {}) => {
   const { playSound } = useAudio()
+  const mountedRef = useRef(true)
+  const showTimerRef = useRef<NodeJS.Timeout>()
+  const hideTimerRef = useRef<NodeJS.Timeout>()
+  
+  // Error states
+  const [error, setError] = useState<ColorSequenceError | null>(null)
+  const [isLoading, setIsLoading] = useState(false)
   
   const [state, setState] = useState<ColorSequenceState>({
     currentLevel: initialLevel,
@@ -50,21 +63,54 @@ export const useColorSequence = ({ initialLevel = 1 }: UseColorSequenceProps = {
     return Array.from({ length }, () => Math.floor(Math.random() * 4))
   }, [])
 
+  // Cleanup effect - memory leaks önlenir
+  useEffect(() => {
+    return () => {
+      mountedRef.current = false
+      if (showTimerRef.current) clearTimeout(showTimerRef.current)
+      if (hideTimerRef.current) clearTimeout(hideTimerRef.current)
+    }
+  }, [])
+
+  // Error recovery function
+  const recoverFromError = useCallback(() => {
+    setError(null)
+    setIsLoading(false)
+  }, [])
+
   const initializeGame = useCallback(() => {
-    setState({
-      currentLevel: initialLevel,
-      sequence: [],
-      userInput: [],
-      phase: 'ready',
-      showingIndex: 0,
-      highlightedColor: null,
-      score: 0,
-      correctCount: 0,
-      incorrectCount: 0,
-      questionStartTime: 0,
-      isGameCompleted: false,
-      maxLevelReached: initialLevel
-    })
+    try {
+      setError(null)
+      setIsLoading(true)
+      
+      // Clear any existing timers
+      if (showTimerRef.current) clearTimeout(showTimerRef.current)
+      if (hideTimerRef.current) clearTimeout(hideTimerRef.current)
+      
+      setState({
+        currentLevel: initialLevel,
+        sequence: [],
+        userInput: [],
+        phase: 'ready',
+        showingIndex: 0,
+        highlightedColor: null,
+        score: 0,
+        correctCount: 0,
+        incorrectCount: 0,
+        questionStartTime: 0,
+        isGameCompleted: false,
+        maxLevelReached: initialLevel
+      })
+      
+      setIsLoading(false)
+    } catch (err) {
+      console.error('Color sequence initialization error:', err)
+      setError({
+        type: 'initialization',
+        message: 'Oyun başlatılamadı. Lütfen tekrar deneyin.'
+      })
+      setIsLoading(false)
+    }
   }, [initialLevel])
 
   const startNextLevel = useCallback(() => {
@@ -82,93 +128,113 @@ export const useColorSequence = ({ initialLevel = 1 }: UseColorSequenceProps = {
     }))
   }, [state.currentLevel, generateSequence])
 
-  // Renk gösterimi otomatik ilerlemesi
+  // Renk gösterimi otomatik ilerlemesi - Safe timers with error handling
   useEffect(() => {
     if (state.phase !== 'showing') return
 
-    const showColor = () => {
-      setState(prev => ({
-        ...prev,
-        highlightedColor: prev.sequence[prev.showingIndex]
-      }))
-    }
+    try {
+      const showColor = () => {
+        if (!mountedRef.current) return
+        setState(prev => ({
+          ...prev,
+          highlightedColor: prev.sequence[prev.showingIndex]
+        }))
+      }
 
-    const hideColor = () => {
-      setState(prev => ({
-        ...prev,
-        highlightedColor: null
-      }))
-      
-      setTimeout(() => {
-        setState(prev => {
-          if (prev.showingIndex < prev.sequence.length - 1) {
-            return {
-              ...prev,
-              showingIndex: prev.showingIndex + 1
+      const hideColor = () => {
+        if (!mountedRef.current) return
+        setState(prev => ({
+          ...prev,
+          highlightedColor: null
+        }))
+        
+        setTimeout(() => {
+          if (!mountedRef.current) return
+          setState(prev => {
+            if (prev.showingIndex < prev.sequence.length - 1) {
+              return {
+                ...prev,
+                showingIndex: prev.showingIndex + 1
+              }
+            } else {
+              return {
+                ...prev,
+                phase: 'input',
+                showingIndex: 0
+              }
             }
-          } else {
-            return {
-              ...prev,
-              phase: 'input',
-              showingIndex: 0
-            }
-          }
-        })
-      }, 250)
-    }
+          })
+        }, 250)
+      }
 
-    const showTimer = setTimeout(showColor, 500)
-    const hideTimer = setTimeout(hideColor, 1250)
+      showTimerRef.current = setTimeout(showColor, 500)
+      hideTimerRef.current = setTimeout(hideColor, 1250)
+    } catch (err) {
+      console.error('Color showing timer error:', err)
+      setError({
+        type: 'timer',
+        message: 'Renk gösterimi sırasında hata oluştu.'
+      })
+    }
 
     return () => {
-      clearTimeout(showTimer)
-      clearTimeout(hideTimer)
+      if (showTimerRef.current) clearTimeout(showTimerRef.current)
+      if (hideTimerRef.current) clearTimeout(hideTimerRef.current)
     }
   }, [state.phase, state.showingIndex, state.sequence.length])
 
   const handleColorInput = useCallback((colorId: number) => {
-    if (state.phase !== 'input') return
+    try {
+      if (state.phase !== 'input' || error || isLoading) return
 
-    const newUserInput = [...state.userInput, colorId]
-    const isCorrect = newUserInput[newUserInput.length - 1] === state.sequence[newUserInput.length - 1]
+      const newUserInput = [...state.userInput, colorId]
+      const isCorrect = newUserInput[newUserInput.length - 1] === state.sequence[newUserInput.length - 1]
 
-    if (!isCorrect) {
-      // Hatalı giriş - seviye başarısız
-      playSound('wrong-answer')
-      setState(prev => ({
-        ...prev,
-        phase: 'feedback',
-        userInput: newUserInput,
-        incorrectCount: prev.incorrectCount + 1
-      }))
-      return 'incorrect'
+      if (!isCorrect) {
+        // Hatalı giriş - seviye başarısız
+        playSound('wrong-answer')
+        setState(prev => ({
+          ...prev,
+          phase: 'feedback',
+          userInput: newUserInput,
+          incorrectCount: prev.incorrectCount + 1
+        }))
+        return 'incorrect'
+      }
+
+      if (newUserInput.length === state.sequence.length) {
+        // Seviye tamamlandı - doğru
+        playSound('correct-answer')
+        const newScore = state.score + (state.currentLevel * 10)
+        const newLevel = state.currentLevel + 1
+        
+        setState(prev => ({
+          ...prev,
+          phase: 'feedback',
+          userInput: newUserInput,
+          score: newScore,
+          correctCount: prev.correctCount + 1,
+          currentLevel: newLevel,
+          maxLevelReached: Math.max(prev.maxLevelReached, newLevel)
+        }))
+        return 'level_complete'
+      } else {
+        // Doğru renk seçildi, devam et
+        setState(prev => ({
+          ...prev,
+          userInput: newUserInput
+        }))
+        return 'continue'
+      }
+    } catch (err) {
+      console.error('Color input error:', err)
+      setError({
+        type: 'gameplay',
+        message: 'Renk seçimi işlenirken hata oluştu.'
+      })
+      return 'error'
     }
-
-    if (newUserInput.length === state.sequence.length) {
-      // Seviye tamamlandı - doğru
-      playSound('correct-answer')
-      const newScore = state.score + (state.currentLevel * 10)
-      const newLevel = state.currentLevel + 1
-      
-      setState(prev => ({
-        ...prev,
-        phase: 'feedback',
-        userInput: newUserInput,
-        score: newScore,
-        correctCount: prev.correctCount + 1,
-        currentLevel: newLevel,
-        maxLevelReached: Math.max(prev.maxLevelReached, newLevel)
-      }))
-      return 'level_complete'
-    } else {
-      // Doğru renk seçildi, devam et
-      setState(prev => ({
-        ...prev,
-        userInput: newUserInput
-      }))
-      return 'continue'
-    }
-  }, [state.phase, state.userInput, state.sequence, state.score, state.currentLevel, playSound])
+  }, [state.phase, state.userInput, state.sequence, state.score, state.currentLevel, playSound, error, isLoading])
 
   const nextLevel = useCallback(() => {
     startNextLevel()
@@ -200,7 +266,12 @@ export const useColorSequence = ({ initialLevel = 1 }: UseColorSequenceProps = {
   }, [state])
 
   return {
-    // State
+    // Error states
+    error,
+    isLoading,
+    recoverFromError,
+    
+    // Game state
     currentLevel: state.currentLevel,
     sequence: state.sequence,
     userInput: state.userInput,

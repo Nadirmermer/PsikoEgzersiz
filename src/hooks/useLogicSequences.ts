@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react'
+import { useState, useCallback, useRef, useEffect } from 'react'
 import { useAudio } from './useAudio'
 
 interface UseLogicSequencesProps {
@@ -27,6 +27,12 @@ interface LogicSequencesState {
   responseTimes: number[]
   isAnswering: boolean
   isGameCompleted: boolean
+}
+
+// Error handling için
+interface LogicSequencesError {
+  type: 'initialization' | 'gameplay' | 'question_generation'
+  message: string
 }
 
 const generateSequence = (level: number): LogicSequence => {
@@ -87,6 +93,18 @@ const generateSequence = (level: number): LogicSequence => {
 
 export const useLogicSequences = ({ totalQuestions }: UseLogicSequencesProps) => {
   const { playSound } = useAudio()
+  const mountedRef = useRef(true)
+
+  // Error states
+  const [error, setError] = useState<LogicSequencesError | null>(null)
+  const [isLoading, setIsLoading] = useState(false)
+
+  // Cleanup effect
+  useEffect(() => {
+    return () => {
+      mountedRef.current = false
+    }
+  }, [])
   
   const [state, setState] = useState<LogicSequencesState>({
     currentQuestion: null,
@@ -105,64 +123,106 @@ export const useLogicSequences = ({ totalQuestions }: UseLogicSequencesProps) =>
     isGameCompleted: false
   })
 
+  // Error recovery function
+  const recoverFromError = useCallback(() => {
+    setError(null)
+    setIsLoading(false)
+  }, [])
+
   const initializeGame = useCallback(() => {
-    setState({
-      currentQuestion: null,
-      questionNumber: 1,
-      score: 0,
-      correctCount: 0,
-      incorrectCount: 0,
-      questionStartTime: 0,
-      showFeedback: false,
-      lastAnswerCorrect: false,
-      userAnswer: null,
-      gameQuestions: [],
-      userAnswers: [],
-      responseTimes: [],
-      isAnswering: true,
-      isGameCompleted: false
-    })
+    try {
+      setError(null)
+      setIsLoading(true)
+      
+      setState({
+        currentQuestion: null,
+        questionNumber: 1,
+        score: 0,
+        correctCount: 0,
+        incorrectCount: 0,
+        questionStartTime: 0,
+        showFeedback: false,
+        lastAnswerCorrect: false,
+        userAnswer: null,
+        gameQuestions: [],
+        userAnswers: [],
+        responseTimes: [],
+        isAnswering: true,
+        isGameCompleted: false
+      })
+      
+      setIsLoading(false)
+    } catch (err) {
+      console.error('Logic sequences initialization error:', err)
+      setError({
+        type: 'initialization',
+        message: 'Oyun başlatılamadı. Lütfen tekrar deneyin.'
+      })
+      setIsLoading(false)
+    }
   }, [])
 
   const generateNewQuestion = useCallback(() => {
-    // Her 3 soruda bir seviye artar (1-4 arası)
-    const level = Math.min(Math.floor((state.questionNumber - 1) / 3) + 1, 4)
-    const question = generateSequence(level)
-    
-    setState(prev => ({
-      ...prev,
-      currentQuestion: question,
-      questionStartTime: Date.now(),
-      showFeedback: false,
-      userAnswer: null,
-      isAnswering: true
-    }))
-  }, [state.questionNumber])
+    try {
+      if (error || isLoading) return
+      
+      // Her 3 soruda bir seviye artar (1-4 arası)
+      const level = Math.min(Math.floor((state.questionNumber - 1) / 3) + 1, 4)
+      const question = generateSequence(level)
+      
+      if (!question) {
+        throw new Error('Question generation failed')
+      }
+      
+      setState(prev => ({
+        ...prev,
+        currentQuestion: question,
+        questionStartTime: Date.now(),
+        showFeedback: false,
+        userAnswer: null,
+        isAnswering: true
+      }))
+    } catch (err) {
+      console.error('Question generation error:', err)
+      setError({
+        type: 'question_generation',
+        message: 'Yeni soru oluşturulamadı. Lütfen tekrar deneyin.'
+      })
+    }
+  }, [state.questionNumber, error, isLoading])
 
   const handleAnswerSelect = useCallback((answer: number) => {
-    if (!state.currentQuestion || state.showFeedback || !state.isAnswering) return
+    try {
+      if (!state.currentQuestion || state.showFeedback || !state.isAnswering || error || isLoading) return
 
-    const isCorrect = answer === state.currentQuestion.answer
-    const responseTime = Date.now() - state.questionStartTime
-    const points = isCorrect ? state.currentQuestion.level * 10 : 0
+      const isCorrect = answer === state.currentQuestion.answer
+      const responseTime = Date.now() - state.questionStartTime
+      const points = isCorrect ? state.currentQuestion.level * 10 : 0
 
-    // Ses efekti
-    playSound(isCorrect ? 'correct-answer' : 'wrong-answer')
+      // Ses efekti
+      playSound(isCorrect ? 'correct-answer' : 'wrong-answer')
 
-    setState(prev => ({
-      ...prev,
-      userAnswer: answer,
-      lastAnswerCorrect: isCorrect,
-      showFeedback: true,
-      score: isCorrect ? prev.score + points : prev.score,
-      correctCount: isCorrect ? prev.correctCount + 1 : prev.correctCount,
-      incorrectCount: isCorrect ? prev.incorrectCount : prev.incorrectCount + 1,
-      gameQuestions: [...prev.gameQuestions, prev.currentQuestion!],
-      userAnswers: [...prev.userAnswers, answer],
-      responseTimes: [...prev.responseTimes, responseTime],
-      isAnswering: false
-    }))
-  }, [state.currentQuestion, state.showFeedback, state.isAnswering, state.questionStartTime, playSound])
+      setState(prev => ({
+        ...prev,
+        userAnswer: answer,
+        lastAnswerCorrect: isCorrect,
+        showFeedback: true,
+        score: isCorrect ? prev.score + points : prev.score,
+        correctCount: isCorrect ? prev.correctCount + 1 : prev.correctCount,
+        incorrectCount: isCorrect ? prev.incorrectCount : prev.incorrectCount + 1,
+        gameQuestions: [...prev.gameQuestions, prev.currentQuestion!],
+        userAnswers: [...prev.userAnswers, answer],
+        responseTimes: [...prev.responseTimes, responseTime],
+        isAnswering: false
+      }))
+    } catch (err) {
+      console.error('Answer selection error:', err)
+      setError({
+        type: 'gameplay',
+        message: 'Cevap işlenirken hata oluştu.'
+      })
+    }
+  }, [state.currentQuestion, state.showFeedback, state.isAnswering, state.questionStartTime, playSound, error, isLoading])
 
   const nextQuestion = useCallback(() => {
     if (state.questionNumber >= totalQuestions) {
@@ -212,6 +272,11 @@ export const useLogicSequences = ({ totalQuestions }: UseLogicSequencesProps) =>
   }, [state])
 
   return {
+    // Error states
+    error,
+    isLoading,
+    recoverFromError,
+    
     // State
     currentQuestion: state.currentQuestion,
     questionNumber: state.questionNumber,

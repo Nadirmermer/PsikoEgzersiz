@@ -60,12 +60,6 @@ const UniversalGameEngine: React.FC<UniversalGameEngineProps> = ({
           onRestart={gameActions.onRestart}
           isPaused={false}
           isPlaying={true}
-          stats={{
-            time: formatTime(gameState.duration),
-            level: gameStats.level,
-            score: gameStats.score,
-            progress: gameStats.progress
-          }}
           showExitConfirmation={true}
         />
         
@@ -88,12 +82,6 @@ const UniversalGameEngine: React.FC<UniversalGameEngineProps> = ({
           onRestart={gameActions.onRestart}
           isPaused={true}
           isPlaying={false}
-          stats={{
-            time: formatTime(gameState.duration),
-            level: gameStats.level,
-            score: gameStats.score,
-            progress: gameStats.progress
-          }}
           showExitConfirmation={true}
         />
         

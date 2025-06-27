@@ -8,6 +8,7 @@ import {
   Lightbulb, CheckCircle, ArrowLeft, Eye
 } from 'lucide-react'
 import { GameConfig, GameStats, GameState } from './types'
+import { useAudio } from '@/hooks/useAudio'
 
 // Ana menü ekranı (oyun başlangıcı)
 interface ReadyScreenProps {
@@ -16,69 +17,49 @@ interface ReadyScreenProps {
 }
 
 export const ReadyScreen: React.FC<ReadyScreenProps> = ({ config, onStart }) => {
+  const { playSound } = useAudio()
+
+  const handleStart = () => {
+    playSound('exercise-start')
+    onStart()
+  }
+
+  const getStatValue = (key: string, config: GameConfig) => {
+    return '0' // Placeholder değer, artık gösterilmeyecek
+  }
+
   return (
-    <div className="container mx-auto px-4 py-8 pb-28 max-w-4xl">
-      <Card className="bg-white/60 dark:bg-gray-900/60 backdrop-blur-sm border-white/20 dark:border-gray-800/20 shadow-xl">
-        <CardHeader className="text-center pb-6">
-          <div className="w-20 h-20 bg-gradient-to-br from-primary to-primary/70 rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-lg">
-            <Brain className="w-10 h-10 text-white" />
-          </div>
-          <CardTitle className="text-2xl sm:text-3xl lg:text-4xl mb-4 bg-gradient-to-r from-primary via-purple-600 to-pink-600 bg-clip-text text-transparent">
-            {config.title}
-          </CardTitle>
-          <CardDescription className="text-base sm:text-lg text-gray-600 dark:text-gray-300 max-w-2xl mx-auto">
-            {config.description}
-          </CardDescription>
-        </CardHeader>
-        
+    <div className="container mx-auto px-4 py-8 pb-28 max-w-2xl">
+      <Card className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-sm border-white/20 dark:border-gray-800/20 shadow-2xl">
         <CardContent className="space-y-8">
-          {/* İstatistik Kartları */}
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-            {config.stats.map((stat, index) => (
-              <div key={index} className="bg-white/40 dark:bg-gray-800/40 backdrop-blur-sm rounded-xl p-4 text-center border border-white/20 dark:border-gray-700/20">
-                <div className="w-12 h-12 bg-primary/10 rounded-xl flex items-center justify-center mx-auto mb-3">
-                  <Target className="w-6 h-6 text-primary" />
-                </div>
-                <h3 className="font-semibold text-gray-700 dark:text-gray-300 mb-1">{stat.label}</h3>
-                <p className="text-2xl font-bold text-primary">
-                  {getStatValue(stat.key, config)}
-                </p>
-              </div>
-            ))}
-          </div>
+          {/* İstatistik kartları kaldırıldı - oyuna odaklanma için */}
 
           {/* Oyun Talimatları */}
-          <div className="bg-gradient-to-r from-blue-50/50 to-indigo-50/50 dark:from-blue-950/20 dark:to-indigo-950/20 backdrop-blur-sm rounded-xl p-6 border border-blue-200/20 dark:border-blue-800/20">
-            <h4 className="font-bold mb-4 flex items-center gap-2 text-gray-800 dark:text-gray-200">
-              <Lightbulb className="w-5 h-5 text-primary" />
-              Nasıl Oynanır?
-            </h4>
-            <ul className="space-y-3 text-sm text-gray-600 dark:text-gray-300">
-              {config.instructions.map((instruction, index) => (
-                <li key={index} className="flex items-start gap-3">
-                  <span className="flex-shrink-0 w-6 h-6 bg-primary/10 rounded-full flex items-center justify-center text-primary font-semibold text-xs">
-                    {instruction.step}
-                  </span>
-                  <div>
-                    <span className="font-medium">{instruction.title}: </span>
-                    <span>{instruction.description}</span>
-                  </div>
-                </li>
-              ))}
-            </ul>
+          <div className="text-center space-y-4">
+            <div className="w-16 h-16 bg-primary/10 rounded-2xl flex items-center justify-center mx-auto">
+              <Target className="w-8 h-8 text-primary" />
+            </div>
+            <h2 className="text-2xl font-bold text-gray-800 dark:text-gray-200">
+              {config.title}
+            </h2>
+                         <div className="space-y-3 text-gray-600 dark:text-gray-300 leading-relaxed">
+               {config.instructions.map((instruction, index) => (
+                 <p key={index} className="text-sm sm:text-base">
+                   <span className="font-medium">{instruction.title}: </span>
+                   {instruction.description}
+                 </p>
+               ))}
+             </div>
           </div>
 
           {/* Başlat Butonu */}
-          <div className="text-center pt-4">
+          <div className="text-center pt-6">
             <Button 
-              onClick={() => {
-                window.scrollTo({ top: 0, behavior: 'smooth' })
-                onStart()
-              }}
+              onClick={handleStart}
               size="lg"
-              className="bg-gradient-to-r from-primary to-purple-600 hover:from-primary/90 hover:to-purple-600/90 text-white px-8 py-3 rounded-xl shadow-lg hover:shadow-xl transition-all duration-200 text-base font-semibold"
+              className="bg-gradient-to-r from-primary to-purple-600 hover:from-primary/90 hover:to-purple-600/90 text-white font-semibold px-8 py-3 text-lg shadow-lg transform hover:scale-105 transition-all duration-200"
             >
-              <Play className="w-5 h-5 mr-2" />
+              <Star className="w-5 h-5 mr-2" />
               Egzersizi Başlat
             </Button>
           </div>
@@ -111,30 +92,26 @@ export const PauseScreen: React.FC<PauseScreenProps> = ({ config, stats, onResum
             Devam etmek için butona tıklayın
           </p>
           
-          {/* Mevcut İstatistikler */}
-          <div className="grid grid-cols-2 gap-4 mb-6">
-            <div className="bg-white/40 dark:bg-gray-800/40 backdrop-blur-sm rounded-xl p-3 text-center border border-white/20 dark:border-gray-700/20">
-              <h4 className="font-semibold text-gray-700 dark:text-gray-300 mb-1">Skor</h4>
-              <p className="text-xl font-bold text-primary">{stats.score}</p>
-            </div>
-            <div className="bg-white/40 dark:bg-gray-800/40 backdrop-blur-sm rounded-xl p-3 text-center border border-white/20 dark:border-gray-700/20">
-              <h4 className="font-semibold text-gray-700 dark:text-gray-300 mb-1">Süre</h4>
-              <p className="text-xl font-bold text-primary">{stats.time || '00:00'}</p>
-            </div>
-          </div>
+          {/* Mevcut istatistikler kaldırıldı - oyuna odaklanma için */}
           
           {/* Aksiyon Butonları */}
-          <div className="flex gap-3 justify-center">
+          <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Button 
-              onClick={onResume} 
-              className="bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700"
+              onClick={onResume}
+              size="lg"
+              className="bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white"
             >
-              <PlayCircle className="w-4 h-4 mr-2" />
+              <PlayCircle className="w-5 h-5 mr-2" />
               Devam Et
             </Button>
-            <Button onClick={onRestart} variant="outline">
-              <RotateCcw className="w-4 h-4 mr-2" />
-              Yeniden Başla
+            <Button 
+              onClick={onRestart}
+              variant="outline"
+              size="lg"
+              className="bg-white/40 dark:bg-gray-800/40 backdrop-blur-sm border-white/20 dark:border-gray-700/20 hover:bg-white/60 dark:hover:bg-gray-800/60"
+            >
+              <RotateCcw className="w-5 h-5 mr-2" />
+              Yeniden Başlat
             </Button>
           </div>
         </CardContent>

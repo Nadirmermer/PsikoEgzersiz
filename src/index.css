@@ -878,3 +878,279 @@
 
 .font-extra-large .card-title { font-size: 1.75rem !important; }
 .font-extra-large .card-description { font-size: 1.125rem !important; }
+
+/* Enhanced Tablet & Touch Device Support */
+@layer components {
+  /* Tablet-friendly touch targets - minimum 44px per Apple/Google guidelines */
+  .touch-friendly {
+    @apply min-h-[44px] min-w-[44px] touch-manipulation select-none;
+  }
+
+  /* Enhanced button styles for tablets */
+  .btn-tablet {
+    @apply touch-friendly active:scale-95 transition-transform duration-150;
+    /* Prevent iOS double-tap zoom */
+    touch-action: manipulation;
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    user-select: none;
+  }
+
+  /* Game card styles optimized for tablets */
+  .game-card-tablet {
+    @apply touch-friendly active:scale-98 hover:scale-[1.02] transition-all duration-200;
+    touch-action: manipulation;
+  }
+
+  /* Prevent text selection during games */
+  .game-container {
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    -khtml-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+  }
+
+  /* Enhanced focus styles for tablet navigation */
+  .focus-tablet {
+    @apply focus:outline-none focus:ring-4 focus:ring-primary/50 focus:ring-offset-2;
+  }
+
+  /* Smooth scrolling for tablet */
+  .scroll-smooth-tablet {
+    -webkit-overflow-scrolling: touch;
+    scroll-behavior: smooth;
+  }
+}
+
+/* Tablet-specific media queries */
+@media (min-width: 768px) and (max-width: 1024px) {
+  /* Optimize button sizes for tablets */
+  button, .btn {
+    @apply min-h-[48px] min-w-[48px] text-base;
+  }
+
+  /* Larger tap targets for game elements */
+  .game-button {
+    @apply min-h-[56px] min-w-[56px] text-lg;
+  }
+
+  /* Better spacing for tablet layouts */
+  .container {
+    @apply px-6;
+  }
+
+  /* Card spacing optimization */
+  .grid {
+    @apply gap-4;
+  }
+}
+
+/* Specific optimizations for landscape tablets */
+@media (min-width: 768px) and (max-width: 1024px) and (orientation: landscape) {
+  /* Reduce vertical spacing in landscape */
+  .game-container {
+    @apply py-4;
+  }
+
+  /* Optimize header height */
+  .header {
+    @apply h-16;
+  }
+}
+
+/* iOS Safari specific fixes */
+@supports (-webkit-touch-callout: none) {
+  /* Fix for iOS bounce scroll */
+  html, body {
+    overscroll-behavior: none;
+  }
+
+  /* Better tap highlighting */
+  * {
+    -webkit-tap-highlight-color: rgba(0, 0, 0, 0);
+  }
+
+  /* Fix for iOS zoom on input focus */
+  input, textarea, select {
+    font-size: 16px !important;
+  }
+}
+
+/* Android-specific optimizations */
+@media screen and (-webkit-min-device-pixel-ratio: 1) {
+  /* Better touch response on Android */
+  button, .btn {
+    -webkit-tap-highlight-color: rgba(0, 0, 0, 0.1);
+  }
+}
+
+/* Enhanced Tablet Optimizations */
+@layer utilities {
+  /* Tablet-specific responsive utilities */
+  .tablet-optimized {
+    @apply tablet:p-6 tablet:text-lg tablet:space-y-6;
+  }
+
+  /* Game elements for tablets */
+  .game-element-tablet {
+    @apply tablet:min-h-[56px] tablet:min-w-[56px] tablet:text-lg tablet:rounded-xl;
+  }
+
+  /* Grid layouts for tablets */
+  .grid-tablet-responsive {
+    @apply grid gap-4 tablet:gap-6 tablet-lg:gap-8;
+  }
+
+  /* Safe area handling for tablets */
+  .safe-area-tablet {
+    padding-left: env(safe-area-inset-left);
+    padding-right: env(safe-area-inset-right);
+    padding-top: env(safe-area-inset-top);
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+}
+
+/* Tablet Portrait Optimizations */
+@media (min-width: 768px) and (max-width: 1024px) and (orientation: portrait) {
+  .container {
+    @apply px-8 py-6;
+  }
+
+  /* Game cards in portrait */
+  .game-card {
+    @apply p-6 rounded-xl;
+  }
+
+  /* Buttons in portrait */
+  button, .btn {
+    @apply min-h-[48px] min-w-[48px] text-base px-6 py-3;
+  }
+
+  /* Game buttons larger for better touch */
+  .game-button {
+    @apply min-h-[64px] min-w-[64px] text-xl;
+  }
+
+  /* Header optimizations */
+  .header {
+    @apply h-20 px-8;
+  }
+
+  /* Navigation optimizations */
+  .nav-item {
+    @apply px-6 py-4 text-lg;
+  }
+}
+
+/* Tablet Landscape Optimizations */
+@media (min-width: 1024px) and (max-width: 1366px) and (orientation: landscape) {
+  .container {
+    @apply px-12 py-4;
+  }
+
+  /* Reduce vertical spacing in landscape */
+  .game-container {
+    @apply py-4 space-y-4;
+  }
+
+  /* Header height optimization */
+  .header {
+    @apply h-16;
+  }
+
+  /* Game cards in landscape */
+  .game-card {
+    @apply p-4;
+  }
+
+  /* Grid layouts in landscape */
+  .grid {
+    @apply gap-6;
+  }
+
+  /* Button optimization for landscape */
+  button, .btn {
+    @apply min-h-[44px] min-w-[44px];
+  }
+}
+
+/* Performance optimizations for tablets */
+@media (min-width: 768px) {
+  /* Enable hardware acceleration for smooth animations */
+  .game-element, .card, .button {
+    transform: translateZ(0);
+    will-change: transform;
+  }
+
+  /* Optimize animations for tablet performance */
+  .transition-optimized {
+    transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  /* Smooth scrolling for tablet */
+  html {
+    scroll-behavior: smooth;
+    -webkit-overflow-scrolling: touch;
+  }
+}
+
+/* Touch device specific optimizations */
+@media (hover: none) and (pointer: coarse) {
+  /* Remove hover effects on touch devices */
+  .hover\:scale-105:hover {
+    transform: none;
+  }
+
+  /* Use active states instead */
+  .touch\:active\:scale-95:active {
+    transform: scale(0.95);
+  }
+
+  /* Larger touch targets */
+  button, .btn, .touch-target {
+    @apply min-h-[48px] min-w-[48px];
+  }
+
+  /* Better focus indicators for keyboard navigation */
+  .focus\:ring-4:focus {
+    box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.5);
+  }
+}
+
+/* High DPI tablet displays */
+@media (min-resolution: 2dppx) and (min-width: 768px) {
+  /* Optimize images and icons for retina tablets */
+  .icon, .logo {
+    image-rendering: -webkit-optimize-contrast;
+    image-rendering: crisp-edges;
+  }
+
+  /* Better text rendering */
+  body {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+}
+
+/* Accessibility improvements for tablets */
+@media (min-width: 768px) {
+  /* Better focus management */
+  .focus-visible {
+    outline: 3px solid #6366f1;
+    outline-offset: 2px;
+  }
+
+  /* Skip navigation for tablet keyboard users */
+  .skip-link {
+    @apply absolute top-4 left-4 bg-primary text-white px-4 py-2 rounded-md;
+    transform: translateY(-100%);
+    transition: transform 0.3s;
+  }
+
+  .skip-link:focus {
+    transform: translateY(0%);
+  }
+}
+

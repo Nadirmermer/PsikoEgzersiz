@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react'
+import { useState, useCallback, useRef, useEffect } from 'react'
 import { useAudio } from './useAudio'
 import { WORD_CIRCLE_LEVELS, WordCircleLevel } from '../data/wordCircleLevels'
 import { GameState } from '../components/GameEngine/types'
@@ -18,8 +18,26 @@ interface WordCircleState {
   levelData: WordCircleLevel | null
 }
 
+// Error handling için
+interface WordCircleError {
+  type: 'initialization' | 'gameplay' | 'level_loading'
+  message: string
+}
+
 export const useWordCircle = ({ maxLevel = 7 }: UseWordCircleProps = {}) => {
   const { playSound } = useAudio()
+  const mountedRef = useRef(true)
+
+  // Error states
+  const [error, setError] = useState<WordCircleError | null>(null)
+  const [isLoading, setIsLoading] = useState(false)
+
+  // Cleanup effect
+  useEffect(() => {
+    return () => {
+      mountedRef.current = false
+    }
+  }, [])
   
   const [state, setState] = useState<WordCircleState>({
     currentLevel: 1,
@@ -32,64 +50,104 @@ export const useWordCircle = ({ maxLevel = 7 }: UseWordCircleProps = {}) => {
     levelData: null
   })
 
+  // Error recovery function
+  const recoverFromError = useCallback(() => {
+    setError(null)
+    setIsLoading(false)
+  }, [])
+
   const initializeGame = useCallback(() => {
-    setState({
-      currentLevel: 1,
-      selectedLetters: [],
-      currentWord: '',
-      foundWords: [],
-      bonusWords: [],
-      score: 0,
-      isGameCompleted: false,
-      levelData: null
-    })
+    try {
+      setError(null)
+      setIsLoading(true)
+      
+      setState({
+        currentLevel: 1,
+        selectedLetters: [],
+        currentWord: '',
+        foundWords: [],
+        bonusWords: [],
+        score: 0,
+        isGameCompleted: false,
+        levelData: null
+      })
+      
+      setIsLoading(false)
+    } catch (err) {
+      console.error('Word circle initialization error:', err)
+      setError({
+        type: 'initialization',
+        message: 'Oyun başlatılamadı. Lütfen tekrar deneyin.'
+      })
+      setIsLoading(false)
+    }
   }, [])
 
   const initializeLevel = useCallback((level: number) => {
-    const levelData = WORD_CIRCLE_LEVELS.find(l => l.levelNumber === level)
-    if (!levelData) return
+    try {
+      if (error || isLoading) return
+      
+      const levelData = WORD_CIRCLE_LEVELS.find(l => l.levelNumber === level)
+      if (!levelData) {
+        throw new Error(`Level ${level} data not found`)
+      }
 
-    setState(prev => ({
-      ...prev,
-      currentLevel: level,
-      selectedLetters: [],
-      currentWord: '',
-      foundWords: [],
-      bonusWords: [],
-      levelData
-    }))
-  }, [])
+      setState(prev => ({
+        ...prev,
+        currentLevel: level,
+        selectedLetters: [],
+        currentWord: '',
+        foundWords: [],
+        bonusWords: [],
+        levelData
+      }))
+    } catch (err) {
+      console.error('Level initialization error:', err)
+      setError({
+        type: 'level_loading',
+        message: 'Seviye yüklenemedi. Lütfen tekrar deneyin.'
+      })
+    }
+  }, [error, isLoading])
 
   const startGame = useCallback(() => {
     initializeLevel(1)
   }, [initializeLevel])
 
   const handleLetterClick = useCallback((letterIndex: number) => {
-    if (!state.levelData) return
+    try {
+      if (!state.levelData || error || isLoading) return
 
-    setState(prev => {
-      // Harf zaten seçiliyse, kaldır (toggle)
-      if (prev.selectedLetters.includes(letterIndex)) {
-        const newSelected = prev.selectedLetters.filter(i => i !== letterIndex)
+      setState(prev => {
+        // Harf zaten seçiliyse, kaldır (toggle)
+        if (prev.selectedLetters.includes(letterIndex)) {
+          const newSelected = prev.selectedLetters.filter(i => i !== letterIndex)
+          const newWord = newSelected.map(i => prev.levelData!.circleLetters[i]).join('')
+          return {
+            ...prev,
+            selectedLetters: newSelected,
+            currentWord: newWord
+          }
+        }
+
+        // Yeni harfi ekle
+        const newSelected = [...prev.selectedLetters, letterIndex]
         const newWord = newSelected.map(i => prev.levelData!.circleLetters[i]).join('')
+        
         return {
           ...prev,
           selectedLetters: newSelected,
           currentWord: newWord
         }
-      }
-
-      // Yeni harfi ekle
-      const newSelected = [...prev.selectedLetters, letterIndex]
-      const newWord = newSelected.map(i => prev.levelData!.circleLetters[i]).join('')
-      
-      return {
-        ...prev,
-        selectedLetters: newSelected,
-        currentWord: newWord
-      }
-    })
-  }, [state.levelData])
+      })
+    } catch (err) {
+      console.error('Letter click error:', err)
+      setError({
+        type: 'gameplay',
+        message: 'Harf seçimi sırasında hata oluştu.'
+      })
+    }
+  }, [state.levelData, error, isLoading])
 
   const clearSelection = useCallback(() => {
     setState(prev => ({
@@ -100,84 +158,101 @@ export const useWordCircle = ({ maxLevel = 7 }: UseWordCircleProps = {}) => {
   }, [])
 
   const shuffleLetters = useCallback(() => {
-    if (!state.levelData) return
+    try {
+      if (!state.levelData || error || isLoading) return
 
-    playSound('button-click')
-    
-    // Harfleri karıştır
-    const shuffled = [...state.levelData.circleLetters].sort(() => Math.random() - 0.5)
-    
-    setState(prev => ({
-      ...prev,
-      levelData: prev.levelData ? { ...prev.levelData, circleLetters: shuffled } : null,
-      selectedLetters: [],
-      currentWord: ''
-    }))
-  }, [state.levelData, playSound])
+      playSound('button-click')
+      
+      // Harfleri karıştır
+      const shuffled = [...state.levelData.circleLetters].sort(() => Math.random() - 0.5)
+      
+      setState(prev => ({
+        ...prev,
+        levelData: prev.levelData ? { ...prev.levelData, circleLetters: shuffled } : null,
+        selectedLetters: [],
+        currentWord: ''
+      }))
+    } catch (err) {
+      console.error('Shuffle letters error:', err)
+      setError({
+        type: 'gameplay',
+        message: 'Harfler karıştırılırken hata oluştu.'
+      })
+    }
+  }, [state.levelData, playSound, error, isLoading])
 
   const submitWord = useCallback(() => {
-    if (!state.levelData || state.currentWord.length < 2) return
+    try {
+      if (!state.levelData || state.currentWord.length < 2 || error || isLoading) return
 
-    const word = state.currentWord
-    
-    // Ana hedef kelimeler kontrolü
-    const targetWord = state.levelData.targetWords.find(tw => tw.word === word)
-    if (targetWord && !state.foundWords.includes(word)) {
-      playSound('correct-answer')
+      const word = state.currentWord
       
-      const wordScore = word.length * 10
-      setState(prev => ({
-        ...prev,
-        foundWords: [...prev.foundWords, word],
-        score: prev.score + wordScore,
-        selectedLetters: [],
-        currentWord: ''
-      }))
+      // Ana hedef kelimeler kontrolü
+      const targetWord = state.levelData.targetWords.find(tw => tw.word === word)
+      if (targetWord && !state.foundWords.includes(word)) {
+        playSound('correct-answer')
+        
+        const wordScore = word.length * 10
+        setState(prev => ({
+          ...prev,
+          foundWords: [...prev.foundWords, word],
+          score: prev.score + wordScore,
+          selectedLetters: [],
+          currentWord: ''
+        }))
 
-      return {
-        type: 'target_word',
-        word,
-        score: wordScore,
-        isComplete: state.foundWords.length + 1 >= state.levelData.targetWords.length
+        return {
+          type: 'target_word',
+          word,
+          score: wordScore,
+          isComplete: state.foundWords.length + 1 >= state.levelData.targetWords.length
+        }
       }
-    }
 
-    // Bonus kelimeler kontrolü
-    if (state.levelData.bonusWords?.includes(word) && !state.bonusWords.includes(word)) {
-      playSound('correct-answer')
-      
-      const bonusScore = word.length * 5
+      // Bonus kelimeler kontrolü
+      if (state.levelData.bonusWords?.includes(word) && !state.bonusWords.includes(word)) {
+        playSound('correct-answer')
+        
+        const bonusScore = word.length * 5
+        setState(prev => ({
+          ...prev,
+          bonusWords: [...prev.bonusWords, word],
+          score: prev.score + bonusScore,
+          selectedLetters: [],
+          currentWord: ''
+        }))
+
+        return {
+          type: 'bonus_word',
+          word,
+          score: bonusScore,
+          isComplete: false
+        }
+      }
+
+      // Geçersiz kelime
+      playSound('wrong-answer')
       setState(prev => ({
         ...prev,
-        bonusWords: [...prev.bonusWords, word],
-        score: prev.score + bonusScore,
         selectedLetters: [],
         currentWord: ''
       }))
 
       return {
-        type: 'bonus_word',
+        type: 'invalid',
         word,
-        score: bonusScore,
+        score: 0,
         isComplete: false
       }
+    } catch (err) {
+      console.error('Submit word error:', err)
+      setError({
+        type: 'gameplay',
+        message: 'Kelime kontrol edilirken hata oluştu.'
+      })
+      return null
     }
-
-    // Geçersiz kelime
-    playSound('wrong-answer')
-    setState(prev => ({
-      ...prev,
-      selectedLetters: [],
-      currentWord: ''
-    }))
-
-    return {
-      type: 'invalid',
-      word,
-      score: 0,
-      isComplete: false
-    }
-  }, [state.levelData, state.currentWord, state.foundWords, state.bonusWords, playSound])
+  }, [state.levelData, state.currentWord, state.foundWords, state.bonusWords, playSound, error, isLoading])
 
   const nextLevel = useCallback(() => {
     if (state.currentLevel >= maxLevel) {
@@ -205,6 +280,11 @@ export const useWordCircle = ({ maxLevel = 7 }: UseWordCircleProps = {}) => {
     Math.round((state.foundWords.length / state.levelData.targetWords.length) * 100) : 0
 
   return {
+    // Error states
+    error,
+    isLoading,
+    recoverFromError,
+    
     // State
     currentLevel: state.currentLevel,
     selectedLetters: state.selectedLetters,

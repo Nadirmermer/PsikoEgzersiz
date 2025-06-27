@@ -197,12 +197,17 @@ const ResimKelimeEslestirmeSayfasi: React.FC<ResimKelimeEslestirmeSayfasiProps> 
                          variant="outline"
                          size="lg"
                          onClick={() => handleAnswerSelect(optionText)}
-                      disabled={matchingGame.showFeedback || !matchingGame.isAnswering}
+                         onTouchStart={(e) => e.preventDefault()} // Prevent double-tap zoom
+                         disabled={matchingGame.showFeedback || !matchingGame.isAnswering}
                          className={`
-                        h-14 sm:h-16 text-base sm:text-lg font-semibold border-2 transition-all duration-300
-                        ${getButtonStyle(optionText)}
-                        ${matchingGame.showFeedback || !matchingGame.isAnswering ? 'cursor-default' : 'cursor-pointer'}
-                      `}
+                           h-14 sm:h-16 text-base sm:text-lg font-semibold border-2 transition-all duration-300
+                           touch-manipulation select-none focus:outline-none focus:ring-4 focus:ring-primary/50
+                           active:scale-95 tablet:hover:scale-[1.02] min-h-[44px] min-w-[44px]
+                           tablet:min-h-[64px] tablet:min-w-[64px]
+                           ${getButtonStyle(optionText)}
+                           ${matchingGame.showFeedback || !matchingGame.isAnswering ? 'cursor-default' : 'cursor-pointer'}
+                         `}
+                         style={{ touchAction: 'manipulation' }}
                     >
                       {getButtonIcon(optionText)}
                       <span className="truncate">{optionText}</span>

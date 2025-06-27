@@ -172,8 +172,43 @@ const MantikDizileriSayfasi: React.FC<MantikDizileriSayfasiProps> = ({ onBack })
       gameHook={gameHook}
       onBack={onBack}
     >
-      {/* Game Content - Only show when playing */}
-      {universalGame.gameState.phase === 'playing' && logicGame.currentQuestion && (
+      {/* Error Display */}
+      {logicGame.error && (
+        <div className="w-full max-w-3xl mx-auto">
+          <Card className="bg-red-50/80 dark:bg-red-950/20 backdrop-blur-sm border-red-200/20 dark:border-red-800/20">
+            <CardContent className="p-6 text-center">
+              <XCircle className="w-12 h-12 text-red-500 mx-auto mb-4" />
+              <h3 className="text-lg font-semibold text-red-700 dark:text-red-300 mb-2">
+                Bir Hata Oluştu
+              </h3>
+              <p className="text-red-600 dark:text-red-400 mb-4">
+                {logicGame.error.message}
+              </p>
+              <Button 
+                onClick={logicGame.recoverFromError}
+                className="bg-red-600 hover:bg-red-700 text-white"
+              >
+                Tekrar Dene
+              </Button>
+            </CardContent>
+          </Card>
+        </div>
+      )}
+
+      {/* Loading Display */}
+      {logicGame.isLoading && (
+        <div className="w-full max-w-3xl mx-auto">
+          <Card className="bg-white/70 dark:bg-gray-900/70 backdrop-blur-sm border-white/30 dark:border-gray-800/30">
+            <CardContent className="p-8 text-center">
+              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
+              <p className="text-gray-600 dark:text-gray-400">Oyun yükleniyor...</p>
+            </CardContent>
+          </Card>
+        </div>
+      )}
+
+      {/* Game Content - Only show when playing and no errors */}
+      {!logicGame.error && !logicGame.isLoading && universalGame.gameState.phase === 'playing' && logicGame.currentQuestion && (
         <div className="w-full max-w-3xl mx-auto space-y-6">
           
           {/* Question Card */}
@@ -222,14 +257,19 @@ const MantikDizileriSayfasi: React.FC<MantikDizileriSayfasiProps> = ({ onBack })
                     <Button
                     key={index}
                     variant="outline"
-                      size="lg"
+                    size="lg"
                     onClick={() => handleAnswerSelect(option)}
+                    onTouchStart={(e) => e.preventDefault()} // Prevent double-tap zoom
                     disabled={logicGame.showFeedback || !logicGame.isAnswering}
                     className={`
                       h-14 sm:h-16 text-lg sm:text-xl font-bold border-2 transition-all duration-300 relative
+                      touch-manipulation select-none focus:outline-none focus:ring-4 focus:ring-primary/50
+                      active:scale-95 tablet:hover:scale-105 min-h-[44px] min-w-[44px]
+                      tablet:min-h-[64px] tablet:min-w-[64px]
                       ${getButtonStyle(option)}
                       ${logicGame.showFeedback || !logicGame.isAnswering ? 'cursor-default' : 'cursor-pointer hover:scale-105'}
                     `}
+                    style={{ touchAction: 'manipulation' }}
                   >
                     <span>{option}</span>
                     {getButtonIcon(option) && (

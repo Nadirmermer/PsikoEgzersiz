@@ -3,7 +3,7 @@
   "private": true,
   "version": "1.0.0",
   "description": "Bilişsel egzersiz ve ruh sağlığı uygulaması",
-  "main": "public/electron.js",
+  "main": "public/electron.cjs",
   "homepage": "./",
   "type": "module",
   "scripts": {
@@ -124,6 +124,7 @@
     "files": [
       "dist/**/*",
       "public/electron.js",
+      "public/preload.js",
       "public/audio/**/*",
       "node_modules/**/*"
     ],
@@ -133,7 +134,9 @@
     },
     "win": {
       "target": "portable",
-      "sign": false
+      "sign": false,
+      "publisherName": false,
+      "verifyUpdateCodeSignature": false
     },
     "linux": {
       "target": "AppImage"

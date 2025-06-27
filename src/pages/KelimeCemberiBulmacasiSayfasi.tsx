@@ -4,6 +4,7 @@ import { WORD_CIRCLE_CONFIG } from '../components/GameEngine/gameConfigs'
 import { useWordCircleGame, useWordCircle } from '../hooks/useWordCircle'
 import { Shuffle, Check, X, RotateCcw, Star } from 'lucide-react'
 import { Button } from '@/components/ui/button'
+import { Card, CardContent } from '@/components/ui/card'
 import { toast } from '@/components/ui/sonner'
 
 interface KelimeCemberiBulmacasiProps {
@@ -44,6 +45,9 @@ const LetterCircle: React.FC<{
             className={`
               absolute w-16 h-16 rounded-full cursor-pointer transition-all duration-300 shadow-lg
               flex items-center justify-center font-bold text-lg
+              touch-manipulation select-none focus:outline-none focus:ring-4 focus:ring-primary/50
+              active:scale-95 tablet:hover:scale-105 min-h-[44px] min-w-[44px]
+              tablet:min-h-[64px] tablet:min-w-[64px] tablet:w-20 tablet:h-20 tablet:text-xl
               ${isSelected 
                 ? 'bg-primary text-white scale-110 shadow-primary/50 z-10' 
                 : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200 hover:scale-105 hover:shadow-xl'
@@ -53,8 +57,10 @@ const LetterCircle: React.FC<{
             style={{
               left: `calc(50% + ${x}px - 32px)`,
               top: `calc(50% + ${y}px - 32px)`,
+              touchAction: 'manipulation'
             }}
             onClick={() => onLetterClick(index)}
+            onTouchStart={(e) => e.preventDefault()} // Prevent double-tap zoom
           >
             {letter}
             {isSelected && (
@@ -206,12 +212,40 @@ const WordCircleGame: React.FC = () => {
     }
   }
 
-  if (!wordCircle.levelData) {
+  // Error Display
+  if (wordCircle.error) {
+    return (
+      <div className="w-full max-w-2xl mx-auto">
+        <Card className="bg-red-50/80 dark:bg-red-950/20 backdrop-blur-sm border-red-200/20 dark:border-red-800/20">
+          <CardContent className="p-6 text-center">
+            <X className="w-12 h-12 text-red-500 mx-auto mb-4" />
+            <h3 className="text-lg font-semibold text-red-700 dark:text-red-300 mb-2">
+              Bir Hata Oluştu
+            </h3>
+            <p className="text-red-600 dark:text-red-400 mb-4">
+              {wordCircle.error.message}
+            </p>
+            <Button 
+              onClick={wordCircle.recoverFromError}
+              className="bg-red-600 hover:bg-red-700 text-white"
+            >
+              Tekrar Dene
+            </Button>
+          </CardContent>
+        </Card>
+      </div>
+    )
+  }
+
+  // Loading Display
+  if (wordCircle.isLoading || !wordCircle.levelData) {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
-          <p className="text-gray-500">Seviye yükleniyor...</p>
+          <p className="text-gray-500">
+            {wordCircle.isLoading ? 'Oyun yükleniyor...' : 'Seviye yükleniyor...'}
+          </p>
         </div>
       </div>
     )

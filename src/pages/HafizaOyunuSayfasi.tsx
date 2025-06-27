@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from 'react'
 import { Card, CardContent } from '@/components/ui/card'
 import { Progress } from '@/components/ui/progress'
+import { Button } from '@/components/ui/button'
+import { AlertTriangle, RefreshCw, Loader2 } from 'lucide-react'
 import UniversalGameEngine from '@/components/GameEngine/UniversalGameEngine'
 import { MEMORY_GAME_CONFIG } from '@/components/GameEngine/gameConfigs'
 import { useUniversalGame } from '@/hooks/useUniversalGame'
@@ -171,8 +173,45 @@ const HafizaOyunuSayfasi: React.FC<HafizaOyunuSayfasiProps> = ({ onBack }) => {
       gameHook={gameHook}
       onBack={onBack}
     >
+      {/* Error State */}
+      {memoryGame.error && (
+        <Card className="mb-4 sm:mb-6 bg-red-50/80 dark:bg-red-900/20 border-red-200 dark:border-red-800 backdrop-blur-sm">
+          <CardContent className="pt-4 sm:pt-6 text-center px-4">
+            <div className="flex flex-col items-center gap-3">
+              <AlertTriangle className="w-8 h-8 text-red-600 dark:text-red-400" />
+              <p className="text-sm sm:text-base text-red-800 dark:text-red-200 font-medium">
+                {memoryGame.error.message}
+              </p>
+              <Button 
+                variant="outline" 
+                size="sm"
+                onClick={memoryGame.recoverFromError}
+                className="bg-white/60 dark:bg-gray-800/60 hover:bg-white/80 dark:hover:bg-gray-800/80"
+              >
+                <RefreshCw className="w-4 h-4 mr-2" />
+                Tekrar Dene
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Loading State */}
+      {memoryGame.isLoading && (
+        <Card className="mb-4 sm:mb-6 bg-blue-50/80 dark:bg-blue-900/20 border-blue-200 dark:border-blue-800 backdrop-blur-sm">
+          <CardContent className="pt-4 sm:pt-6 text-center px-4">
+            <div className="flex flex-col items-center gap-3">
+              <Loader2 className="w-8 h-8 text-blue-600 dark:text-blue-400 animate-spin" />
+              <p className="text-sm sm:text-base text-blue-800 dark:text-blue-200">
+                Oyun hazırlanıyor...
+              </p>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
       {/* Oyun İçeriği - Her zaman göster */}
-      {memoryGame.cards.length > 0 && (
+      {!memoryGame.error && !memoryGame.isLoading && memoryGame.cards.length > 0 && (
         <>
 
           {/* Önizleme Uyarısı */}
@@ -209,6 +248,7 @@ const HafizaOyunuSayfasi: React.FC<HafizaOyunuSayfasiProps> = ({ onBack }) => {
               <button
                 key={card.id}
                 onClick={() => handleCardClick(card.id)}
+                onTouchStart={(e) => e.preventDefault()} // Prevent double-tap zoom
                     disabled={
                       memoryGame.showingPreview || 
                       card.isFlipped || 
@@ -219,16 +259,18 @@ const HafizaOyunuSayfasi: React.FC<HafizaOyunuSayfasiProps> = ({ onBack }) => {
                     }
                 className={`
                       aspect-square rounded-md sm:rounded-lg font-bold transition-all duration-300 border-2 shadow-lg
+                      touch-manipulation select-none focus:outline-none focus:ring-2 focus:ring-primary/50
+                      active:scale-95 hover:shadow-xl
                       ${
-                        // Dinamik font boyutu: kart sayısına göre
+                        // Tablet-friendly boyutlama: minimum 44px touch target
                         currentLevel.gridSize.rows * currentLevel.gridSize.cols <= 12
-                          ? 'text-lg sm:text-2xl md:text-3xl min-h-14 sm:min-h-18'
+                          ? 'text-lg sm:text-2xl md:text-3xl min-h-[44px] sm:min-h-18 min-w-[44px]'
                           : currentLevel.gridSize.rows * currentLevel.gridSize.cols <= 16  
-                          ? 'text-base sm:text-xl md:text-2xl min-h-12 sm:min-h-16'
-                          : 'text-sm sm:text-base md:text-lg min-h-10 sm:min-h-12' // 20 kart için küçük
+                          ? 'text-base sm:text-xl md:text-2xl min-h-[44px] sm:min-h-16 min-w-[44px]'
+                          : 'text-sm sm:text-base md:text-lg min-h-[44px] sm:min-h-12 min-w-[44px]' // 20 kart için daha büyük minimum
                       }
                   ${getCardStyle(card)}
-                      ${(memoryGame.showingPreview || card.isFlipped || card.isMatched || memoryGame.flippedCards >= 2 || universalGame.gameState.isPaused || universalGame.gameState.phase === 'ready') ? 'cursor-default' : 'cursor-pointer'}
+                      ${(memoryGame.showingPreview || card.isFlipped || card.isMatched || memoryGame.flippedCards >= 2 || universalGame.gameState.isPaused || universalGame.gameState.phase === 'ready') ? 'cursor-default' : 'cursor-pointer hover:cursor-pointer'}
                 `}
               >
                 {getCardDisplayContent(card)}

@@ -3,7 +3,7 @@ import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Progress } from '@/components/ui/progress'
-import { CheckCircle, XCircle, Brain, Eye } from 'lucide-react'
+import { CheckCircle, XCircle, Brain, Eye, AlertTriangle, RefreshCw, Loader2 } from 'lucide-react'
 import UniversalGameEngine from '@/components/GameEngine/UniversalGameEngine'
 import { NUMBER_SEQUENCE_CONFIG } from '@/components/GameEngine/gameConfigs'
 import { useUniversalGame } from '@/hooks/useUniversalGame'
@@ -127,8 +127,45 @@ const SayiDizisiTakibiSayfasi: React.FC<SayiDizisiTakibiSayfasiProps> = ({ onBac
       gameHook={gameHook}
       onBack={onBack}
     >
+      {/* Error State */}
+      {sequenceGame.error && (
+        <Card className="mb-4 sm:mb-6 bg-red-50/80 dark:bg-red-900/20 border-red-200 dark:border-red-800 backdrop-blur-sm">
+          <CardContent className="pt-4 sm:pt-6 text-center px-4">
+            <div className="flex flex-col items-center gap-3">
+              <AlertTriangle className="w-8 h-8 text-red-600 dark:text-red-400" />
+              <p className="text-sm sm:text-base text-red-800 dark:text-red-200 font-medium">
+                {sequenceGame.error.message}
+              </p>
+              <Button 
+                variant="outline" 
+                size="sm"
+                onClick={sequenceGame.recoverFromError}
+                className="bg-white/60 dark:bg-gray-800/60 hover:bg-white/80 dark:hover:bg-gray-800/80"
+              >
+                <RefreshCw className="w-4 h-4 mr-2" />
+                Tekrar Dene
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Loading State */}
+      {sequenceGame.isLoading && (
+        <Card className="mb-4 sm:mb-6 bg-blue-50/80 dark:bg-blue-900/20 border-blue-200 dark:border-blue-800 backdrop-blur-sm">
+          <CardContent className="pt-4 sm:pt-6 text-center px-4">
+            <div className="flex flex-col items-center gap-3">
+              <Loader2 className="w-8 h-8 text-blue-600 dark:text-blue-400 animate-spin" />
+              <p className="text-sm sm:text-base text-blue-800 dark:text-blue-200">
+                Oyun hazırlanıyor...
+              </p>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
       {/* Game Content - Only show when playing */}
-      {universalGame.gameState.phase === 'playing' && (
+      {!sequenceGame.error && !sequenceGame.isLoading && universalGame.gameState.phase === 'playing' && (
         <div className="w-full max-w-4xl mx-auto space-y-6">
 
           {/* Showing Phase */}
@@ -224,7 +261,8 @@ const SayiDizisiTakibiSayfasi: React.FC<SayiDizisiTakibiSayfasiProps> = ({ onBac
                         variant="outline"
                         size="lg"
                       onClick={() => handleNumberInput(number)}
-                      className="h-16 text-xl font-bold bg-white/60 dark:bg-gray-800/60 backdrop-blur-sm border-white/20 dark:border-gray-700/20 hover:bg-white/80 dark:hover:bg-gray-800/80 hover:scale-105 transition-all duration-200"
+                        onTouchStart={(e) => e.preventDefault()} // Prevent double-tap zoom
+                        className="h-16 text-xl font-bold bg-white/60 dark:bg-gray-800/60 backdrop-blur-sm border-white/20 dark:border-gray-700/20 hover:bg-white/80 dark:hover:bg-gray-800/80 hover:scale-105 transition-all duration-200 touch-manipulation select-none focus:outline-none focus:ring-2 focus:ring-primary/50 active:scale-95 min-h-[44px] min-w-[44px]"
                       >
                         {number}
                       </Button>

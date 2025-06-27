@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react'
+import { useState, useCallback, useRef, useEffect } from 'react'
 import { generateMatchingQuestion, MatchingQuestion } from '@/utils/matchingExerciseUtils'
 import { useAudio } from './useAudio'
 
@@ -21,8 +21,26 @@ export interface ImageWordMatchingState {
   responseTimes: number[]
 }
 
+// Error handling için
+interface ImageWordMatchingError {
+  type: 'initialization' | 'gameplay' | 'question_generation'
+  message: string
+}
+
 export const useImageWordMatching = ({ totalQuestions }: UseImageWordMatchingProps) => {
   const { playSound } = useAudio()
+  const mountedRef = useRef(true)
+
+  // Error states
+  const [error, setError] = useState<ImageWordMatchingError | null>(null)
+  const [isLoading, setIsLoading] = useState(false)
+
+  // Cleanup effect
+  useEffect(() => {
+    return () => {
+      mountedRef.current = false
+    }
+  }, [])
 
   const [state, setState] = useState<ImageWordMatchingState>({
     currentQuestion: null,
@@ -38,61 +56,104 @@ export const useImageWordMatching = ({ totalQuestions }: UseImageWordMatchingPro
     responseTimes: []
   })
 
+  // Error recovery function
+  const recoverFromError = useCallback(() => {
+    setError(null)
+    setIsLoading(false)
+  }, [])
+
   // Initialize/reset game
   const initializeGame = useCallback(() => {
-    setState({
-      currentQuestion: null,
-      questionNumber: 1,
-      score: 0,
-      isAnswering: false,
-      showFeedback: false,
-      lastAnswerCorrect: false,
-      selectedAnswer: '',
-      questionStartTime: 0,
-      gameQuestions: [],
-      userAnswers: [],
-      responseTimes: []
-    })
+    try {
+      setError(null)
+      setIsLoading(true)
+      
+      setState({
+        currentQuestion: null,
+        questionNumber: 1,
+        score: 0,
+        isAnswering: false,
+        showFeedback: false,
+        lastAnswerCorrect: false,
+        selectedAnswer: '',
+        questionStartTime: 0,
+        gameQuestions: [],
+        userAnswers: [],
+        responseTimes: []
+      })
+      
+      setIsLoading(false)
+    } catch (err) {
+      console.error('Image-word matching initialization error:', err)
+      setError({
+        type: 'initialization',
+        message: 'Oyun başlatılamadı. Lütfen tekrar deneyin.'
+      })
+      setIsLoading(false)
+    }
   }, [])
 
   // Generate new question
   const generateNewQuestion = useCallback(() => {
-    const question = generateMatchingQuestion('emoji-to-word')
-    setState(prev => ({
-      ...prev,
-      currentQuestion: question,
-      questionStartTime: Date.now(),
-      showFeedback: false,
-      selectedAnswer: '',
-      isAnswering: true
-    }))
-  }, [])
+    try {
+      if (error || isLoading) return
+      
+      const question = generateMatchingQuestion('emoji-to-word')
+      if (!question) {
+        throw new Error('Question generation failed')
+      }
+      
+      setState(prev => ({
+        ...prev,
+        currentQuestion: question,
+        questionStartTime: Date.now(),
+        showFeedback: false,
+        selectedAnswer: '',
+        isAnswering: true
+      }))
+    } catch (err) {
+      console.error('Question generation error:', err)
+      setError({
+        type: 'question_generation',
+        message: 'Yeni soru oluşturulamadı. Lütfen tekrar deneyin.'
+      })
+    }
+  }, [error, isLoading])
 
   // Handle answer selection
   const handleAnswerSelect = useCallback((answer: string) => {
-    if (state.showFeedback || !state.currentQuestion || !state.isAnswering) return
+    try {
+      if (state.showFeedback || !state.currentQuestion || !state.isAnswering || error || isLoading) return
 
-    const isCorrect = answer === state.currentQuestion.correctAnswer.word
-    const responseTime = Date.now() - state.questionStartTime
+      const isCorrect = answer === state.currentQuestion.correctAnswer.word
+      const responseTime = Date.now() - state.questionStartTime
 
-    // Play sound effect
-    playSound(isCorrect ? 'correct-answer' : 'wrong-answer')
+      // Play sound effect
+      playSound(isCorrect ? 'correct-answer' : 'wrong-answer')
 
-    setState(prev => ({
-      ...prev,
-      selectedAnswer: answer,
-      lastAnswerCorrect: isCorrect,
-      showFeedback: true,
-      isAnswering: false,
-      score: isCorrect ? prev.score + 1 : prev.score,
-      // Update stats
-      gameQuestions: [...prev.gameQuestions, prev.currentQuestion!],
-      userAnswers: [...prev.userAnswers, isCorrect],
-      responseTimes: [...prev.responseTimes, responseTime]
-    }))
+      setState(prev => ({
+        ...prev,
+        selectedAnswer: answer,
+        lastAnswerCorrect: isCorrect,
+        showFeedback: true,
+        isAnswering: false,
+        score: isCorrect ? prev.score + 1 : prev.score,
+        // Update stats
+        gameQuestions: [...prev.gameQuestions, prev.currentQuestion!],
+        userAnswers: [...prev.userAnswers, isCorrect],
+        responseTimes: [...prev.responseTimes, responseTime]
+      }))
 
-    return isCorrect
-  }, [state.showFeedback, state.currentQuestion, state.isAnswering, state.questionStartTime, playSound])
+      return isCorrect
+    } catch (err) {
+      console.error('Answer selection error:', err)
+      setError({
+        type: 'gameplay',
+        message: 'Cevap işlenirken hata oluştu.'
+      })
+      return false
+    }
+  }, [state.showFeedback, state.currentQuestion, state.isAnswering, state.questionStartTime, playSound, error, isLoading])
 
   // Move to next question
   const nextQuestion = useCallback(() => {
@@ -133,7 +194,12 @@ export const useImageWordMatching = ({ totalQuestions }: UseImageWordMatchingPro
   }, [state])
 
   return {
-    // State
+    // Error states
+    error,
+    isLoading,
+    recoverFromError,
+    
+    // Game state
     currentQuestion: state.currentQuestion,
     questionNumber: state.questionNumber,
     score: state.score,

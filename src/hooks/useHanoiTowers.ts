@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect } from 'react'
+import { useState, useCallback, useEffect, useRef } from 'react'
 import { useAudio } from './useAudio'
 import { GameState, GameStats, GameActions, GameHookReturn, GameResult } from '../components/GameEngine/types'
 import { 
@@ -15,6 +15,12 @@ import { LocalStorageManager } from '../utils/localStorage'
 
 interface UseHanoiTowersProps {
   maxLevel?: number
+}
+
+// Error handling için
+interface HanoiTowersError {
+  type: 'initialization' | 'gameplay' | 'level_loading'
+  message: string
 }
 
 interface HanoiTowersState {
@@ -37,6 +43,18 @@ const TOWER_CLICK_SOUNDS = ['button-click', 'button-hover'] as const
 
 export const useHanoiTowers = ({ maxLevel = 18 }: UseHanoiTowersProps = {}) => {
   const { playSound } = useAudio()
+  const mountedRef = useRef(true)
+
+  // Error states
+  const [error, setError] = useState<HanoiTowersError | null>(null)
+  const [isLoading, setIsLoading] = useState(false)
+
+  // Cleanup effect
+  useEffect(() => {
+    return () => {
+      mountedRef.current = false
+    }
+  }, [])
   
   const [state, setState] = useState<HanoiTowersState>({
     currentLevel: 1,
@@ -52,6 +70,12 @@ export const useHanoiTowers = ({ maxLevel = 18 }: UseHanoiTowersProps = {}) => {
     timeStarted: null,
     showingPreview: true
   })
+
+  // Error recovery function
+  const recoverFromError = useCallback(() => {
+    setError(null)
+    setIsLoading(false)
+  }, [])
 
   const getCurrentLevelData = useCallback((): HanoiLevel => {
     return HANOI_LEVELS[state.currentLevel - 1] || HANOI_LEVELS[0]

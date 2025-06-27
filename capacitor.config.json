@@ -1,4 +1,3 @@
-
 {
   "appId": "com.psikoegzersiz.app",
   "appName": "PsikoEgzersiz",
@@ -20,16 +19,26 @@
     "Keyboard": {
       "resize": "body",
       "resizeOnFullScreen": true
+    },
+    "Device": {
+      "orientation": "all"
     }
   },
   "android": {
     "allowMixedContent": true,
     "minWebViewVersion": 60,
-    "webContentsDebuggingEnabled": true
+    "webContentsDebuggingEnabled": true,
+    "hideLogs": false,
+    "orientations": ["portrait", "landscape", "portrait-reverse", "landscape-reverse"],
+    "useLegacyBridge": false,
+    "useFileApi": true
   },
   "ios": {
     "scheme": "PsikoEgzersiz",
     "contentInset": "automatic",
-    "preferredContentMode": "mobile"
+    "preferredContentMode": "mobile",
+    "orientations": ["portrait", "landscape", "portrait-upside-down", "landscape-left", "landscape-right"],
+    "handleApplicationURL": true,
+    "backgroundColor": "#6366f1"
   }
 }

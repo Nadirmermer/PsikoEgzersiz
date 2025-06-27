@@ -224,13 +224,17 @@ const RenkDizisiTakibiSayfasi: React.FC<RenkDizisiTakibiSayfasiProps> = ({ onBac
                         key={color.id}
                         variant="outline"
                         onClick={() => handleColorInput(color.id)}
+                        onTouchStart={(e) => e.preventDefault()}
                         className={`
-                          w-24 h-24 sm:w-28 sm:h-28 ${color.bg} ${color.hover} 
+                          w-24 h-24 sm:w-28 sm:h-28 tablet:w-32 tablet:h-32 ${color.bg} ${color.hover} 
                           border-2 border-white/30 hover:border-white/60 
-                          shadow-lg hover:shadow-xl hover:scale-105 
+                          shadow-lg hover:shadow-xl hover:scale-105 active:scale-95
                           transition-all duration-200 rounded-xl
+                          touch-manipulation select-none focus:outline-none focus:ring-4 focus:ring-primary/50
+                          min-h-[44px] min-w-[44px] tablet:min-h-[64px] tablet:min-w-[64px]
                         `}
                         aria-label={color.name}
+                        style={{ touchAction: 'manipulation' }}
                       />
                     ))}
                   </div>

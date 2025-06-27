@@ -57,9 +57,14 @@ const Tower: React.FC<{
       <div 
         className={`
           relative ${kubeHeight} ${platformWidth} cursor-pointer transition-all duration-300
+          touch-manipulation select-none focus:outline-none focus:ring-4 focus:ring-primary/50
+          active:scale-95 tablet:hover:scale-102 min-h-[44px] min-w-[44px]
+          tablet:min-h-[64px] tablet:min-w-[64px]
           ${isSelected ? 'scale-105' : 'hover:scale-102'}
         `}
         onClick={onClick}
+        onTouchStart={(e) => e.preventDefault()} // Prevent double-tap zoom
+        style={{ touchAction: 'manipulation' }}
         title={`${label} - ${disks.length} disk`}
       >
         {/* Platform */}

@@ -1,4 +1,3 @@
-
 import type { Config } from "tailwindcss";
 
 export default {
@@ -23,6 +22,22 @@ export default {
 			screens: {
 				'2xl': '1400px'
 			}
+		},
+		screens: {
+			'xs': '475px',
+			'sm': '640px',
+			'md': '768px',
+			'tablet': '768px',
+			'lg': '1024px',
+			'tablet-lg': '1024px',
+			'xl': '1280px',
+			'2xl': '1536px',
+			// Tablet özel ekran boyutları
+			'tablet-portrait': {'raw': '(min-width: 768px) and (max-width: 1024px) and (orientation: portrait)'},
+			'tablet-landscape': {'raw': '(min-width: 1024px) and (max-width: 1366px) and (orientation: landscape)'},
+			// Touch device detection
+			'touch': {'raw': '(hover: none) and (pointer: coarse)'},
+			'hover-device': {'raw': '(hover: hover) and (pointer: fine)'},
 		},
 		extend: {
 			colors: {

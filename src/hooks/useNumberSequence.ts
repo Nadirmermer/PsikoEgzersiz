@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect } from 'react'
+import { useState, useCallback, useEffect, useRef } from 'react'
 import { useAudio } from './useAudio'
 
 interface UseNumberSequenceProps {
@@ -19,8 +19,20 @@ interface NumberSequenceState {
   maxLevelReached: number
 }
 
+// Error handling için
+interface NumberSequenceError {
+  type: 'initialization' | 'gameplay' | 'timer'
+  message: string
+}
+
 export const useNumberSequence = ({ initialLevel = 1 }: UseNumberSequenceProps = {}) => {
   const { playSound } = useAudio()
+  const mountedRef = useRef(true)
+  const sequenceTimerRef = useRef<NodeJS.Timeout>()
+  
+  // Error states
+  const [error, setError] = useState<NumberSequenceError | null>(null)
+  const [isLoading, setIsLoading] = useState(false)
   
   const [state, setState] = useState<NumberSequenceState>({
     currentLevel: initialLevel,
@@ -40,101 +52,166 @@ export const useNumberSequence = ({ initialLevel = 1 }: UseNumberSequenceProps =
     return Array.from({ length }, () => Math.floor(Math.random() * 10))
   }, [])
 
+  // Cleanup effect - memory leaks önlenir
+  useEffect(() => {
+    return () => {
+      mountedRef.current = false
+      if (sequenceTimerRef.current) clearTimeout(sequenceTimerRef.current)
+    }
+  }, [])
+
+  // Error recovery function
+  const recoverFromError = useCallback(() => {
+    setError(null)
+    setIsLoading(false)
+  }, [])
+
   const initializeGame = useCallback(() => {
-    setState({
-      currentLevel: initialLevel,
-      sequence: [],
-      userInput: [],
-      phase: 'ready',
-      showingIndex: 0,
-      score: 0,
-      correctCount: 0,
-      incorrectCount: 0,
-      questionStartTime: 0,
-      isGameCompleted: false,
-      maxLevelReached: initialLevel
-    })
+    try {
+      setError(null)
+      setIsLoading(true)
+      
+      // Clear any existing timers
+      if (sequenceTimerRef.current) clearTimeout(sequenceTimerRef.current)
+      
+      setState({
+        currentLevel: initialLevel,
+        sequence: [],
+        userInput: [],
+        phase: 'ready',
+        showingIndex: 0,
+        score: 0,
+        correctCount: 0,
+        incorrectCount: 0,
+        questionStartTime: 0,
+        isGameCompleted: false,
+        maxLevelReached: initialLevel
+      })
+      
+      setIsLoading(false)
+    } catch (err) {
+      console.error('Number sequence initialization error:', err)
+      setError({
+        type: 'initialization',
+        message: 'Oyun başlatılamadı. Lütfen tekrar deneyin.'
+      })
+      setIsLoading(false)
+    }
   }, [initialLevel])
 
   const startNextLevel = useCallback(() => {
-    const sequenceLength = 2 + state.currentLevel
-    const newSequence = generateSequence(sequenceLength)
-    
-    setState(prev => ({
-      ...prev,
-      sequence: newSequence,
-      userInput: [],
-      phase: 'showing',
-      showingIndex: 0,
-      questionStartTime: Date.now()
-    }))
-  }, [state.currentLevel, generateSequence])
-
-  // Dizi gösterimi otomatik ilerlemesi
-  useEffect(() => {
-    if (state.phase !== 'showing') return
-
-    const timer = setTimeout(() => {
-      if (state.showingIndex < state.sequence.length - 1) {
-        setState(prev => ({
-          ...prev,
-          showingIndex: prev.showingIndex + 1
-        }))
-      } else {
-        setState(prev => ({
-          ...prev,
-          phase: 'input',
-          showingIndex: 0
-        }))
-      }
-    }, 1000) // Her sayı 1 saniye gösterilir
-
-    return () => clearTimeout(timer)
-  }, [state.phase, state.showingIndex, state.sequence.length])
-
-  const handleNumberInput = useCallback((number: number) => {
-    if (state.phase !== 'input') return
-
-    const newUserInput = [...state.userInput, number]
-    const isCorrect = newUserInput[newUserInput.length - 1] === state.sequence[newUserInput.length - 1]
-
-    if (!isCorrect) {
-      // Hatalı giriş - seviye başarısız
-      playSound('wrong-answer')
-      setState(prev => ({
-        ...prev,
-        phase: 'feedback',
-        userInput: newUserInput,
-        incorrectCount: prev.incorrectCount + 1
-      }))
-      return 'incorrect'
-    }
-
-    if (newUserInput.length === state.sequence.length) {
-      // Seviye tamamlandı - doğru
-      playSound('correct-answer')
-      const newScore = state.score + (state.currentLevel * 10)
-      const newLevel = state.currentLevel + 1
+    try {
+      if (error || isLoading) return
+      
+      const sequenceLength = 2 + state.currentLevel
+      const newSequence = generateSequence(sequenceLength)
+      
+      // Clear any existing timers
+      if (sequenceTimerRef.current) clearTimeout(sequenceTimerRef.current)
       
       setState(prev => ({
         ...prev,
-        phase: 'feedback',
-        userInput: newUserInput,
-        score: newScore,
-        correctCount: prev.correctCount + 1,
-        currentLevel: newLevel,
-        maxLevelReached: Math.max(prev.maxLevelReached, newLevel)
+        sequence: newSequence,
+        userInput: [],
+        phase: 'showing',
+        showingIndex: 0,
+        questionStartTime: Date.now()
       }))
-      return 'level_complete'
-    } else {
-      // Doğru sayı girildi, devam et
-      setState(prev => ({
-        ...prev,
-        userInput: newUserInput
-      }))
-      return 'continue'
+    } catch (err) {
+      console.error('Start next level error:', err)
+      setError({
+        type: 'gameplay',
+        message: 'Yeni seviye başlatılamadı.'
+      })
     }
-  }, [state.phase, state.userInput, state.sequence, state.score, state.currentLevel, playSound])
+  }, [state.currentLevel, generateSequence, error, isLoading])
+
+  // Dizi gösterimi otomatik ilerlemesi - Safe timer with error handling
+  useEffect(() => {
+    if (state.phase !== 'showing') return
+
+    try {
+      sequenceTimerRef.current = setTimeout(() => {
+        if (!mountedRef.current) return
+
+        if (state.showingIndex < state.sequence.length - 1) {
+          setState(prev => ({
+            ...prev,
+            showingIndex: prev.showingIndex + 1
+          }))
+        } else {
+          setState(prev => ({
+            ...prev,
+            phase: 'input',
+            showingIndex: 0
+          }))
+        }
+      }, 1000) // Her sayı 1 saniye gösterilir
+    } catch (err) {
+      console.error('Sequence timer error:', err)
+      setError({
+        type: 'timer',
+        message: 'Dizi gösterimi sırasında hata oluştu.'
+      })
+    }
+
+    return () => {
+      if (sequenceTimerRef.current) clearTimeout(sequenceTimerRef.current)
+    }
+  }, [state.phase, state.showingIndex, state.sequence.length])
+
+  const handleNumberInput = useCallback((number: number) => {
+    try {
+      if (state.phase !== 'input' || error || isLoading) return
+
+      const newUserInput = [...state.userInput, number]
+      const isCorrect = newUserInput[newUserInput.length - 1] === state.sequence[newUserInput.length - 1]
+
+      if (!isCorrect) {
+        // Hatalı giriş - seviye başarısız
+        playSound('wrong-answer')
+        setState(prev => ({
+          ...prev,
+          phase: 'feedback',
+          userInput: newUserInput,
+          incorrectCount: prev.incorrectCount + 1
+        }))
+        return 'incorrect'
+      }
+
+      if (newUserInput.length === state.sequence.length) {
+        // Seviye tamamlandı - doğru
+        playSound('correct-answer')
+        const newScore = state.score + (state.currentLevel * 10)
+        const newLevel = state.currentLevel + 1
+        
+        setState(prev => ({
+          ...prev,
+          phase: 'feedback',
+          userInput: newUserInput,
+          score: newScore,
+          correctCount: prev.correctCount + 1,
+          currentLevel: newLevel,
+          maxLevelReached: Math.max(prev.maxLevelReached, newLevel)
+        }))
+        return 'level_complete'
+      } else {
+        // Doğru sayı girildi, devam et
+        setState(prev => ({
+          ...prev,
+          userInput: newUserInput
+        }))
+        return 'continue'
+      }
+    } catch (err) {
+      console.error('Number input error:', err)
+      setError({
+        type: 'gameplay',
+        message: 'Sayı girişi işlenirken hata oluştu.'
+      })
+      return 'error'
+    }
+  }, [state.phase, state.userInput, state.sequence, state.score, state.currentLevel, playSound, error, isLoading])
 
   const nextLevel = useCallback(() => {
     startNextLevel()
@@ -166,7 +243,12 @@ export const useNumberSequence = ({ initialLevel = 1 }: UseNumberSequenceProps =
   }, [state])
 
   return {
-    // State
+    // Error states
+    error,
+    isLoading,
+    recoverFromError,
+    
+    // Game state
     currentLevel: state.currentLevel,
     sequence: state.sequence,
     userInput: state.userInput,
