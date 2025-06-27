@@ -37,7 +37,7 @@ export const MEMORY_GAME_CONFIG: GameConfig = {
 export const IMAGE_WORD_MATCHING_CONFIG: GameConfig = {
   id: 'image-word-matching',
   title: 'Resim-Kelime Eşleştirme',
-  description: 'Gösterilen emojiye uygun kelimeyi seçin. Dikkatli olun, çeldiriciler var!',
+  description: 'Gösterilene uygun kelimeyi seçin. Dikkatli olun, çeldiriciler var!',
   difficulty: 'Orta',
   estimatedTime: '3-5 dk',
   totalQuestions: 15,
@@ -45,8 +45,8 @@ export const IMAGE_WORD_MATCHING_CONFIG: GameConfig = {
   instructions: [
     {
       step: 1,
-      title: 'Emojiyi İnceleyin',
-      description: 'Ekranda bir emoji gösterilecek'
+      title: 'Resmi İnceleyin',
+      description: 'Ekranda bir resim gösterilecek'
     },
     {
       step: 2,
@@ -258,7 +258,7 @@ export const WORD_CIRCLE_CONFIG: GameConfig = {
 export const WORD_IMAGE_MATCHING_CONFIG: GameConfig = {
   id: 'word-image-matching',
   title: 'Kelime-Resim Eşleştirme',
-  description: 'Gösterilen kelimeye uygun emojiyi seçin. Tersine eşleştirme egzersizi.',
+  description: 'Gösterilen kelimeye uygun resmi seçin. Tersine eşleştirme egzersizi.',
   difficulty: 'Orta',
   estimatedTime: '3-5 dk',
   totalQuestions: 15,
@@ -271,7 +271,7 @@ export const WORD_IMAGE_MATCHING_CONFIG: GameConfig = {
     },
     {
       step: 2,
-      title: 'Doğru Emojiyi Seçin',
+      title: 'Doğru Resmi Seçin',
       description: '4 emoji seçeneği arasından doğru olanı seçin'
     },
     {

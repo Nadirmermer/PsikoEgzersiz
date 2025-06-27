@@ -6,6 +6,7 @@ import { Shuffle, Check, X, RotateCcw, Star } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { toast } from '@/components/ui/sonner'
+import { useAudio } from '@/hooks/useAudio'
 
 interface KelimeCemberiBulmacasiProps {
   onBack: () => void
@@ -180,6 +181,7 @@ const FoundWords: React.FC<{
 
 // Ana Oyun Komponenti
 const WordCircleGame: React.FC = () => {
+  const { playSound } = useAudio()
   const wordCircle = useWordCircle({ maxLevel: 7 })
 
   React.useEffect(() => {
@@ -187,25 +189,36 @@ const WordCircleGame: React.FC = () => {
     wordCircle.startGame()
   }, [])
 
+  // 🔧 FIX: Letter click with sound
+  const handleLetterClick = (index: number) => {
+    playSound('button-click')
+    wordCircle.handleLetterClick(index)
+  }
+
   const handleSubmitWord = () => {
     const result = wordCircle.submitWord()
     if (!result) return
 
+    // 🔧 FIX: Add audio feedback for word results
     switch (result.type) {
       case 'target_word':
+        playSound('correct-answer')
         toast.success(`🎉 Harika! "${result.word}" kelimesini buldunuz! (+${result.score} puan)`)
         if (result.isComplete) {
           setTimeout(() => {
+            playSound('level-up')
             toast.success('🏆 Seviye tamamlandı!')
             wordCircle.nextLevel()
           }, 1500)
         }
         break
       case 'bonus_word':
+        playSound('achievement')
         toast.success(`⭐ Bonus kelime! "${result.word}" (+${result.score} puan)`)
         break
       case 'invalid':
         if (result.word.length > 1) {
+          playSound('wrong-answer')
           toast.error(`"${result.word}" geçerli bir kelime değil`)
         }
         break
@@ -268,7 +281,7 @@ const WordCircleGame: React.FC = () => {
       <LetterCircle
         letters={wordCircle.levelData.circleLetters}
         selectedLetters={wordCircle.selectedLetters}
-        onLetterClick={wordCircle.handleLetterClick}
+        onLetterClick={handleLetterClick}
       />
 
       {/* Word Display */}

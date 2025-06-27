@@ -2,7 +2,7 @@ import React from 'react'
 import UniversalGameEngine from '../components/GameEngine/UniversalGameEngine'
 import { useHanoiTowersGame } from '../hooks/useHanoiTowers'
 import { HANOI_TOWERS_CONFIG } from '../components/GameEngine/gameConfigs'
-import { Building2, Target, Timer, Trophy, Lightbulb } from 'lucide-react'
+import { Building2, Target, Timer, Trophy, Lightbulb, AlertTriangle, RefreshCw, Loader2 } from 'lucide-react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -113,6 +113,48 @@ const HanoiTowersGame: React.FC = () => {
   const levelData = hanoiGame.getCurrentLevelData()
   const towerLabels = ['Kule A', 'Kule B', 'Kule C']
 
+  // Error Display
+  if (hanoiGame.error) {
+    return (
+      <div className="w-full max-w-4xl mx-auto space-y-4 sm:space-y-6 p-2 sm:p-4">
+        <Card className="bg-red-50/80 dark:bg-red-950/20 backdrop-blur-sm border-red-200/20 dark:border-red-800/20">
+          <CardContent className="p-6 text-center">
+            <div className="flex flex-col items-center gap-3">
+              <AlertTriangle className="w-12 h-12 text-red-500" />
+              <h3 className="text-lg font-semibold text-red-700 dark:text-red-300 mb-2">
+                Bir Hata Oluştu
+              </h3>
+              <p className="text-red-600 dark:text-red-400 mb-4">
+                {hanoiGame.error.message}
+              </p>
+              <Button 
+                onClick={hanoiGame.recoverFromError}
+                className="bg-red-600 hover:bg-red-700 text-white"
+              >
+                <RefreshCw className="w-4 h-4 mr-2" />
+                Tekrar Dene
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    )
+  }
+
+  // Loading Display
+  if (hanoiGame.isLoading) {
+    return (
+      <div className="w-full max-w-4xl mx-auto space-y-4 sm:space-y-6 p-2 sm:p-4">
+        <Card className="bg-white/70 dark:bg-gray-900/70 backdrop-blur-sm border-white/30 dark:border-gray-800/30">
+          <CardContent className="p-8 text-center">
+            <Loader2 className="h-12 w-12 border-b-2 border-primary mx-auto mb-4 animate-spin" />
+            <p className="text-gray-600 dark:text-gray-400">Oyun yükleniyor...</p>
+          </CardContent>
+        </Card>
+      </div>
+    )
+  }
+
   // Seviye tamamlama kontrolü - Londra Kulesi stilinde
   React.useEffect(() => {
     if (hanoiGame.levelsCompleted > 0) {
@@ -218,6 +260,9 @@ const HanoiTowersGame: React.FC = () => {
                 disks={tower}
                 isSelected={hanoiGame.selectedTower === index}
                 onClick={() => {
+                  // 🔧 FIX: Add disk move sound
+                  playSound('button-click')
+                  
                   if (!hanoiGame.timeStarted) {
                     hanoiGame.startGame()
                   }

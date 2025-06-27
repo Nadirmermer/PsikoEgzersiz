@@ -11,6 +11,7 @@ import { useNumberSequence } from '@/hooks/useNumberSequence'
 import { GameResult } from '@/components/GameEngine/types'
 import { toast } from '@/components/ui/sonner'
 import { useAudio } from '@/hooks/useAudio'
+import { touchTargetClasses, cn, gameTimings } from '@/lib/utils'
 
 interface SayiDizisiTakibiSayfasiProps {
   onBack: () => void
@@ -18,7 +19,8 @@ interface SayiDizisiTakibiSayfasiProps {
 
 const SayiDizisiTakibiSayfasi: React.FC<SayiDizisiTakibiSayfasiProps> = ({ onBack }) => {
   const { playSound } = useAudio()
-  const FEEDBACK_DURATION = 2000
+  // 🔧 FIX: Use unified feedback duration for consistency
+  const FEEDBACK_DURATION = gameTimings.numberSequence.feedbackDuration
 
   // Universal game hook
   const universalGame = useUniversalGame({
@@ -114,9 +116,12 @@ const SayiDizisiTakibiSayfasi: React.FC<SayiDizisiTakibiSayfasiProps> = ({ onBac
     playSound('button-click')
     const result = sequenceGame.handleNumberInput(number)
     
+    // 🔧 FIX: Add audio feedback for correct/wrong answers
     if (result === 'incorrect') {
+      playSound('wrong-answer')
       toast.error('Yanlış! Aynı seviyeyi tekrar deneyin.')
     } else if (result === 'level_complete') {
+      playSound('correct-answer')
       toast.success(`Harika! Seviye ${sequenceGame.currentLevel - 1} tamamlandı!`)
     }
   }
@@ -262,7 +267,10 @@ const SayiDizisiTakibiSayfasi: React.FC<SayiDizisiTakibiSayfasiProps> = ({ onBac
                         size="lg"
                       onClick={() => handleNumberInput(number)}
                         onTouchStart={(e) => e.preventDefault()} // Prevent double-tap zoom
-                        className="h-16 text-xl font-bold bg-white/60 dark:bg-gray-800/60 backdrop-blur-sm border-white/20 dark:border-gray-700/20 hover:bg-white/80 dark:hover:bg-gray-800/80 hover:scale-105 transition-all duration-200 touch-manipulation select-none focus:outline-none focus:ring-2 focus:ring-primary/50 active:scale-95 min-h-[44px] min-w-[44px]"
+                        className={cn(
+                          "h-16 text-xl font-bold bg-white/60 dark:bg-gray-800/60 backdrop-blur-sm border-white/20 dark:border-gray-700/20 hover:bg-white/80 dark:hover:bg-gray-800/80 hover:scale-105 transition-all duration-200",
+                          touchTargetClasses.gameButton
+                        )}
                       >
                         {number}
                       </Button>

@@ -2,7 +2,7 @@ import React from 'react'
 import UniversalGameEngine from '../components/GameEngine/UniversalGameEngine'
 import { TOWER_OF_LONDON_CONFIG } from '../components/GameEngine/gameConfigs'
 import { useTowerOfLondonGame } from '../hooks/useTowerOfLondon'
-import { Target, Move, Building, Timer, MapPin } from 'lucide-react'
+import { Target, Move, Building, Timer, MapPin, AlertTriangle, RefreshCw, Loader2 } from 'lucide-react'
 import { toast } from '@/components/ui/sonner'
 import { useAudio } from '@/hooks/useAudio'
 import { Card, CardContent } from '@/components/ui/card'
@@ -433,6 +433,10 @@ Tower.displayName = 'Tower'
 
 // Ana Oyun Komponenti
 const TowerOfLondonGame: React.FC = () => {
+  // Error handling states
+  const [error, setError] = React.useState<string | null>(null)
+  const [isLoading, setIsLoading] = React.useState(false)
+  
   const [currentLevel, setCurrentLevel] = React.useState(1)
   const [towers, setTowers] = React.useState<string[][]>([[], [], []])
   const [selectedTower, setSelectedTower] = React.useState<number | null>(null)
@@ -442,20 +446,42 @@ const TowerOfLondonGame: React.FC = () => {
   const [planningTime, setPlanningTime] = React.useState(0)
   const { playSound } = useAudio()
   
+  // Error recovery function
+  const recoverFromError = React.useCallback(() => {
+    setError(null)
+    setIsLoading(false)
+    initializeLevel(1) // Restart from level 1
+  }, [])
+  
   const currentProblem = TOWER_PROBLEMS[currentLevel - 1] || TOWER_PROBLEMS[0]
   const maxTowerHeights = [3, 2, 1] // Sol: 3 top, Orta: 2 top, Sağ: 1 top (Gerçek Londra Kulesi kuralı)
 
   // Seviye başlatma
   const initializeLevel = React.useCallback((level: number) => {
-    const problem = TOWER_PROBLEMS[level - 1] || TOWER_PROBLEMS[0]
-    
-    setCurrentLevel(level)
-    setTowers(problem.initial.map(tower => [...tower]))
-    setSelectedTower(null)
-    setMoves(0)
-    setIsCompleted(false)
-    setStartTime(null)
-    setPlanningTime(0)
+    try {
+      setError(null)
+      setIsLoading(true)
+      
+      const problem = TOWER_PROBLEMS[level - 1] || TOWER_PROBLEMS[0]
+      
+      if (!problem) {
+        throw new Error(`Seviye ${level} bulunamadı`)
+      }
+      
+      setCurrentLevel(level)
+      setTowers(problem.initial.map(tower => [...tower]))
+      setSelectedTower(null)
+      setMoves(0)
+      setIsCompleted(false)
+      setStartTime(null)
+      setPlanningTime(0)
+      
+      setIsLoading(false)
+    } catch (err) {
+      console.error('Level initialization error:', err)
+      setError(`Seviye ${level} yüklenirken hata oluştu. Lütfen tekrar deneyin.`)
+      setIsLoading(false)
+    }
   }, [])
 
   // İlk seviyeyi başlat
@@ -524,63 +550,106 @@ const TowerOfLondonGame: React.FC = () => {
 
   // Kule tıklama mantığı - Gerçek Londra Kulesi kuralları - Optimizasyonlu
   const handleTowerClick = React.useCallback((towerIndex: number) => {
-    if (isCompleted) return
+    try {
+      if (isCompleted || error || isLoading) return
 
-    recordFirstMove()
+      recordFirstMove()
 
-    if (selectedTower === null) {
-      // Kule seçimi - sadece top varsa seçilebilir
-      if (towers[towerIndex].length > 0) {
-        setSelectedTower(towerIndex)
-        playSound('button-click')
-      }
-    } else {
-      // Top hareketi
-      if (selectedTower === towerIndex) {
-        // Aynı kuleye tıklandı, seçimi iptal et
-        setSelectedTower(null)
-        playSound('button-click')
+      if (selectedTower === null) {
+        // Kule seçimi - sadece top varsa seçilebilir
+        if (towers[towerIndex].length > 0) {
+          setSelectedTower(towerIndex)
+          playSound('button-click')
+        }
       } else {
-        // Farklı kuleye tıklandı, top taşımaya çalış
-        const from = towers[selectedTower]
-        const to = towers[towerIndex]
-        const maxHeight = maxTowerHeights[towerIndex]
-        
-        // Gerçek Londra Kulesi kuralı: Her kule farklı maksimum yüksekliğe sahip
-        if (from.length > 0 && to.length < maxHeight) {
-          // Geçerli hamle
-          const newTowers = towers.map(tower => [...tower])
-          const ball = newTowers[selectedTower].pop()!
-          newTowers[towerIndex].push(ball)
-          
-          setTowers(newTowers)
-          setMoves(prev => prev + 1)
+        // Top hareketi
+        if (selectedTower === towerIndex) {
+          // Aynı kuleye tıklandı, seçimi iptal et
           setSelectedTower(null)
-          playSound('correct-answer')
+          playSound('button-click')
         } else {
-          // Geçersiz hamle
-          setSelectedTower(null)
-          playSound('wrong-answer')
-          if (to.length >= maxHeight) {
-            toast.error(`Bu kuleye en fazla ${maxHeight} top konabilir!`)
+          // Farklı kuleye tıklandı, top taşımaya çalış
+          const from = towers[selectedTower]
+          const to = towers[towerIndex]
+          const maxHeight = maxTowerHeights[towerIndex]
+          
+          // Gerçek Londra Kulesi kuralı: Her kule farklı maksimum yüksekliğe sahip
+          if (from.length > 0 && to.length < maxHeight) {
+            // Geçerli hamle
+            const newTowers = towers.map(tower => [...tower])
+            const ball = newTowers[selectedTower].pop()!
+            newTowers[towerIndex].push(ball)
+            
+            setTowers(newTowers)
+            setMoves(prev => prev + 1)
+            setSelectedTower(null)
+            playSound('correct-answer')
+          } else {
+            // Geçersiz hamle
+            setSelectedTower(null)
+            playSound('wrong-answer')
+            if (to.length >= maxHeight) {
+              toast.error(`Bu kuleye en fazla ${maxHeight} top konabilir!`)
+            }
           }
         }
       }
+    } catch (err) {
+      console.error('Tower click error:', err)
+      setError('Hamle sırasında hata oluştu. Lütfen tekrar deneyin.')
     }
-  }, [isCompleted, selectedTower, towers, maxTowerHeights, playSound])
+  }, [isCompleted, selectedTower, towers, maxTowerHeights, playSound, error, isLoading])
 
   const towerLabels = ['Büyük Kule', 'Orta Kule', 'Küçük Kule']
 
     return (
     <div className="w-full max-w-4xl mx-auto space-y-4 sm:space-y-6 p-2 sm:p-4">
       
-      {/* Sadece Seviye Badge'ı - Temiz tasarım */}
-      <div className="text-center mb-4">
-        <Badge variant="secondary" className="text-sm sm:text-base px-3 py-2 sm:px-4 bg-primary/10 text-primary border-primary/20">
-          <Building className="w-4 h-4 sm:w-5 sm:h-5 mr-2" />
-          Seviye {currentLevel} - {currentProblem.difficulty}
-        </Badge>
-              </div>
+      {/* Error Display */}
+      {error && (
+        <Card className="mb-4 sm:mb-6 bg-red-50/80 dark:bg-red-900/20 border-red-200 dark:border-red-800 backdrop-blur-sm">
+          <CardContent className="pt-4 sm:pt-6 text-center px-4">
+            <div className="flex flex-col items-center gap-3">
+              <AlertTriangle className="w-8 h-8 text-red-600 dark:text-red-400" />
+              <p className="text-sm sm:text-base text-red-800 dark:text-red-200 font-medium">
+                {error}
+              </p>
+              <button 
+                onClick={recoverFromError}
+                className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg font-medium transition-colors text-sm flex items-center gap-2"
+              >
+                <RefreshCw className="w-4 h-4" />
+                Tekrar Dene
+              </button>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Loading Display */}
+      {isLoading && (
+        <Card className="mb-4 sm:mb-6 bg-blue-50/80 dark:bg-blue-900/20 border-blue-200 dark:border-blue-800 backdrop-blur-sm">
+          <CardContent className="pt-4 sm:pt-6 text-center px-4">
+            <div className="flex flex-col items-center gap-3">
+              <Loader2 className="w-8 h-8 text-blue-600 dark:text-blue-400 animate-spin" />
+              <p className="text-sm sm:text-base text-blue-800 dark:text-blue-200">
+                Seviye yükleniyor...
+              </p>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+      
+      {/* Game Content - Only show when no error or loading */}
+      {!error && !isLoading && (
+        <>
+          {/* Sadece Seviye Badge'ı - Temiz tasarım */}
+          <div className="text-center mb-4">
+            <Badge variant="secondary" className="text-sm sm:text-base px-3 py-2 sm:px-4 bg-primary/10 text-primary border-primary/20">
+              <Building className="w-4 h-4 sm:w-5 sm:h-5 mr-2" />
+              Seviye {currentLevel} - {currentProblem.difficulty}
+            </Badge>
+          </div>
 
       {/* Mevcut Durum - Mobile Optimized */}
       <Card className="bg-white/70 dark:bg-gray-900/70 backdrop-blur-sm border-white/30 dark:border-gray-800/30 shadow-xl">
@@ -690,6 +759,8 @@ const TowerOfLondonGame: React.FC = () => {
             </div>
           </CardContent>
         </Card>
+      )}
+        </>
       )}
     </div>
   )

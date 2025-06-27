@@ -1,13 +1,14 @@
 import React, { useEffect } from 'react'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { CheckCircle, XCircle } from 'lucide-react'
+import { CheckCircle, XCircle, AlertTriangle, RefreshCw, Loader2 } from 'lucide-react'
 import UniversalGameEngine from '@/components/GameEngine/UniversalGameEngine'
 import { IMAGE_WORD_MATCHING_CONFIG } from '@/components/GameEngine/gameConfigs'
 import { useUniversalGame } from '@/hooks/useUniversalGame'
 import { useImageWordMatching } from '@/hooks/useImageWordMatching'
 import { GameResult } from '@/components/GameEngine/types'
 import { toast } from '@/components/ui/sonner'
+import { gameTimings } from '@/lib/utils'
 
 interface ResimKelimeEslestirmeSayfasiProps {
   onBack: () => void
@@ -15,7 +16,8 @@ interface ResimKelimeEslestirmeSayfasiProps {
 
 const ResimKelimeEslestirmeSayfasi: React.FC<ResimKelimeEslestirmeSayfasiProps> = ({ onBack }) => {
   const TOTAL_QUESTIONS = 30
-  const FEEDBACK_DURATION = 1500
+  // 🔧 FIX: Use unified feedback duration for consistency
+  const FEEDBACK_DURATION = gameTimings.matchingGames.feedbackDuration
 
   // Universal game hook
   const universalGame = useUniversalGame({
@@ -163,14 +165,52 @@ const ResimKelimeEslestirmeSayfasi: React.FC<ResimKelimeEslestirmeSayfasiProps> 
     return null
   }
 
-    return (
+        return (
     <UniversalGameEngine
       gameConfig={IMAGE_WORD_MATCHING_CONFIG}
       gameHook={gameHook}
-          onBack={onBack}
+      onBack={onBack}
     >
-      {/* Game Content - Only show when playing */}
-      {universalGame.gameState.phase === 'playing' && matchingGame.currentQuestion && (
+      {/* Error Display */}
+      {matchingGame.error && (
+        <div className="w-full max-w-2xl mx-auto">
+          <Card className="bg-red-50/80 dark:bg-red-950/20 backdrop-blur-sm border-red-200/20 dark:border-red-800/20">
+            <CardContent className="p-6 text-center">
+              <div className="flex flex-col items-center gap-3">
+                <AlertTriangle className="w-12 h-12 text-red-500" />
+                <h3 className="text-lg font-semibold text-red-700 dark:text-red-300 mb-2">
+                  Bir Hata Oluştu
+                </h3>
+                <p className="text-red-600 dark:text-red-400 mb-4">
+                  {matchingGame.error.message}
+                </p>
+                <Button 
+                  onClick={matchingGame.recoverFromError}
+                  className="bg-red-600 hover:bg-red-700 text-white"
+                >
+                  <RefreshCw className="w-4 h-4 mr-2" />
+                  Tekrar Dene
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      )}
+
+      {/* Loading Display */}
+      {matchingGame.isLoading && (
+        <div className="w-full max-w-2xl mx-auto">
+          <Card className="bg-white/70 dark:bg-gray-900/70 backdrop-blur-sm border-white/30 dark:border-gray-800/30">
+            <CardContent className="p-8 text-center">
+              <Loader2 className="h-12 w-12 border-b-2 border-primary mx-auto mb-4 animate-spin" />
+              <p className="text-gray-600 dark:text-gray-400">Oyun yükleniyor...</p>
+            </CardContent>
+          </Card>
+        </div>
+      )}
+
+      {/* Game Content - Only show when playing and no errors */}
+      {!matchingGame.error && !matchingGame.isLoading && universalGame.gameState.phase === 'playing' && matchingGame.currentQuestion && (
         <div className="w-full max-w-2xl mx-auto space-y-6">
           
           {/* Question Card - Super Clean & Obvious */}
@@ -183,7 +223,7 @@ const ResimKelimeEslestirmeSayfasi: React.FC<ResimKelimeEslestirmeSayfasiProps> 
                   {matchingGame.currentQuestion.correctAnswer.emoji}
                 </div>
                 <p className="text-base sm:text-lg text-gray-600 dark:text-gray-300 font-medium">
-                    Bu emojiye uygun kelimeyi seçin
+                    Yukarıdakine en uygun kelimeyi seçin
                   </p>
                 </div>
 

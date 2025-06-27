@@ -26,6 +26,14 @@ interface ColorSequenceError {
   message: string
 }
 
+// 🔧 FIX: Unified timing configuration
+const TIMING_CONFIG = {
+  SHOW_DELAY: 500,        // Renk gösterilmeden önce bekleme
+  SHOW_DURATION: 750,     // Renk gösterilme süresi  
+  HIDE_DURATION: 250,     // Renkler arası bekleme
+  INITIAL_DELAY: 1000     // İlk renk öncesi bekleme
+} as const
+
 // Renk tanımları
 export const colors = [
   { id: 0, name: 'Kırmızı', bg: 'bg-red-500', hover: 'hover:bg-red-600', active: 'bg-red-600' },
@@ -37,8 +45,8 @@ export const colors = [
 export const useColorSequence = ({ initialLevel = 1 }: UseColorSequenceProps = {}) => {
   const { playSound } = useAudio()
   const mountedRef = useRef(true)
-  const showTimerRef = useRef<NodeJS.Timeout>()
-  const hideTimerRef = useRef<NodeJS.Timeout>()
+  // 🔧 FIX: Single unified timer instead of multiple timers
+  const sequenceTimerRef = useRef<NodeJS.Timeout>()
   
   // Error states
   const [error, setError] = useState<ColorSequenceError | null>(null)
@@ -63,12 +71,13 @@ export const useColorSequence = ({ initialLevel = 1 }: UseColorSequenceProps = {
     return Array.from({ length }, () => Math.floor(Math.random() * 4))
   }, [])
 
-  // Cleanup effect - memory leaks önlenir
+  // 🔧 FIX: Cleanup effect with single timer cleanup
   useEffect(() => {
     return () => {
       mountedRef.current = false
-      if (showTimerRef.current) clearTimeout(showTimerRef.current)
-      if (hideTimerRef.current) clearTimeout(hideTimerRef.current)
+      if (sequenceTimerRef.current) {
+        clearTimeout(sequenceTimerRef.current)
+      }
     }
   }, [])
 
@@ -83,9 +92,10 @@ export const useColorSequence = ({ initialLevel = 1 }: UseColorSequenceProps = {
       setError(null)
       setIsLoading(true)
       
-      // Clear any existing timers
-      if (showTimerRef.current) clearTimeout(showTimerRef.current)
-      if (hideTimerRef.current) clearTimeout(hideTimerRef.current)
+      // 🔧 FIX: Clear single timer
+      if (sequenceTimerRef.current) {
+        clearTimeout(sequenceTimerRef.current)
+      }
       
       setState({
         currentLevel: initialLevel,
@@ -114,74 +124,110 @@ export const useColorSequence = ({ initialLevel = 1 }: UseColorSequenceProps = {
   }, [initialLevel])
 
   const startNextLevel = useCallback(() => {
-    const sequenceLength = 1 + state.currentLevel
-    const newSequence = generateSequence(sequenceLength)
-    
-    setState(prev => ({
-      ...prev,
-      sequence: newSequence,
-      userInput: [],
-      phase: 'showing',
-      showingIndex: 0,
-      highlightedColor: null,
-      questionStartTime: Date.now()
-    }))
-  }, [state.currentLevel, generateSequence])
+    try {
+      if (error || isLoading) return
+      
+      const sequenceLength = 1 + state.currentLevel
+      const newSequence = generateSequence(sequenceLength)
+      
+      // Clear any existing timer
+      if (sequenceTimerRef.current) {
+        clearTimeout(sequenceTimerRef.current)
+      }
+      
+      setState(prev => ({
+        ...prev,
+        sequence: newSequence,
+        userInput: [],
+        phase: 'showing',
+        showingIndex: 0,
+        highlightedColor: null,
+        questionStartTime: Date.now()
+      }))
+    } catch (err) {
+      console.error('Start next level error:', err)
+      setError({
+        type: 'gameplay',
+        message: 'Yeni seviye başlatılamadı.'
+      })
+    }
+  }, [state.currentLevel, generateSequence, error, isLoading])
 
-  // Renk gösterimi otomatik ilerlemesi - Safe timers with error handling
+  // 🔧 FIX: Unified sequence showing system with single timer
+  const scheduleNextSequenceStep = useCallback(() => {
+    if (!mountedRef.current || state.phase !== 'showing') return
+
+    try {
+      // İlk renk için başlangıç gecikmesi
+      const isFirstColor = state.showingIndex === 0 && state.highlightedColor === null
+      const showDelay = isFirstColor ? TIMING_CONFIG.INITIAL_DELAY : 0
+
+      sequenceTimerRef.current = setTimeout(() => {
+        if (!mountedRef.current) return
+
+        // Şu an gösterilen renk varsa, gizle ve sonraki adıma geç
+        if (state.highlightedColor !== null) {
+          setState(prev => ({ ...prev, highlightedColor: null }))
+          
+          // Gizleme sonrası pause ve sonraki renk/bitiş
+          sequenceTimerRef.current = setTimeout(() => {
+            if (!mountedRef.current) return
+            
+            setState(prev => {
+              if (prev.showingIndex < prev.sequence.length - 1) {
+                // Sonraki renk
+                return {
+                  ...prev,
+                  showingIndex: prev.showingIndex + 1
+                }
+              } else {
+                // Sequence bitti, input phase'e geç
+                return {
+                  ...prev,
+                  phase: 'input',
+                  showingIndex: 0,
+                  highlightedColor: null
+                }
+              }
+            })
+          }, TIMING_CONFIG.HIDE_DURATION)
+        } else {
+          // Renk göster
+          setState(prev => ({
+            ...prev,
+            highlightedColor: prev.sequence[prev.showingIndex]
+          }))
+        }
+      }, showDelay)
+    } catch (err) {
+      console.error('Sequence step scheduling error:', err)
+      setError({
+        type: 'timer',
+        message: 'Renk dizisi gösterimi sırasında hata oluştu.'
+      })
+    }
+  }, [state.phase, state.showingIndex, state.highlightedColor, state.sequence])
+
+  // 🔧 FIX: Single effect for sequence showing with proper cleanup
   useEffect(() => {
     if (state.phase !== 'showing') return
 
-    try {
-      const showColor = () => {
-        if (!mountedRef.current) return
-        setState(prev => ({
-          ...prev,
-          highlightedColor: prev.sequence[prev.showingIndex]
-        }))
-      }
-
-      const hideColor = () => {
-        if (!mountedRef.current) return
-        setState(prev => ({
-          ...prev,
-          highlightedColor: null
-        }))
-        
-        setTimeout(() => {
-          if (!mountedRef.current) return
-          setState(prev => {
-            if (prev.showingIndex < prev.sequence.length - 1) {
-              return {
-                ...prev,
-                showingIndex: prev.showingIndex + 1
-              }
-            } else {
-              return {
-                ...prev,
-                phase: 'input',
-                showingIndex: 0
-              }
-            }
-          })
-        }, 250)
-      }
-
-      showTimerRef.current = setTimeout(showColor, 500)
-      hideTimerRef.current = setTimeout(hideColor, 1250)
-    } catch (err) {
-      console.error('Color showing timer error:', err)
-      setError({
-        type: 'timer',
-        message: 'Renk gösterimi sırasında hata oluştu.'
-      })
+    // Renk gösteriliyorsa, SHOW_DURATION sonra gizle
+    if (state.highlightedColor !== null) {
+      sequenceTimerRef.current = setTimeout(() => {
+        scheduleNextSequenceStep()
+      }, TIMING_CONFIG.SHOW_DURATION)
+    } else {
+      // Renk gösterilmiyorsa, hemen sonraki adıma geç
+      scheduleNextSequenceStep()
     }
 
     return () => {
-      if (showTimerRef.current) clearTimeout(showTimerRef.current)
-      if (hideTimerRef.current) clearTimeout(hideTimerRef.current)
+      if (sequenceTimerRef.current) {
+        clearTimeout(sequenceTimerRef.current)
+      }
     }
-  }, [state.phase, state.showingIndex, state.sequence.length])
+  }, [state.phase, state.showingIndex, state.highlightedColor, scheduleNextSequenceStep])
 
   const handleColorInput = useCallback((colorId: number) => {
     try {

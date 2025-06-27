@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react'
+import { useState, useCallback, useRef, useEffect } from 'react'
 import { useAudio } from './useAudio'
 import { GameState, GameStats, GameActions, GameHookReturn, GameResult } from '../components/GameEngine/types'
 import { LocalStorageManager } from '../utils/localStorage'
@@ -17,6 +17,12 @@ interface TowerOfLondonState {
   levelsCompleted: number
   isGameCompleted: boolean
   diskCount: number
+}
+
+// Error handling için
+interface TowerOfLondonError {
+  type: 'initialization' | 'gameplay' | 'level_loading'
+  message: string
 }
 
 // Disk renkleri - size'a göre
@@ -44,6 +50,18 @@ export const getDiskStyle = (size: number, maxSize: number, isSelected: boolean 
 
 export const useTowerOfLondon = ({ maxLevel = 10 }: UseTowerOfLondonProps = {}) => {
   const { playSound } = useAudio()
+  const mountedRef = useRef(true)
+
+  // Error states
+  const [error, setError] = useState<TowerOfLondonError | null>(null)
+  const [isLoading, setIsLoading] = useState(false)
+
+  // Cleanup effect
+  useEffect(() => {
+    return () => {
+      mountedRef.current = false
+    }
+  }, [])
   
   const [state, setState] = useState<TowerOfLondonState>({
     currentLevel: 1,
@@ -57,77 +75,126 @@ export const useTowerOfLondon = ({ maxLevel = 10 }: UseTowerOfLondonProps = {}) 
     diskCount: 3
   })
 
+  // Error recovery function
+  const recoverFromError = useCallback(() => {
+    setError(null)
+    setIsLoading(false)
+  }, [])
+
   const calculateMinMoves = useCallback((diskCount: number) => {
     return Math.pow(2, diskCount) - 1
   }, [])
 
   const initializeGame = useCallback(() => {
-    setState({
-      currentLevel: 1,
-      towers: [[], [], []],
-      selectedTower: null,
-      moves: 0,
-      minMoves: 0,
-      score: 0,
-      levelsCompleted: 0,
-      isGameCompleted: false,
-      diskCount: 3
-    })
+    try {
+      setError(null)
+      setIsLoading(true)
+      
+      setState({
+        currentLevel: 1,
+        towers: [[], [], []],
+        selectedTower: null,
+        moves: 0,
+        minMoves: 0,
+        score: 0,
+        levelsCompleted: 0,
+        isGameCompleted: false,
+        diskCount: 3
+      })
+      
+      setIsLoading(false)
+    } catch (err) {
+      console.error('Tower of London initialization error:', err)
+      setError({
+        type: 'initialization',
+        message: 'Oyun başlatılamadı. Lütfen tekrar deneyin.'
+      })
+      setIsLoading(false)
+    }
   }, [])
 
   const initializeLevel = useCallback((level: number) => {
-    const diskCount = Math.min(2 + level, 6) // Seviye 1: 3 disk, Seviye 4: 6 disk
-    const initialTower = Array.from({ length: diskCount }, (_, i) => diskCount - i) // En büyük disk altta
-    const minMoves = calculateMinMoves(diskCount)
+    try {
+      if (error || isLoading) return
+      
+      const diskCount = Math.min(2 + level, 6) // Seviye 1: 3 disk, Seviye 4: 6 disk
+      const initialTower = Array.from({ length: diskCount }, (_, i) => diskCount - i) // En büyük disk altta
+      const minMoves = calculateMinMoves(diskCount)
 
-    setState(prev => ({
-      ...prev,
-      currentLevel: level,
-      towers: [initialTower, [], []],
-      selectedTower: null,
-      moves: 0,
-      minMoves,
-      diskCount
-    }))
-  }, [calculateMinMoves])
+      setState(prev => ({
+        ...prev,
+        currentLevel: level,
+        towers: [initialTower, [], []],
+        selectedTower: null,
+        moves: 0,
+        minMoves,
+        diskCount
+      }))
+    } catch (err) {
+      console.error('Level initialization error:', err)
+      setError({
+        type: 'level_loading',
+        message: 'Seviye yüklenemedi. Lütfen tekrar deneyin.'
+      })
+    }
+  }, [calculateMinMoves, error, isLoading])
 
   const canMoveDisk = useCallback((fromTower: number, toTower: number): boolean => {
-    if (fromTower === toTower) return false
-    
-    const from = state.towers[fromTower]
-    const to = state.towers[toTower]
-    
-    if (from.length === 0) return false
-    if (to.length === 0) return true
-    
-    // Küçük disk büyük diskin üstüne gidebilir (küçük sayı > büyük sayı)
-    return from[from.length - 1] < to[to.length - 1]
+    try {
+      if (fromTower === toTower) return false
+      
+      const from = state.towers[fromTower]
+      const to = state.towers[toTower]
+      
+      if (from.length === 0) return false
+      if (to.length === 0) return true
+      
+      // Küçük disk büyük diskin üstüne gidebilir (küçük sayı > büyük sayı)
+      return from[from.length - 1] < to[to.length - 1]
+    } catch (err) {
+      console.error('Move validation error:', err)
+      setError({
+        type: 'gameplay',
+        message: 'Hamle kontrolü sırasında hata oluştu.'
+      })
+      return false
+    }
   }, [state.towers])
 
   const handleTowerClick = useCallback((towerIndex: number) => {
-    if (state.selectedTower === null) {
-      // Kule seçimi - sadece disk varsa seçilebilir
-      if (state.towers[towerIndex].length > 0) {
-        playSound('button-click')
-        setState(prev => ({ ...prev, selectedTower: towerIndex }))
-      }
-    } else {
-      // Disk hareketi
-      if (state.selectedTower === towerIndex) {
-        // Aynı kuleye tıklandı, seçimi iptal et
-        setState(prev => ({ ...prev, selectedTower: null }))
+    try {
+      if (error || isLoading) return
+      
+      if (state.selectedTower === null) {
+        // Kule seçimi - sadece disk varsa seçilebilir
+        if (state.towers[towerIndex].length > 0) {
+          playSound('button-click')
+          setState(prev => ({ ...prev, selectedTower: towerIndex }))
+        }
       } else {
-        // Farklı kuleye tıklandı, disk taşımaya çalış
-        if (canMoveDisk(state.selectedTower, towerIndex)) {
-          moveDisk(state.selectedTower, towerIndex)
-        } else {
-          // Geçersiz hamle
-          playSound('wrong-answer')
+        // Disk hareketi
+        if (state.selectedTower === towerIndex) {
+          // Aynı kuleye tıklandı, seçimi iptal et
           setState(prev => ({ ...prev, selectedTower: null }))
+        } else {
+          // Farklı kuleye tıklandı, disk taşımaya çalış
+          if (canMoveDisk(state.selectedTower, towerIndex)) {
+            moveDisk(state.selectedTower, towerIndex)
+          } else {
+            // Geçersiz hamle
+            playSound('wrong-answer')
+            setState(prev => ({ ...prev, selectedTower: null }))
+          }
         }
       }
+    } catch (err) {
+      console.error('Tower click error:', err)
+      setError({
+        type: 'gameplay',
+        message: 'Kule tıklama sırasında hata oluştu.'
+      })
     }
-  }, [state.selectedTower, state.towers, canMoveDisk, playSound])
+  }, [state.selectedTower, state.towers, canMoveDisk, playSound, error, isLoading])
 
   const moveDisk = useCallback((fromTower: number, toTower: number) => {
     const newTowers = state.towers.map(tower => [...tower])
@@ -207,6 +274,11 @@ export const useTowerOfLondon = ({ maxLevel = 10 }: UseTowerOfLondonProps = {}) 
   }, [initializeLevel])
 
   return {
+    // Error states
+    error,
+    isLoading,
+    recoverFromError,
+    
     // State
     currentLevel: state.currentLevel,
     towers: state.towers,

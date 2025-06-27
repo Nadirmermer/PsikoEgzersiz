@@ -11,6 +11,7 @@ import { useAudio } from '@/hooks/useAudio'
 import { LocalStorageManager, MEMORY_GAME_LEVELS, MemoryGameLevel } from '@/utils/localStorage'
 import { GameResult } from '@/components/GameEngine/types'
 import { toast } from '@/components/ui/sonner'
+import { touchTargetClasses, cn, gameTimings } from '@/lib/utils'
 
 interface HafizaOyunuSayfasiProps {
   onBack: () => void
@@ -76,7 +77,7 @@ const HafizaOyunuSayfasi: React.FC<HafizaOyunuSayfasiProps> = ({ onBack }) => {
       }
       universalGame.gameActions.onComplete(result)
       
-      // 3 saniye sonra otomatik olarak sonraki seviyeye geç
+      // 🔧 FIX: Use unified auto-progression timing for consistency
       setTimeout(() => {
         const nextLevelIndex = LocalStorageManager.getCurrentMemoryGameLevel() - 1
         const nextLevel = MEMORY_GAME_LEVELS[nextLevelIndex]
@@ -92,7 +93,7 @@ const HafizaOyunuSayfasi: React.FC<HafizaOyunuSayfasiProps> = ({ onBack }) => {
           // Tüm seviyeler tamamlandı
           toast.success('🏆 Tebrikler! Tüm seviyeleri tamamladınız!')
         }
-      }, 3000)
+      }, gameTimings.memoryGame.autoProgressDelay)
     }
   }, [memoryGame.gameCompleted])
 
@@ -134,6 +135,9 @@ const HafizaOyunuSayfasi: React.FC<HafizaOyunuSayfasiProps> = ({ onBack }) => {
   // Kart click handler
   const handleCardClick = (cardId: string) => {
     if (universalGame.gameState.isPaused) return
+    
+    // 🔧 FIX: Add card flip sound
+    playSound('button-click')
     
     // Memory game başlamadıysa ve preview de gösterilmiyorsa başlat
     if (!memoryGame.gameStarted && !memoryGame.showingPreview && universalGame.gameState.isPlaying) {
@@ -257,21 +261,20 @@ const HafizaOyunuSayfasi: React.FC<HafizaOyunuSayfasiProps> = ({ onBack }) => {
                       universalGame.gameState.isPaused ||
                       universalGame.gameState.phase === 'ready'
                     }
-                className={`
-                      aspect-square rounded-md sm:rounded-lg font-bold transition-all duration-300 border-2 shadow-lg
-                      touch-manipulation select-none focus:outline-none focus:ring-2 focus:ring-primary/50
-                      active:scale-95 hover:shadow-xl
-                      ${
-                        // Tablet-friendly boyutlama: minimum 44px touch target
-                        currentLevel.gridSize.rows * currentLevel.gridSize.cols <= 12
-                          ? 'text-lg sm:text-2xl md:text-3xl min-h-[44px] sm:min-h-18 min-w-[44px]'
-                          : currentLevel.gridSize.rows * currentLevel.gridSize.cols <= 16  
-                          ? 'text-base sm:text-xl md:text-2xl min-h-[44px] sm:min-h-16 min-w-[44px]'
-                          : 'text-sm sm:text-base md:text-lg min-h-[44px] sm:min-h-12 min-w-[44px]' // 20 kart için daha büyük minimum
-                      }
-                  ${getCardStyle(card)}
-                      ${(memoryGame.showingPreview || card.isFlipped || card.isMatched || memoryGame.flippedCards >= 2 || universalGame.gameState.isPaused || universalGame.gameState.phase === 'ready') ? 'cursor-default' : 'cursor-pointer hover:cursor-pointer'}
-                `}
+                className={cn(
+                  "aspect-square rounded-md sm:rounded-lg font-bold transition-all duration-300 border-2 shadow-lg hover:shadow-xl",
+                  touchTargetClasses.gameCard,
+                  // Text sizing based on grid complexity
+                  currentLevel.gridSize.rows * currentLevel.gridSize.cols <= 12
+                    ? 'text-lg sm:text-2xl md:text-3xl'
+                    : currentLevel.gridSize.rows * currentLevel.gridSize.cols <= 16  
+                    ? 'text-base sm:text-xl md:text-2xl'
+                    : 'text-sm sm:text-base md:text-lg',
+                  getCardStyle(card),
+                  (memoryGame.showingPreview || card.isFlipped || card.isMatched || memoryGame.flippedCards >= 2 || universalGame.gameState.isPaused || universalGame.gameState.phase === 'ready') 
+                    ? 'cursor-default' 
+                    : 'cursor-pointer hover:cursor-pointer'
+                )}
               >
                 {getCardDisplayContent(card)}
               </button>

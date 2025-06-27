@@ -8,6 +8,7 @@ import { useUniversalGame } from '@/hooks/useUniversalGame'
 import { useWordImageMatching } from '@/hooks/useWordImageMatching'
 import { GameResult } from '@/components/GameEngine/types'
 import { ExerciseItem } from '@/utils/matchingExerciseUtils'
+import { gameTimings } from '@/lib/utils'
 
 interface KelimeResimEslestirmeSayfasiProps {
   onBack: () => void
@@ -15,7 +16,8 @@ interface KelimeResimEslestirmeSayfasiProps {
 
 const KelimeResimEslestirmeSayfasi: React.FC<KelimeResimEslestirmeSayfasiProps> = ({ onBack }) => {
   const TOTAL_QUESTIONS = 30
-  const FEEDBACK_DURATION = 1500
+  // 🔧 FIX: Use unified feedback duration for consistency
+  const FEEDBACK_DURATION = gameTimings.matchingGames.feedbackDuration
 
   // Universal game hook
   const universalGame = useUniversalGame({
@@ -218,7 +220,7 @@ const KelimeResimEslestirmeSayfasi: React.FC<KelimeResimEslestirmeSayfasiProps> 
                   {matchingGame.currentQuestion.correctAnswer.word}
             </div>
                 <p className="text-base sm:text-lg text-gray-600 dark:text-gray-300 font-medium">
-                  Bu kelimeye uygun emojiyi seçin
+                  Bu kelimeye uygun resmi seçin
                 </p>
               </div>
 
