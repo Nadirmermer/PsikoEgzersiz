@@ -6,10 +6,10 @@ import { Badge } from '@/components/ui/badge'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { LocalStorageManager, ExerciseResult } from '../utils/localStorage'
 import { useAuth } from '../contexts/AuthContext'
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar, Legend, AreaChart, Area, PieChart, Pie, Cell } from 'recharts'
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar, Legend, AreaChart, Area, PieChart, Pie, Cell, ReferenceLine } from 'recharts'
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import { BarChart3, TrendingUp, Clock, Trophy, Target, Brain, User, Trash2, Download, Zap, Award, Star, Layers, Filter, Calendar, Gauge, CheckCircle, XCircle } from 'lucide-react'
+import { BarChart3, TrendingUp, Clock, Trophy, Target, Brain, User, Trash2, Download, Zap, Award, Star, Layers, Filter, Calendar, Gauge, CheckCircle, XCircle, ArrowRightLeft, Lightbulb, Palette } from 'lucide-react'
 import { useAudio } from '../hooks/useAudio'
 
 const IstatistiklerSayfasi: React.FC = () => {
@@ -353,11 +353,343 @@ const IstatistiklerSayfasi: React.FC = () => {
     }
   }
 
+  // Word-Image Matching specific analytics - 🧠 REVERSE PROCESSING CLINICAL ENHANCEMENT  
+  const prepareWordImageAnalytics = () => {
+    if (wordImageResults.length === 0) return null
+
+    const analytics = wordImageResults.reduce((acc, result) => {
+      acc.games.push(result)
+      acc.scores.push(result.score)
+      acc.accuracies.push(result.details?.accuracy || result.score || 0)
+      acc.durations.push(result.duration || 0)
+      
+      // 🧠 Reverse processing clinical data processing
+      if (result.details?.clinicalData) {
+        const clinical = result.details.clinicalData
+        acc.clinicalScores.push(clinical.overallReverseProcessing || 0)
+        acc.visualSemanticMapping.push(clinical.visualSemanticMapping || 0)
+        acc.reverseProcessingSpeed.push(clinical.reverseProcessingSpeed || 0)
+        acc.visualRecognition.push(clinical.visualRecognition || 0)
+        acc.crossModalIntegration.push(clinical.crossModalIntegration || 0)
+        
+        // Category visual performance aggregation
+        if (clinical.categoryVisualPerformance) {
+          Object.entries(clinical.categoryVisualPerformance).forEach(([category, perf]: [string, any]) => {
+            if (!acc.categoryVisualPerformance[category]) {
+              acc.categoryVisualPerformance[category] = {
+                semanticToVisualAccuracies: [],
+                visualRecognitionSpeeds: [],
+                questionCounts: []
+              }
+            }
+            acc.categoryVisualPerformance[category].semanticToVisualAccuracies.push(perf.semanticToVisualAccuracy || 0)
+            acc.categoryVisualPerformance[category].visualRecognitionSpeeds.push(perf.visualRecognitionSpeed || 0)
+            acc.categoryVisualPerformance[category].questionCounts.push(perf.questionsAsked || 0)
+          })
+        }
+        
+        // Reverse processing insights
+        if (clinical.reverseCognitiveProfile?.crossModalRecommendations) {
+          acc.clinicalInsights.push(...clinical.reverseCognitiveProfile.crossModalRecommendations)
+        }
+        if (clinical.reverseCognitiveProfile?.reverseProcessingNotes) {
+          acc.clinicalInsights.push(...clinical.reverseCognitiveProfile.reverseProcessingNotes)
+        }
+      }
+      
+      return acc
+    }, {
+      games: [] as ExerciseResult[],
+      scores: [] as number[],
+      accuracies: [] as number[],
+      durations: [] as number[],
+      // 🧠 Reverse processing clinical metrics
+      clinicalScores: [] as number[],
+      visualSemanticMapping: [] as number[],
+      reverseProcessingSpeed: [] as number[],
+      visualRecognition: [] as number[],
+      crossModalIntegration: [] as number[],
+      categoryVisualPerformance: {} as Record<string, {
+        semanticToVisualAccuracies: number[],
+        visualRecognitionSpeeds: number[],
+        questionCounts: number[]
+      }>,
+      clinicalInsights: [] as string[]
+    })
+
+    // Calculate statistics
+    const avgScore = analytics.scores.length > 0 ? Math.round(analytics.scores.reduce((a, b) => a + b, 0) / analytics.scores.length) : 0
+    const avgAccuracy = analytics.accuracies.length > 0 ? Math.round(analytics.accuracies.reduce((a, b) => a + b, 0) / analytics.accuracies.length) : 0
+    const avgDuration = analytics.durations.length > 0 ? Math.round(analytics.durations.reduce((a, b) => a + b, 0) / analytics.durations.length) : 0
+    
+    // 🧠 Reverse processing clinical analytics
+    const avgClinicalScore = analytics.clinicalScores.length > 0 ? Math.round(analytics.clinicalScores.reduce((a, b) => a + b, 0) / analytics.clinicalScores.length) : null
+    const avgVisualSemanticMapping = analytics.visualSemanticMapping.length > 0 ? Math.round(analytics.visualSemanticMapping.reduce((a, b) => a + b, 0) / analytics.visualSemanticMapping.length) : null
+    const avgReverseProcessingSpeed = analytics.reverseProcessingSpeed.length > 0 ? Math.round(analytics.reverseProcessingSpeed.reduce((a, b) => a + b, 0) / analytics.reverseProcessingSpeed.length) : null
+    const avgVisualRecognition = analytics.visualRecognition.length > 0 ? Math.round(analytics.visualRecognition.reduce((a, b) => a + b, 0) / analytics.visualRecognition.length) : null
+    const avgCrossModalIntegration = analytics.crossModalIntegration.length > 0 ? Math.round(analytics.crossModalIntegration.reduce((a, b) => a + b, 0) / analytics.crossModalIntegration.length) : null
+    
+    // Category visual performance summary
+    const categoryVisualStats = Object.entries(analytics.categoryVisualPerformance).map(([category, perf]) => ({
+      category,
+      avgSemanticToVisualAccuracy: perf.semanticToVisualAccuracies.length > 0 ? Math.round(perf.semanticToVisualAccuracies.reduce((a, b) => a + b, 0) / perf.semanticToVisualAccuracies.length) : 0,
+      avgVisualRecognitionSpeed: perf.visualRecognitionSpeeds.length > 0 ? Math.round(perf.visualRecognitionSpeeds.reduce((a, b) => a + b, 0) / perf.visualRecognitionSpeeds.length) : 0,
+      totalQuestions: perf.questionCounts.reduce((a, b) => a + b, 0)
+    })).filter(stat => stat.totalQuestions > 0).sort((a, b) => b.avgSemanticToVisualAccuracy - a.avgSemanticToVisualAccuracy)
+    
+    return {
+      totalGames: analytics.games.length,
+      avgScore,
+      avgAccuracy,
+      avgDuration,
+      // 🧠 Reverse processing clinical metrics
+      avgClinicalScore,
+      avgVisualSemanticMapping,
+      avgReverseProcessingSpeed,
+      avgVisualRecognition,
+      avgCrossModalIntegration,
+      categoryVisualStats,
+      topClinicalInsights: [...new Set(analytics.clinicalInsights)].slice(0, 5), // Unique insights, top 5
+      // Chart data for category visual performance
+      categoryVisualChartData: categoryVisualStats.map((stat, index) => ({
+        name: stat.category,
+        semanticToVisual: stat.avgSemanticToVisualAccuracy,
+        visualSpeed: stat.avgVisualRecognitionSpeed,
+        questions: stat.totalQuestions,
+        fill: `hsl(${280 + (index * 40)}, 70%, 50%)` // Dynamic colors (purple-ish range)
+      }))
+    }
+  }
+
   const memoryAnalytics = prepareMemoryGameAnalytics()
   const towerAnalytics = prepareTowerAnalytics()
-  const numberSequenceAnalytics = prepareSequenceAnalytics(numberSequenceResults, 'Sayı Dizisi Takibi')
-  const colorSequenceAnalytics = prepareSequenceAnalytics(colorSequenceResults, 'Renk Dizisi Takibi')
+  // Number Sequence specific analytics - 🧠 WORKING MEMORY CLINICAL ENHANCEMENT  
+  const prepareNumberSequenceAnalytics = () => {
+    if (numberSequenceResults.length === 0) return null
+
+    const analytics = numberSequenceResults.reduce((acc, result) => {
+      acc.games.push(result)
+      acc.scores.push(result.score)
+      acc.maxLevels.push(result.details?.max_level_reached || 1)
+      acc.durations.push(result.duration || 0)
+      
+      // 🧠 Working memory clinical data processing
+      if (result.details?.clinicalData) {
+        const clinical = result.details.clinicalData
+        acc.clinicalScores.push(clinical.overallWorkingMemory || 0)
+        acc.digitSpanCapacities.push(clinical.digitSpanCapacity || 0)
+        acc.processingSpeeds.push(clinical.processingSpeed || 0)
+        acc.cognitiveLoads.push(clinical.cognitiveLoad || 0)
+        acc.attentionControls.push(clinical.attentionControl || 0)
+        
+        // Miller's 7±2 Rule compliance tracking
+        if (clinical.millerCompliance) {
+          acc.millerCompliances.push({
+            capacity: clinical.digitSpanCapacity,
+            isWithinNormal: clinical.millerCompliance.isWithinNormalRange,
+            category: clinical.millerCompliance.capacityCategory,
+            deviation: clinical.millerCompliance.millerDeviation
+          })
+        }
+        
+        // Working memory insights
+        if (clinical.workingMemoryCognitiveProfile?.cognitiveRecommendations) {
+          acc.clinicalInsights.push(...clinical.workingMemoryCognitiveProfile.cognitiveRecommendations)
+        }
+        if (clinical.workingMemoryCognitiveProfile?.workingMemoryNotes) {
+          acc.clinicalInsights.push(...clinical.workingMemoryCognitiveProfile.workingMemoryNotes)
+        }
+      }
+      
+      return acc
+    }, {
+      games: [] as ExerciseResult[],
+      scores: [] as number[],
+      maxLevels: [] as number[],
+      durations: [] as number[],
+      // 🧠 Working memory clinical metrics
+      clinicalScores: [] as number[],
+      digitSpanCapacities: [] as number[],
+      processingSpeeds: [] as number[],
+      cognitiveLoads: [] as number[],
+      attentionControls: [] as number[],
+      millerCompliances: [] as Array<{
+        capacity: number,
+        isWithinNormal: boolean,
+        category: string,
+        deviation: number
+      }>,
+      clinicalInsights: [] as string[]
+    })
+
+    // Calculate statistics
+    const avgScore = analytics.scores.length > 0 ? Math.round(analytics.scores.reduce((a, b) => a + b, 0) / analytics.scores.length) : 0
+    const avgMaxLevel = analytics.maxLevels.length > 0 ? Math.round(analytics.maxLevels.reduce((a, b) => a + b, 0) / analytics.maxLevels.length) : 0
+    const avgDuration = analytics.durations.length > 0 ? Math.round(analytics.durations.reduce((a, b) => a + b, 0) / analytics.durations.length) : 0
+    
+    // 🧠 Working memory clinical analytics
+    const avgClinicalScore = analytics.clinicalScores.length > 0 ? Math.round(analytics.clinicalScores.reduce((a, b) => a + b, 0) / analytics.clinicalScores.length) : null
+    const avgDigitSpanCapacity = analytics.digitSpanCapacities.length > 0 ? Math.round(analytics.digitSpanCapacities.reduce((a, b) => a + b, 0) / analytics.digitSpanCapacities.length) : null
+    const avgProcessingSpeed = analytics.processingSpeeds.length > 0 ? Math.round(analytics.processingSpeeds.reduce((a, b) => a + b, 0) / analytics.processingSpeeds.length) : null
+    const avgCognitiveLoad = analytics.cognitiveLoads.length > 0 ? Math.round(analytics.cognitiveLoads.reduce((a, b) => a + b, 0) / analytics.cognitiveLoads.length) : null
+    const avgAttentionControl = analytics.attentionControls.length > 0 ? Math.round(analytics.attentionControls.reduce((a, b) => a + b, 0) / analytics.attentionControls.length) : null
+    
+    // Miller's 7±2 Rule analysis
+    const millerStats = analytics.millerCompliances.length > 0 ? {
+      totalAssessments: analytics.millerCompliances.length,
+      withinNormalRange: analytics.millerCompliances.filter(m => m.isWithinNormal).length,
+      belowAverage: analytics.millerCompliances.filter(m => m.category === 'below-average').length,
+      average: analytics.millerCompliances.filter(m => m.category === 'average').length,
+      aboveAverage: analytics.millerCompliances.filter(m => m.category === 'above-average').length,
+      exceptional: analytics.millerCompliances.filter(m => m.category === 'exceptional').length,
+      averageCapacity: Math.round(analytics.millerCompliances.reduce((sum, m) => sum + m.capacity, 0) / analytics.millerCompliances.length)
+    } : null
+    
+    return {
+      totalGames: analytics.games.length,
+      avgScore,
+      avgMaxLevel,
+      avgDuration,
+      // 🧠 Working memory clinical metrics
+      avgClinicalScore,
+      avgDigitSpanCapacity,
+      avgProcessingSpeed,
+      avgCognitiveLoad,
+      avgAttentionControl,
+      millerStats,
+      topClinicalInsights: [...new Set(analytics.clinicalInsights)].slice(0, 5), // Unique insights, top 5
+      // Chart data for Miller's 7±2 Rule progression
+      millerProgressionData: analytics.millerCompliances.map((compliance, index) => ({
+        session: index + 1,
+        capacity: compliance.capacity,
+        isWithinNormal: compliance.isWithinNormal,
+        category: compliance.category,
+        fill: compliance.isWithinNormal ? '#10B981' : compliance.capacity > 9 ? '#8B5CF6' : '#3B82F6'
+      }))
+    }
+  }
+
+  const numberSequenceAnalytics = prepareNumberSequenceAnalytics()
+  
+  // Color Sequence specific analytics - 🧠 VISUAL-SPATIAL MEMORY CLINICAL ENHANCEMENT  
+  const prepareColorSequenceAnalytics = () => {
+    if (colorSequenceResults.length === 0) return null
+
+    const analytics = colorSequenceResults.reduce((acc, result) => {
+      acc.games.push(result)
+      acc.scores.push(result.score)
+      acc.maxLevels.push(result.details?.max_level_reached || 1)
+      acc.durations.push(result.duration || 0)
+      
+      // 🧠 Visual-spatial memory clinical data processing
+      if (result.details?.clinicalData) {
+        const clinical = result.details.clinicalData
+        acc.clinicalScores.push(clinical.overallVisualSpatialMemory || 0)
+        acc.visualSpanCapacities.push(clinical.visualSpanCapacity || 0)
+        acc.visualMemoryScores.push(clinical.visualMemoryScore || 0)
+        acc.spatialProcessingSpeeds.push(clinical.spatialProcessingSpeed || 0)
+        acc.colorRecognitionAccuracies.push(clinical.colorRecognitionAccuracy || 0)
+        acc.visualAttentionSpans.push(clinical.visualAttentionSpan || 0)
+        
+        // Visual pattern compliance tracking
+        if (clinical.visualPatternCompliance) {
+          acc.visualPatternCompliances.push({
+            capacity: clinical.visualSpanCapacity,
+            complexity: clinical.visualPatternCompliance.visualComplexity,
+            category: clinical.visualPatternCompliance.patternRecognitionCategory,
+            deviation: clinical.visualPatternCompliance.visualProcessingDeviation
+          })
+        }
+        
+        // Visual-spatial insights
+        if (clinical.visualSpatialCognitiveProfile?.visualCognitiveRecommendations) {
+          acc.clinicalInsights.push(...clinical.visualSpatialCognitiveProfile.visualCognitiveRecommendations)
+        }
+        if (clinical.visualSpatialCognitiveProfile?.spatialMemoryNotes) {
+          acc.clinicalInsights.push(...clinical.visualSpatialCognitiveProfile.spatialMemoryNotes)
+        }
+      }
+      
+      return acc
+    }, {
+      games: [] as ExerciseResult[],
+      scores: [] as number[],
+      maxLevels: [] as number[],
+      durations: [] as number[],
+      // 🧠 Visual-spatial memory clinical metrics
+      clinicalScores: [] as number[],
+      visualSpanCapacities: [] as number[],
+      visualMemoryScores: [] as number[],
+      spatialProcessingSpeeds: [] as number[],
+      colorRecognitionAccuracies: [] as number[],
+      visualAttentionSpans: [] as number[],
+      visualPatternCompliances: [] as Array<{
+        capacity: number,
+        complexity: string,
+        category: string,
+        deviation: number
+      }>,
+      clinicalInsights: [] as string[]
+    })
+
+    // Calculate statistics
+    const avgScore = analytics.scores.length > 0 ? Math.round(analytics.scores.reduce((a, b) => a + b, 0) / analytics.scores.length) : 0
+    const avgMaxLevel = analytics.maxLevels.length > 0 ? Math.round(analytics.maxLevels.reduce((a, b) => a + b, 0) / analytics.maxLevels.length) : 0
+    const avgDuration = analytics.durations.length > 0 ? Math.round(analytics.durations.reduce((a, b) => a + b, 0) / analytics.durations.length) : 0
+    
+    // 🧠 Visual-spatial memory clinical analytics
+    const avgClinicalScore = analytics.clinicalScores.length > 0 ? Math.round(analytics.clinicalScores.reduce((a, b) => a + b, 0) / analytics.clinicalScores.length) : null
+    const avgVisualSpanCapacity = analytics.visualSpanCapacities.length > 0 ? Math.round(analytics.visualSpanCapacities.reduce((a, b) => a + b, 0) / analytics.visualSpanCapacities.length) : null
+    const avgVisualMemoryScore = analytics.visualMemoryScores.length > 0 ? Math.round(analytics.visualMemoryScores.reduce((a, b) => a + b, 0) / analytics.visualMemoryScores.length) : null
+    const avgSpatialProcessingSpeed = analytics.spatialProcessingSpeeds.length > 0 ? Math.round(analytics.spatialProcessingSpeeds.reduce((a, b) => a + b, 0) / analytics.spatialProcessingSpeeds.length) : null
+    const avgColorRecognitionAccuracy = analytics.colorRecognitionAccuracies.length > 0 ? Math.round(analytics.colorRecognitionAccuracies.reduce((a, b) => a + b, 0) / analytics.colorRecognitionAccuracies.length) : null
+    const avgVisualAttentionSpan = analytics.visualAttentionSpans.length > 0 ? Math.round(analytics.visualAttentionSpans.reduce((a, b) => a + b, 0) / analytics.visualAttentionSpans.length) : null
+    
+    // Visual pattern analysis
+    const visualPatternStats = analytics.visualPatternCompliances.length > 0 ? {
+      totalAssessments: analytics.visualPatternCompliances.length,
+      lowComplexity: analytics.visualPatternCompliances.filter(v => v.complexity === 'low').length,
+      mediumComplexity: analytics.visualPatternCompliances.filter(v => v.complexity === 'medium').length,
+      highComplexity: analytics.visualPatternCompliances.filter(v => v.complexity === 'high').length,
+      exceptionalComplexity: analytics.visualPatternCompliances.filter(v => v.complexity === 'exceptional').length,
+      belowAverage: analytics.visualPatternCompliances.filter(v => v.category === 'below-average').length,
+      average: analytics.visualPatternCompliances.filter(v => v.category === 'average').length,
+      aboveAverage: analytics.visualPatternCompliances.filter(v => v.category === 'above-average').length,
+      exceptional: analytics.visualPatternCompliances.filter(v => v.category === 'exceptional').length,
+      averageCapacity: Math.round(analytics.visualPatternCompliances.reduce((sum, v) => sum + v.capacity, 0) / analytics.visualPatternCompliances.length)
+    } : null
+    
+    return {
+      totalGames: analytics.games.length,
+      avgScore,
+      avgMaxLevel,
+      avgDuration,
+      // 🧠 Visual-spatial memory clinical metrics
+      avgClinicalScore,
+      avgVisualSpanCapacity,
+      avgVisualMemoryScore,
+      avgSpatialProcessingSpeed,
+      avgColorRecognitionAccuracy,
+      avgVisualAttentionSpan,
+      visualPatternStats,
+      topClinicalInsights: [...new Set(analytics.clinicalInsights)].slice(0, 5), // Unique insights, top 5
+      // Chart data for visual-spatial progression
+      visualSpatialProgressionData: analytics.visualPatternCompliances.map((compliance, index) => ({
+        session: index + 1,
+        capacity: compliance.capacity,
+        complexity: compliance.complexity,
+        category: compliance.category,
+        fill: compliance.complexity === 'exceptional' ? '#8B5CF6' : 
+              compliance.complexity === 'high' ? '#10B981' :
+              compliance.complexity === 'medium' ? '#06B6D4' : '#3B82F6'
+      }))
+    }
+  }
+
+  const colorSequenceAnalytics = prepareColorSequenceAnalytics()
+  const legacyColorSequenceAnalytics = prepareSequenceAnalytics(colorSequenceResults, 'Renk Dizisi Takibi')
   const imageWordAnalytics = prepareImageWordAnalytics()
+  const wordImageAnalytics = prepareWordImageAnalytics()
 
   const chartConfig = {
     skor: { label: "Skor", color: "hsl(var(--primary))" },
@@ -801,14 +1133,14 @@ const IstatistiklerSayfasi: React.FC = () => {
                     </ResponsiveContainer>
                   </ChartContainer>
                   <div className="grid gap-3 sm:gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
-                    {memoryAnalytics.map((level, index) => (
-                      <div key={index} className="p-3 sm:p-4 bg-blue-50/30 dark:bg-blue-950/20 rounded-xl border border-border/50">
-                        <div className="font-semibold text-blue-700 dark:text-blue-300 mb-2 text-sm sm:text-base">{level.level}</div>
-                        <div className="space-y-1 sm:space-y-2 text-xs sm:text-sm">
-                          <div>Ortalama Skor: <span className="font-bold">{level.avgScore}</span></div>
-                          <div>Ortalama Süre: <span className="font-bold">{level.avgTime}s</span></div>
-                          <div>Ortalama Hamle: <span className="font-bold">{level.avgMoves}</span></div>
-                          <div>Hata Oranı: <span className="font-bold">{level.avgIncorrectMoves}</span></div>
+                                          {memoryAnalytics.map((level, index) => (
+                        <div key={index} className="p-3 sm:p-4 bg-blue-50/30 dark:bg-blue-950/20 rounded-xl border border-border/50">
+                          <div className="font-semibold text-blue-700 dark:text-blue-300 mb-2 text-sm sm:text-base">{level.level}</div>
+                          <div className="space-y-1 sm:space-y-2 text-xs sm:text-sm">
+                            <div>Ortalama Skor: <span className="font-bold">{level.avgScore}</span></div>
+                            <div>Ortalama Süre: <span className="font-bold">{level.avgTime}s</span></div>
+                            <div>Ortalama Hamle: <span className="font-bold">{level.avgMoves}</span></div>
+                            <div>Hata Oranı: <span className="font-bold">{level.avgIncorrectMoves}</span></div>
                           
                           {/* 🧠 Clinical Data Display */}
                           {level.avgClinicalScore && (
@@ -834,11 +1166,11 @@ const IstatistiklerSayfasi: React.FC = () => {
                             </>
                           )}
                           
-                          <Badge variant="outline" className="text-xs mt-2">{level.playCount} oyun</Badge>
+                            <Badge variant="outline" className="text-xs mt-2">{level.playCount} oyun</Badge>
+                          </div>
                         </div>
-                      </div>
-                    ))}
-                  </div>
+                      ))}
+                    </div>
                 </CardContent>
               </Card>
             )}
@@ -934,18 +1266,18 @@ const IstatistiklerSayfasi: React.FC = () => {
                         Kategori Bazında Performans
                       </h4>
                       <ChartContainer config={chartConfig} className="h-[300px] sm:h-[400px]">
-                        <ResponsiveContainer width="100%" height="100%">
+                    <ResponsiveContainer width="100%" height="100%">
                           <BarChart data={imageWordAnalytics.categoryChartData} layout="horizontal">
-                            <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+                        <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
                             <XAxis type="number" stroke="hsl(var(--muted-foreground))" fontSize={10} />
                             <YAxis dataKey="name" type="category" stroke="hsl(var(--muted-foreground))" fontSize={10} width={80} />
-                            <ChartTooltip content={<ChartTooltipContent />} />
+                        <ChartTooltip content={<ChartTooltipContent />} />
                             <Legend />
                             <Bar dataKey="accuracy" fill="#10B981" name="Doğruluk %" />
                             <Bar dataKey="responseTime" fill="#F59E0B" name="Tepki Süresi (x100ms)" />
                           </BarChart>
-                        </ResponsiveContainer>
-                      </ChartContainer>
+                    </ResponsiveContainer>
+                  </ChartContainer>
                     </div>
                   )}
 
@@ -1030,37 +1362,661 @@ const IstatistiklerSayfasi: React.FC = () => {
               </Card>
             )}
 
-            {/* Sequence Exercises Analytics */}
+            {/* Word-Image Matching Specific Analytics - 🧠 REVERSE PROCESSING CLINICAL ENHANCEMENT */}
+            {wordImageAnalytics && (selectedExerciseFilter === 'all' || selectedExerciseFilter === 'Kelime-Resim Eşleştirme') && (
+              <Card className="card-enhanced">
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-3 text-2xl">
+                    <div className="p-2 bg-purple-500/10 rounded-lg">
+                      <ArrowRightLeft className="w-6 h-6 text-purple-600" />
+                    </div>
+                    Kelime-Resim Eşleştirme - Reverse Processing Analizi
+                  </CardTitle>
+                  <CardDescription className="text-base">
+                    Semantic→Visual pathway assessment ve kategori-bazlı reverse processing performansı
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-8">
+                  
+                  {/* 🧠 Reverse Processing Clinical Overview */}
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+                    <Card className="bg-gradient-to-br from-purple-50 to-purple-100 dark:from-purple-900/20 dark:to-purple-800/20 border-purple-200 dark:border-purple-700">
+                      <CardContent className="p-4 text-center">
+                        <div className="text-2xl font-bold text-purple-700 dark:text-purple-300 mb-2">
+                          {wordImageAnalytics.avgClinicalScore !== null ? `${wordImageAnalytics.avgClinicalScore}%` : 'N/A'}
+                        </div>
+                        <div className="text-sm text-purple-600 dark:text-purple-400 font-medium">
+                          Genel Reverse Processing
+                        </div>
+                      </CardContent>
+                    </Card>
+                    
+                    <Card className="bg-gradient-to-br from-violet-50 to-violet-100 dark:from-violet-900/20 dark:to-violet-800/20 border-violet-200 dark:border-violet-700">
+                      <CardContent className="p-4 text-center">
+                        <div className="text-2xl font-bold text-violet-700 dark:text-violet-300 mb-2">
+                          {wordImageAnalytics.avgVisualSemanticMapping !== null ? `${wordImageAnalytics.avgVisualSemanticMapping}%` : 'N/A'}
+                        </div>
+                        <div className="text-sm text-violet-600 dark:text-violet-400 font-medium">
+                          Visual-Semantic Mapping
+                        </div>
+                      </CardContent>
+                    </Card>
+                    
+                    <Card className="bg-gradient-to-br from-indigo-50 to-indigo-100 dark:from-indigo-900/20 dark:to-indigo-800/20 border-indigo-200 dark:border-indigo-700">
+                      <CardContent className="p-4 text-center">
+                        <div className="text-2xl font-bold text-indigo-700 dark:text-indigo-300 mb-2">
+                          {wordImageAnalytics.avgReverseProcessingSpeed !== null ? `${wordImageAnalytics.avgReverseProcessingSpeed}%` : 'N/A'}
+                        </div>
+                        <div className="text-sm text-indigo-600 dark:text-indigo-400 font-medium">
+                          Reverse Processing Hızı
+                        </div>
+                      </CardContent>
+                    </Card>
+                    
+                    <Card className="bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-900/20 dark:to-blue-800/20 border-blue-200 dark:border-blue-700">
+                      <CardContent className="p-4 text-center">
+                        <div className="text-2xl font-bold text-blue-700 dark:text-blue-300 mb-2">
+                          {wordImageAnalytics.avgCrossModalIntegration !== null ? `${wordImageAnalytics.avgCrossModalIntegration}%` : 'N/A'}
+                        </div>
+                        <div className="text-sm text-blue-600 dark:text-blue-400 font-medium">
+                          Cross-Modal Integration
+                        </div>
+                      </CardContent>
+                    </Card>
+                  </div>
+                  
+                  {/* 📊 Category Visual Performance Chart */}
+                  {wordImageAnalytics.categoryVisualChartData.length > 0 && (
+                    <div>
+                      <h4 className="text-lg font-semibold mb-4 flex items-center gap-2">
+                        <BarChart3 className="w-5 h-5 text-purple-600" />
+                        Kategori-bazlı Reverse Processing Performansı
+                      </h4>
+                      <div className="h-80">
+                        <ResponsiveContainer width="100%" height="100%">
+                          <BarChart data={wordImageAnalytics.categoryVisualChartData}>
+                            <CartesianGrid strokeDasharray="3 3" className="opacity-30" />
+                            <XAxis 
+                              dataKey="name" 
+                              tick={{ fontSize: 12 }}
+                              angle={-45}
+                              textAnchor="end"
+                              height={80}
+                            />
+                            <YAxis domain={[0, 100]} />
+                            <Tooltip 
+                              content={({ active, payload, label }) => {
+                                if (active && payload && payload.length) {
+                                  const data = payload[0].payload
+                                  return (
+                                    <div className="bg-white dark:bg-gray-800 p-3 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg">
+                                      <p className="font-semibold text-gray-900 dark:text-gray-100">{label}</p>
+                                      <p className="text-purple-600">Semantic→Visual: {data.semanticToVisual}%</p>
+                                      <p className="text-indigo-600">Visual Speed: {data.visualSpeed}%</p>
+                                      <p className="text-gray-600">Sorular: {data.questions}</p>
+                                    </div>
+                                  )
+                                }
+                                return null
+                              }}
+                            />
+                            <Bar dataKey="semanticToVisual" fill="#9333ea" name="Semantic→Visual" />
+                            <Bar dataKey="visualSpeed" fill="#6366f1" name="Visual Speed" />
+                          </BarChart>
+                        </ResponsiveContainer>
+                      </div>
+                    </div>
+                  )}
+                  
+                  {/* 💡 Reverse Processing Clinical Insights */}
+                  {wordImageAnalytics.topClinicalInsights.length > 0 && (
+                    <div>
+                      <h4 className="text-lg font-semibold mb-4 flex items-center gap-2">
+                        <Lightbulb className="w-5 h-5 text-yellow-600" />
+                        Reverse Processing Clinical Insights
+                      </h4>
+                      <div className="bg-gradient-to-r from-yellow-50 to-amber-50 dark:from-yellow-900/10 dark:to-amber-900/10 p-4 rounded-lg border border-yellow-200 dark:border-yellow-800">
+                        <ul className="list-disc list-inside space-y-2 text-yellow-800 dark:text-yellow-200">
+                          {wordImageAnalytics.topClinicalInsights.map((insight, index) => (
+                            <li key={index} className="text-sm">{insight}</li>
+                          ))}
+                        </ul>
+                      </div>
+                    </div>
+                  )}
+                  
+                  {/* 📈 Performance Overview */}
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+                    <Card className="bg-gray-50 dark:bg-gray-800/50">
+                      <CardContent className="p-4 text-center">
+                        <div className="text-xl font-bold text-gray-700 dark:text-gray-300">
+                          {wordImageAnalytics.totalGames}
+                        </div>
+                        <div className="text-sm text-gray-600 dark:text-gray-400">
+                          Toplam Oyun
+                        </div>
+                      </CardContent>
+                    </Card>
+                    
+                    <Card className="bg-green-50 dark:bg-green-900/20">
+                      <CardContent className="p-4 text-center">
+                        <div className="text-xl font-bold text-green-700 dark:text-green-300">
+                          {wordImageAnalytics.avgScore}%
+                        </div>
+                        <div className="text-sm text-green-600 dark:text-green-400">
+                          Ortalama Skor
+                        </div>
+                      </CardContent>
+                    </Card>
+                    
+                    <Card className="bg-blue-50 dark:bg-blue-900/20">
+                      <CardContent className="p-4 text-center">
+                        <div className="text-xl font-bold text-blue-700 dark:text-blue-300">
+                          {wordImageAnalytics.avgAccuracy}%
+                        </div>
+                        <div className="text-sm text-blue-600 dark:text-blue-400">
+                          Doğruluk Oranı
+                        </div>
+                      </CardContent>
+                    </Card>
+                    
+                    <Card className="bg-orange-50 dark:bg-orange-900/20">
+                      <CardContent className="p-4 text-center">
+                        <div className="text-xl font-bold text-orange-700 dark:text-orange-300">
+                          {Math.round(wordImageAnalytics.avgDuration / 60)}dk
+                        </div>
+                        <div className="text-sm text-orange-600 dark:text-orange-400">
+                          Ortalama Süre
+                        </div>
+                      </CardContent>
+                    </Card>
+                  </div>
+                  
+                </CardContent>
+              </Card>
+            )}
+
+            {/* Number Sequence Specific Analytics - 🧠 WORKING MEMORY CLINICAL ENHANCEMENT */}
             {numberSequenceAnalytics && (selectedExerciseFilter === 'all' || selectedExerciseFilter === 'Sayı Dizisi Takibi') && (
               <Card className="card-enhanced">
                 <CardHeader>
                   <CardTitle className="flex items-center gap-3 text-2xl">
                     <div className="p-2 bg-orange-500/10 rounded-lg">
-                      <TrendingUp className="w-6 h-6 text-orange-600" />
+                      <Brain className="w-6 h-6 text-orange-600" />
                     </div>
-                    Sayı Dizisi Takibi - İlerleme Analizi
+                    Sayı Dizisi Takibi - Working Memory Analizi
                   </CardTitle>
                   <CardDescription className="text-base">
-                    Ulaşılan maksimum seviyeler ve performans trendi
+                    Miller's 7±2 Rule compliance ve working memory capacity assessment
                   </CardDescription>
                 </CardHeader>
-                <CardContent>
-                  <ChartContainer config={chartConfig} className="h-[300px]">
-                    <ResponsiveContainer width="100%" height="100%">
-                      <LineChart data={numberSequenceAnalytics}>
-                        <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
-                        <XAxis dataKey="level" stroke="hsl(var(--muted-foreground))" fontSize={12} />
-                        <YAxis stroke="hsl(var(--muted-foreground))" fontSize={12} />
-                        <ChartTooltip content={<ChartTooltipContent />} />
-                        <Line type="monotone" dataKey="avgScore" stroke="#F97316" strokeWidth={3} name="Ortalama Skor" />
-                      </LineChart>
-                    </ResponsiveContainer>
-                  </ChartContainer>
+                <CardContent className="space-y-8">
+                  
+                  {/* 🧠 Working Memory Clinical Overview */}
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+                    <Card className="bg-gradient-to-br from-orange-50 to-orange-100 dark:from-orange-900/20 dark:to-orange-800/20 border-orange-200 dark:border-orange-700">
+                      <CardContent className="p-4 text-center">
+                        <div className="text-2xl font-bold text-orange-700 dark:text-orange-300 mb-2">
+                          {numberSequenceAnalytics.avgClinicalScore !== null ? `${numberSequenceAnalytics.avgClinicalScore}%` : 'N/A'}
+                        </div>
+                        <div className="text-sm text-orange-600 dark:text-orange-400 font-medium">
+                          Working Memory Skoru
+                        </div>
+                      </CardContent>
+                    </Card>
+                    
+                    <Card className="bg-gradient-to-br from-green-50 to-green-100 dark:from-green-900/20 dark:to-green-800/20 border-green-200 dark:border-green-700">
+                      <CardContent className="p-4 text-center">
+                        <div className="text-2xl font-bold text-green-700 dark:text-green-300 mb-2">
+                          {numberSequenceAnalytics.avgDigitSpanCapacity !== null ? `${numberSequenceAnalytics.avgDigitSpanCapacity}` : 'N/A'}
+                        </div>
+                        <div className="text-sm text-green-600 dark:text-green-400 font-medium">
+                          Digit Span Kapasitesi
+                        </div>
+                      </CardContent>
+                    </Card>
+                    
+                    <Card className="bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-900/20 dark:to-blue-800/20 border-blue-200 dark:border-blue-700">
+                      <CardContent className="p-4 text-center">
+                        <div className="text-2xl font-bold text-blue-700 dark:text-blue-300 mb-2">
+                          {numberSequenceAnalytics.avgProcessingSpeed !== null ? `${numberSequenceAnalytics.avgProcessingSpeed}%` : 'N/A'}
+                        </div>
+                        <div className="text-sm text-blue-600 dark:text-blue-400 font-medium">
+                          Processing Speed
+                        </div>
+                      </CardContent>
+                    </Card>
+                    
+                    <Card className="bg-gradient-to-br from-purple-50 to-purple-100 dark:from-purple-900/20 dark:to-purple-800/20 border-purple-200 dark:border-purple-700">
+                      <CardContent className="p-4 text-center">
+                        <div className="text-2xl font-bold text-purple-700 dark:text-purple-300 mb-2">
+                          {numberSequenceAnalytics.avgAttentionControl !== null ? `${numberSequenceAnalytics.avgAttentionControl}%` : 'N/A'}
+                        </div>
+                        <div className="text-sm text-purple-600 dark:text-purple-400 font-medium">
+                          Attention Control
+                        </div>
+                      </CardContent>
+                    </Card>
+                  </div>
+                  
+                  {/* 📊 Miller's 7±2 Rule Progression Chart */}
+                  {numberSequenceAnalytics.millerProgressionData && numberSequenceAnalytics.millerProgressionData.length > 0 && (
+                    <div>
+                      <h4 className="text-lg font-semibold mb-4 flex items-center gap-2">
+                        <BarChart3 className="w-5 h-5 text-orange-600" />
+                        Miller's 7±2 Rule - Working Memory Progression
+                      </h4>
+                      <div className="h-80">
+                        <ResponsiveContainer width="100%" height="100%">
+                          <LineChart data={numberSequenceAnalytics.millerProgressionData}>
+                            <CartesianGrid strokeDasharray="3 3" className="opacity-30" />
+                            <XAxis dataKey="session" tick={{ fontSize: 12 }} />
+                            <YAxis domain={[0, 12]} label={{ value: 'Digit Span', angle: -90, position: 'insideLeft' }} />
+                            <Tooltip 
+                              content={({ active, payload, label }) => {
+                                if (active && payload && payload.length) {
+                                  const data = payload[0].payload
+                                  return (
+                                    <div className="bg-white dark:bg-gray-800 p-3 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg">
+                                      <p className="font-semibold text-gray-900 dark:text-gray-100">Session {label}</p>
+                                      <p className="text-orange-600">Digit Span: {data.capacity}</p>
+                                      <p className="text-gray-600">Category: {data.category}</p>
+                                      <p className={`${data.isWithinNormal ? 'text-green-600' : 'text-blue-600'}`}>
+                                        {data.isWithinNormal ? 'Miller 7±2 ✓' : 'Outside Normal Range'}
+                                      </p>
+                                    </div>
+                                  )
+                                }
+                                return null
+                              }}
+                            />
+                            {/* Miller's 7±2 Rule reference lines */}
+                            <ReferenceLine y={5} stroke="#EF4444" strokeDasharray="5 5" label="Miller 7-2" />
+                            <ReferenceLine y={7} stroke="#10B981" strokeDasharray="3 3" label="Miller Optimal" />
+                            <ReferenceLine y={9} stroke="#EF4444" strokeDasharray="5 5" label="Miller 7+2" />
+                            <Line type="monotone" dataKey="capacity" stroke="#F97316" strokeWidth={3} name="Digit Span Capacity" />
+                          </LineChart>
+                        </ResponsiveContainer>
+                      </div>
+                    </div>
+                  )}
+                  
+                  {/* 📈 Miller's 7±2 Rule Statistics */}
+                  {numberSequenceAnalytics.millerStats && (
+                    <div>
+                      <h4 className="text-lg font-semibold mb-4 flex items-center gap-2">
+                        <Target className="w-5 h-5 text-green-600" />
+                        Miller's 7±2 Rule Compliance Analysis
+                      </h4>
+                      <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+                        <Card className="bg-gray-50 dark:bg-gray-800/50">
+                          <CardContent className="p-4 text-center">
+                            <div className="text-xl font-bold text-gray-700 dark:text-gray-300">
+                              {numberSequenceAnalytics.millerStats.totalAssessments}
+                            </div>
+                            <div className="text-sm text-gray-600 dark:text-gray-400">
+                              Toplam Test
+                            </div>
+                          </CardContent>
+                        </Card>
+                        
+                        <Card className="bg-green-50 dark:bg-green-900/20">
+                          <CardContent className="p-4 text-center">
+                            <div className="text-xl font-bold text-green-700 dark:text-green-300">
+                              {numberSequenceAnalytics.millerStats.withinNormalRange}
+                            </div>
+                            <div className="text-sm text-green-600 dark:text-green-400">
+                              Normal Range (5-9)
+                            </div>
+                          </CardContent>
+                        </Card>
+                        
+                        <Card className="bg-blue-50 dark:bg-blue-900/20">
+                          <CardContent className="p-4 text-center">
+                            <div className="text-xl font-bold text-blue-700 dark:text-blue-300">
+                              {numberSequenceAnalytics.millerStats.average}
+                            </div>
+                            <div className="text-sm text-blue-600 dark:text-blue-400">
+                              Average (6-8)
+                            </div>
+                          </CardContent>
+                        </Card>
+                        
+                        <Card className="bg-purple-50 dark:bg-purple-900/20">
+                          <CardContent className="p-4 text-center">
+                            <div className="text-xl font-bold text-purple-700 dark:text-purple-300">
+                              {numberSequenceAnalytics.millerStats.exceptional}
+                            </div>
+                            <div className="text-sm text-purple-600 dark:text-purple-400">
+                              Exceptional (10+)
+                            </div>
+                          </CardContent>
+                        </Card>
+                        
+                        <Card className="bg-orange-50 dark:bg-orange-900/20">
+                          <CardContent className="p-4 text-center">
+                            <div className="text-xl font-bold text-orange-700 dark:text-orange-300">
+                              {numberSequenceAnalytics.millerStats.averageCapacity}
+                            </div>
+                            <div className="text-sm text-orange-600 dark:text-orange-400">
+                              Ortalama Kapasite
+                            </div>
+                          </CardContent>
+                        </Card>
+                      </div>
+                    </div>
+                  )}
+                  
+                  {/* 💡 Working Memory Clinical Insights */}
+                  {numberSequenceAnalytics.topClinicalInsights && numberSequenceAnalytics.topClinicalInsights.length > 0 && (
+                    <div>
+                      <h4 className="text-lg font-semibold mb-4 flex items-center gap-2">
+                        <Lightbulb className="w-5 h-5 text-yellow-600" />
+                        Working Memory Clinical Insights
+                      </h4>
+                      <div className="bg-gradient-to-r from-yellow-50 to-amber-50 dark:from-yellow-900/10 dark:to-amber-900/10 p-4 rounded-lg border border-yellow-200 dark:border-yellow-800">
+                        <ul className="list-disc list-inside space-y-2 text-yellow-800 dark:text-yellow-200">
+                          {numberSequenceAnalytics.topClinicalInsights.map((insight, index) => (
+                            <li key={index} className="text-sm">{insight}</li>
+                          ))}
+                        </ul>
+                      </div>
+                    </div>
+                  )}
+                  
+                  {/* 📈 Performance Overview */}
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+                    <Card className="bg-gray-50 dark:bg-gray-800/50">
+                      <CardContent className="p-4 text-center">
+                        <div className="text-xl font-bold text-gray-700 dark:text-gray-300">
+                          {numberSequenceAnalytics.totalGames}
+                        </div>
+                        <div className="text-sm text-gray-600 dark:text-gray-400">
+                          Toplam Oyun
+                        </div>
+                      </CardContent>
+                    </Card>
+                    
+                    <Card className="bg-green-50 dark:bg-green-900/20">
+                      <CardContent className="p-4 text-center">
+                        <div className="text-xl font-bold text-green-700 dark:text-green-300">
+                          {numberSequenceAnalytics.avgScore}
+                        </div>
+                        <div className="text-sm text-green-600 dark:text-green-400">
+                          Ortalama Skor
+                        </div>
+                      </CardContent>
+                    </Card>
+                    
+                    <Card className="bg-blue-50 dark:bg-blue-900/20">
+                      <CardContent className="p-4 text-center">
+                        <div className="text-xl font-bold text-blue-700 dark:text-blue-300">
+                          {numberSequenceAnalytics.avgMaxLevel}
+                        </div>
+                        <div className="text-sm text-blue-600 dark:text-blue-400">
+                          Ortalama Max Level
+                        </div>
+                      </CardContent>
+                    </Card>
+                    
+                    <Card className="bg-orange-50 dark:bg-orange-900/20">
+                      <CardContent className="p-4 text-center">
+                        <div className="text-xl font-bold text-orange-700 dark:text-orange-300">
+                          {Math.round(numberSequenceAnalytics.avgDuration / 60)}dk
+                        </div>
+                        <div className="text-sm text-orange-600 dark:text-orange-400">
+                          Ortalama Süre
+                        </div>
+                      </CardContent>
+                    </Card>
+                  </div>
+                  
                 </CardContent>
               </Card>
             )}
 
             {colorSequenceAnalytics && (selectedExerciseFilter === 'all' || selectedExerciseFilter === 'Renk Dizisi Takibi') && (
+              <Card className="card-enhanced">
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-3 text-2xl">
+                    <div className="p-2 bg-cyan-500/10 rounded-lg">
+                      <Palette className="w-6 h-6 text-cyan-600" />
+                    </div>
+                    Renk Dizisi Takibi - Visual-Spatial Memory Assessment
+                  </CardTitle>
+                  <CardDescription className="text-base">
+                    Görsel-uzamsal bellek analizi ve klinik değerlendirme sonuçları
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-8">
+                  
+                  {/* 🧠 Visual-Spatial Memory Clinical Overview */}
+                  <div>
+                    <h4 className="text-lg font-semibold mb-4 flex items-center gap-2">
+                      <Brain className="w-5 h-5 text-cyan-600" />
+                      Visual-Spatial Memory Clinical Overview
+                    </h4>
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+                      <Card className="bg-gradient-to-br from-cyan-50 to-cyan-100 dark:from-cyan-900/20 dark:to-cyan-800/20 border-cyan-200 dark:border-cyan-700">
+                        <CardContent className="p-4 text-center">
+                          <div className="text-2xl font-bold text-cyan-700 dark:text-cyan-300 mb-2">
+                            {colorSequenceAnalytics.avgClinicalScore !== null ? `${colorSequenceAnalytics.avgClinicalScore}%` : 'N/A'}
+                          </div>
+                          <div className="text-sm text-cyan-600 dark:text-cyan-400 font-medium">
+                            Görsel-Uzamsal Bellek
+                          </div>
+                        </CardContent>
+                      </Card>
+                      
+                      <Card className="bg-gradient-to-br from-green-50 to-green-100 dark:from-green-900/20 dark:to-green-800/20 border-green-200 dark:border-green-700">
+                        <CardContent className="p-4 text-center">
+                          <div className="text-2xl font-bold text-green-700 dark:text-green-300 mb-2">
+                            {colorSequenceAnalytics.avgVisualSpanCapacity !== null ? `${colorSequenceAnalytics.avgVisualSpanCapacity}` : 'N/A'}
+                          </div>
+                          <div className="text-sm text-green-600 dark:text-green-400 font-medium">
+                            Visual Span Kapasitesi
+                          </div>
+                        </CardContent>
+                      </Card>
+                      
+                      <Card className="bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-900/20 dark:to-blue-800/20 border-blue-200 dark:border-blue-700">
+                        <CardContent className="p-4 text-center">
+                          <div className="text-2xl font-bold text-blue-700 dark:text-blue-300 mb-2">
+                            {colorSequenceAnalytics.avgSpatialProcessingSpeed !== null ? `${colorSequenceAnalytics.avgSpatialProcessingSpeed}%` : 'N/A'}
+                          </div>
+                          <div className="text-sm text-blue-600 dark:text-blue-400 font-medium">
+                            Spatial Processing Speed
+                          </div>
+                        </CardContent>
+                      </Card>
+                      
+                      <Card className="bg-gradient-to-br from-purple-50 to-purple-100 dark:from-purple-900/20 dark:to-purple-800/20 border-purple-200 dark:border-purple-700">
+                        <CardContent className="p-4 text-center">
+                          <div className="text-2xl font-bold text-purple-700 dark:text-purple-300 mb-2">
+                            {colorSequenceAnalytics.avgColorRecognitionAccuracy !== null ? `${colorSequenceAnalytics.avgColorRecognitionAccuracy}%` : 'N/A'}
+                          </div>
+                          <div className="text-sm text-purple-600 dark:text-purple-400 font-medium">
+                            Color Recognition
+                          </div>
+                        </CardContent>
+                      </Card>
+                    </div>
+                  </div>
+                  
+                  {/* 📊 Visual-Spatial Pattern Progression Chart */}
+                  {colorSequenceAnalytics?.visualSpatialProgressionData && colorSequenceAnalytics.visualSpatialProgressionData.length > 0 && (
+                    <div>
+                      <h4 className="text-lg font-semibold mb-4 flex items-center gap-2">
+                        <BarChart3 className="w-5 h-5 text-cyan-600" />
+                        Visual-Spatial Pattern - Capacity Progression
+                      </h4>
+                      <div className="h-80">
+                        <ResponsiveContainer width="100%" height="100%">
+                          <LineChart data={colorSequenceAnalytics.visualSpatialProgressionData}>
+                            <CartesianGrid strokeDasharray="3 3" className="opacity-30" />
+                            <XAxis dataKey="session" tick={{ fontSize: 12 }} />
+                            <YAxis domain={[0, 12]} label={{ value: 'Color Span', angle: -90, position: 'insideLeft' }} />
+                            <Tooltip 
+                              formatter={(value: any, name: string) => [
+                                name === 'capacity' ? `${value} Color Pattern` : value,
+                                name === 'capacity' ? 'Visual Span' : name
+                              ]}
+                              labelFormatter={(label: any) => `Session ${label}`}
+                            />
+                            <Line 
+                              type="monotone" 
+                              dataKey="capacity" 
+                              stroke="#06B6D4" 
+                              strokeWidth={3}
+                              dot={{ r: 6, fill: '#06B6D4' }}
+                              activeDot={{ r: 8, stroke: '#06B6D4', strokeWidth: 2, fill: '#fff' }}
+                            />
+                            {/* Visual Complexity Reference Lines */}
+                            <ReferenceLine y={4} stroke="#3B82F6" strokeDasharray="5 5" label={{ value: "Baseline (4 colors)", position: "top" }} />
+                            <ReferenceLine y={7} stroke="#10B981" strokeDasharray="5 5" label={{ value: "Normal Visual Range (7 colors)", position: "top" }} />
+                            <ReferenceLine y={9} stroke="#8B5CF6" strokeDasharray="5 5" label={{ value: "Exceptional (9+ colors)", position: "top" }} />
+                          </LineChart>
+                        </ResponsiveContainer>
+                      </div>
+                    </div>
+                  )}
+                  
+                  {/* 🎯 Visual Pattern Complexity Analysis */}
+                  {colorSequenceAnalytics?.visualPatternStats && (
+                    <div>
+                      <h4 className="text-lg font-semibold mb-4 flex items-center gap-2">
+                        <Target className="w-5 h-5 text-green-600" />
+                        Visual Pattern Complexity Analysis
+                      </h4>
+                      <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+                        <Card className="bg-gray-50 dark:bg-gray-800/50">
+                          <CardContent className="p-4 text-center">
+                            <div className="text-xl font-bold text-gray-700 dark:text-gray-300">
+                              {colorSequenceAnalytics.visualPatternStats.totalAssessments}
+                            </div>
+                            <div className="text-sm text-gray-600 dark:text-gray-400">
+                              Toplam Test
+                            </div>
+                          </CardContent>
+                        </Card>
+                        
+                        <Card className="bg-blue-50 dark:bg-blue-900/20">
+                          <CardContent className="p-4 text-center">
+                            <div className="text-xl font-bold text-blue-700 dark:text-blue-300">
+                              {colorSequenceAnalytics.visualPatternStats.mediumComplexity}
+                            </div>
+                            <div className="text-sm text-blue-600 dark:text-blue-400">
+                              Medium Complexity
+                            </div>
+                          </CardContent>
+                        </Card>
+                        
+                        <Card className="bg-green-50 dark:bg-green-900/20">
+                          <CardContent className="p-4 text-center">
+                            <div className="text-xl font-bold text-green-700 dark:text-green-300">
+                              {colorSequenceAnalytics.visualPatternStats.highComplexity}
+                            </div>
+                            <div className="text-sm text-green-600 dark:text-green-400">
+                              High Complexity
+                            </div>
+                          </CardContent>
+                        </Card>
+                        
+                        <Card className="bg-purple-50 dark:bg-purple-900/20">
+                          <CardContent className="p-4 text-center">
+                            <div className="text-xl font-bold text-purple-700 dark:text-purple-300">
+                              {colorSequenceAnalytics.visualPatternStats.exceptionalComplexity}
+                            </div>
+                            <div className="text-sm text-purple-600 dark:text-purple-400">
+                              Exceptional
+                            </div>
+                          </CardContent>
+                        </Card>
+                        
+                        <Card className="bg-cyan-50 dark:bg-cyan-900/20">
+                          <CardContent className="p-4 text-center">
+                            <div className="text-xl font-bold text-cyan-700 dark:text-cyan-300">
+                              {colorSequenceAnalytics.visualPatternStats.averageCapacity}
+                            </div>
+                            <div className="text-sm text-cyan-600 dark:text-cyan-400">
+                              Ortalama Kapasite
+                            </div>
+                          </CardContent>
+                        </Card>
+                      </div>
+                    </div>
+                  )}
+                  
+                  {/* 💡 Visual-Spatial Clinical Insights */}
+                  {colorSequenceAnalytics?.topClinicalInsights && colorSequenceAnalytics.topClinicalInsights.length > 0 && (
+                    <div>
+                      <h4 className="text-lg font-semibold mb-4 flex items-center gap-2">
+                        <Lightbulb className="w-5 h-5 text-yellow-600" />
+                        Visual-Spatial Memory Clinical Insights
+                      </h4>
+                      <div className="bg-gradient-to-r from-cyan-50 to-blue-50 dark:from-cyan-900/10 dark:to-blue-900/10 p-4 rounded-lg border border-cyan-200 dark:border-cyan-800">
+                        <ul className="list-disc list-inside space-y-2 text-cyan-800 dark:text-cyan-200">
+                          {colorSequenceAnalytics.topClinicalInsights.map((insight, index) => (
+                            <li key={index} className="text-sm">{insight}</li>
+                          ))}
+                        </ul>
+                      </div>
+                    </div>
+                  )}
+                  
+                  {/* 📈 Performance Overview */}
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+                    <Card className="bg-gray-50 dark:bg-gray-800/50">
+                      <CardContent className="p-4 text-center">
+                        <div className="text-xl font-bold text-gray-700 dark:text-gray-300">
+                          {colorSequenceAnalytics.totalGames}
+                        </div>
+                        <div className="text-sm text-gray-600 dark:text-gray-400">
+                          Toplam Oyun
+                        </div>
+                      </CardContent>
+                    </Card>
+                    
+                    <Card className="bg-green-50 dark:bg-green-900/20">
+                      <CardContent className="p-4 text-center">
+                        <div className="text-xl font-bold text-green-700 dark:text-green-300">
+                          {colorSequenceAnalytics.avgScore}
+                        </div>
+                        <div className="text-sm text-green-600 dark:text-green-400">
+                          Ortalama Skor
+                        </div>
+                      </CardContent>
+                    </Card>
+                    
+                    <Card className="bg-blue-50 dark:bg-blue-900/20">
+                      <CardContent className="p-4 text-center">
+                        <div className="text-xl font-bold text-blue-700 dark:text-blue-300">
+                          {colorSequenceAnalytics.avgMaxLevel}
+                        </div>
+                        <div className="text-sm text-blue-600 dark:text-blue-400">
+                          Ortalama Max Level
+                        </div>
+                      </CardContent>
+                    </Card>
+                    
+                    <Card className="bg-orange-50 dark:bg-orange-900/20">
+                      <CardContent className="p-4 text-center">
+                        <div className="text-xl font-bold text-orange-700 dark:text-orange-300">
+                          {Math.round(colorSequenceAnalytics.avgDuration / 60)}dk
+                        </div>
+                        <div className="text-sm text-orange-600 dark:text-orange-400">
+                          Ortalama Süre
+                        </div>
+                      </CardContent>
+                    </Card>
+                  </div>
+                  
+                </CardContent>
+              </Card>
+            )}
+
+            {/* Legacy Color Sequence Chart - Keep for backwards compatibility */}
+            {legacyColorSequenceAnalytics && !colorSequenceAnalytics && (selectedExerciseFilter === 'all' || selectedExerciseFilter === 'Renk Dizisi Takibi') && (
               <Card className="card-enhanced">
                 <CardHeader>
                   <CardTitle className="flex items-center gap-3 text-2xl">
@@ -1076,7 +2032,7 @@ const IstatistiklerSayfasi: React.FC = () => {
                 <CardContent>
                   <ChartContainer config={chartConfig} className="h-[300px]">
                     <ResponsiveContainer width="100%" height="100%">
-                      <AreaChart data={colorSequenceAnalytics}>
+                      <AreaChart data={legacyColorSequenceAnalytics}>
                         <defs>
                           <linearGradient id="colorSequenceGradient" x1="0" y1="0" x2="0" y2="1">
                             <stop offset="5%" stopColor="#06B6D4" stopOpacity={0.3}/>

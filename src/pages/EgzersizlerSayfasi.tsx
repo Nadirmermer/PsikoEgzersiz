@@ -387,55 +387,6 @@ const EgzersizlerSayfasi: React.FC<EgzersizlerSayfasiProps> = ({
             );
           })}
         </div>
-
-        {/* Assistant Message Card */}
-        <div className="mt-6 mb-4">
-          <Card className="bg-gradient-to-r from-blue-50/80 via-indigo-50/80 to-purple-50/80 dark:from-blue-950/40 dark:via-indigo-950/40 dark:to-purple-950/40 backdrop-blur-sm border border-primary/20 rounded-2xl shadow-sm relative overflow-hidden">
-            <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-primary via-purple-500 to-pink-500" />
-            <CardContent className="p-4 sm:p-5">
-              <div className="flex items-start gap-3">
-                <div className="flex-shrink-0 w-10 h-10 bg-gradient-to-br from-primary/20 to-purple-500/20 rounded-full border border-primary/30 flex items-center justify-center">
-                  <img 
-                    src="/logo.png" 
-                    alt="Asistan" 
-                    className="w-6 h-6 object-contain" 
-                  />
-                </div>
-                <div className="flex-1 space-y-2">
-                  <div className="flex items-center gap-2">
-                    <span className="text-lg">👋</span>
-                    <span className="text-base font-bold bg-gradient-to-r from-primary to-purple-600 bg-clip-text text-transparent">
-                      Merhaba!
-                    </span>
-                  </div>
-                  <p className="text-sm text-muted-foreground leading-relaxed">
-                    Ben sizin <span className="font-semibold text-primary">bilişsel asistanınızım</span>. 
-                    Size 9 farklı egzersiz türü ile beyin gücünüzü geliştirmenizde yardımcı olacağım! 🧠✨
-                  </p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* Quick Stats */}
-        <div className="mt-4 text-center">
-          <Card className="bg-white/60 dark:bg-gray-900/60 backdrop-blur-sm border border-border/50 rounded-2xl shadow-sm">
-            <CardContent className="p-4">
-              <div className="flex items-center justify-center gap-4 text-sm">
-                <div className="flex items-center gap-1.5 text-success">
-                  <div className="w-2 h-2 bg-success rounded-full animate-pulse" />
-                  <span className="font-medium">9 Aktif Egzersiz</span>
-                </div>
-                <div className="w-px h-4 bg-border" />
-                <div className="flex items-center gap-1.5 text-primary">
-                  <Brain className="w-3 h-3" />
-                  <span className="font-medium">Bilimsel Temelli</span>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
       </div>
     </div>
   )

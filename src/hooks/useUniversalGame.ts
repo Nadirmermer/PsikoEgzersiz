@@ -181,6 +181,51 @@ export const useUniversalGame = ({ exerciseName, onComplete }: UseUniversalGameP
       }
     }, [exerciseName, playSound, onComplete]),
 
+    // 🚨 NEW: Handle early exit with partial results saving
+    onExitEarly: useCallback(async () => {
+      playSound('button-click')
+      
+      if (gameState.phase === 'playing' || gameState.phase === 'paused') {
+        // 🚨 EARLY EXIT: Save partial results with exitedEarly flag
+        try {
+          const partialResult: GameResult = {
+            exerciseName,
+            score: gameStats.score,
+            duration: gameState.duration,
+            completed: false, // Not fully completed
+            accuracy: gameStats.accuracy || 0,
+            details: {
+              exercise_name: exerciseName,
+              session_duration_seconds: gameState.duration,
+              score: gameStats.score,
+              level_reached: gameStats.level,
+              progress: gameStats.progress,
+              timestamp: new Date().toISOString(),
+              early_exit_reason: 'User navigated back during active session'
+            },
+            timestamp: new Date().toISOString()
+          }
+          
+          await LocalStorageManager.saveExerciseResult({
+            exerciseName: partialResult.exerciseName,
+            score: partialResult.score,
+            duration: partialResult.duration,
+            date: partialResult.timestamp,
+            details: partialResult.details,
+            completed: false,
+            exitedEarly: true // 🚨 CRITICAL FLAG
+          })
+          
+          toast.warning(`⚠️ Egzersiz yarıda kesildi. Kısmi ilerleme kaydedildi (${gameStats.score} puan, ${formatTime(gameState.duration)})`)
+          
+          console.log('🚨 Early exit - Partial results saved:', partialResult)
+        } catch (error) {
+          console.error('Early exit result save error:', error)
+          toast.error('Kısmi sonuç kaydedilirken hata oluştu')
+        }
+      }
+    }, [exerciseName, gameState, gameStats, playSound]),
+
     onBack: useCallback(() => {
       playSound('button-click')
       // Bu default implementation, oyun specific logic için override edilebilir

@@ -38,11 +38,12 @@ const SayiDizisiTakibiSayfasi: React.FC<SayiDizisiTakibiSayfasiProps> = ({ onBac
     sequenceGame.initializeGame()
   }, [])
 
-  // Handle game completion (when user makes a mistake or chooses to end)
+  // Handle game completion with working memory clinical assessment
   useEffect(() => {
     if (sequenceGame.isGameCompleted && !universalGame.gameState.isCompleted) {
       const finalStats = sequenceGame.getFinalStats()
       
+      // 🧠 Enhanced result with working memory clinical assessment data
       const result: GameResult = {
         exerciseName: 'Sayı Dizisi Takibi',
         score: finalStats.score,
@@ -56,14 +57,41 @@ const SayiDizisiTakibiSayfasi: React.FC<SayiDizisiTakibiSayfasiProps> = ({ onBac
           total_incorrect_sequences: finalStats.incorrectCount,
           session_duration_seconds: universalGame.gameState.duration,
           score: finalStats.score,
-          timestamp: new Date().toISOString()
+          timestamp: new Date().toISOString(),
+          
+          // 🧠 Working Memory Clinical Assessment Data
+          clinicalData: finalStats.clinicalData,
+          digitSpanCapacity: finalStats.digitSpanCapacity,
+          workingMemoryScore: finalStats.workingMemoryScore
         },
         timestamp: new Date().toISOString()
       }
       
+      console.log('🧠 Working Memory Clinical Assessment Results:', {
+        digitSpanCapacity: finalStats.clinicalData.digitSpanCapacity,
+        workingMemoryScore: finalStats.clinicalData.workingMemoryScore,
+        processingSpeed: finalStats.clinicalData.processingSpeed,
+        cognitiveLoad: finalStats.clinicalData.cognitiveLoad,
+        attentionControl: finalStats.clinicalData.attentionControl,
+        millerCompliance: finalStats.clinicalData.millerCompliance,
+        workingMemoryCognitiveProfile: finalStats.clinicalData.workingMemoryCognitiveProfile
+      })
+      
       universalGame.gameActions.onComplete(result)
     }
   }, [sequenceGame.isGameCompleted, universalGame.gameState.isCompleted])
+
+  // Handle automatic game completion scenarios 
+  useEffect(() => {
+    if (sequenceGame.isGameCompleted && sequenceGame.phase === 'feedback') {
+      // Show completion message based on why game ended
+      if (sequenceGame.incorrectCount >= 3) {
+        toast.info('🎯 Working Memory Assessment tamamlandı! 3 hata ile test sona erdi.')
+      } else if (sequenceGame.currentLevel > 10) {
+        toast.success('🏆 Mükemmel! Exceptional working memory capacity (12+ digits) ulaştınız!')
+      }
+    }
+  }, [sequenceGame.isGameCompleted, sequenceGame.phase, sequenceGame.incorrectCount, sequenceGame.currentLevel])
 
   // Update game stats
   useEffect(() => {
@@ -78,6 +106,12 @@ const SayiDizisiTakibiSayfasi: React.FC<SayiDizisiTakibiSayfasiProps> = ({ onBac
   useEffect(() => {
     if (sequenceGame.phase === 'feedback') {
       const timer = setTimeout(() => {
+        // 🧠 If game is completed, don't progress to next level
+        if (sequenceGame.isGameCompleted) {
+          // Game will be handled by completion logic above
+          return
+        }
+        
         // Check if it was correct or incorrect
         if (sequenceGame.userInput.length === sequenceGame.sequence.length && 
             sequenceGame.userInput.every((input, index) => input === sequenceGame.sequence[index])) {
@@ -91,7 +125,7 @@ const SayiDizisiTakibiSayfasi: React.FC<SayiDizisiTakibiSayfasiProps> = ({ onBac
       
       return () => clearTimeout(timer)
     }
-  }, [sequenceGame.phase])
+  }, [sequenceGame.phase, sequenceGame.isGameCompleted])
 
   // Custom game hook
   const gameHook = () => ({
@@ -105,6 +139,17 @@ const SayiDizisiTakibiSayfasi: React.FC<SayiDizisiTakibiSayfasiProps> = ({ onBac
       onRestart: () => {
         sequenceGame.initializeGame()
         universalGame.gameActions.onRestart()
+      },
+      // 🚨 Number Sequence specific early exit handler
+      onExitEarly: () => {
+        // Call universal early exit first
+        if (universalGame.gameActions.onExitEarly) {
+          universalGame.gameActions.onExitEarly()
+        }
+        
+        // 🧠 Number Sequence specific: Add working memory context to early exit
+        toast.warning('⚠️ Working Memory Assessment yarıda kesildi! Klinik analiz için test tamamlanmalı.')
+        console.log('🧠 Number Sequence Early Exit - Working Memory assessment incomplete')
       }
     }
   })
@@ -178,11 +223,38 @@ const SayiDizisiTakibiSayfasi: React.FC<SayiDizisiTakibiSayfasiProps> = ({ onBac
             <Card className={uiStyles.gameCard.primary}>
               <CardContent className={`${uiStyles.cardContent.standard} text-center`}>
                 
-                {/* Level Badge */}
-                <div className="mb-4">
-                  <Badge variant="secondary" className="text-sm px-3 py-1 bg-primary/10 text-primary border-primary/20">
-                    <Brain className="w-4 h-4 mr-1" />
+                {/* Level Badge & Working Memory Indicator - Mobile Responsive */}
+                <div className="mb-4 flex flex-col sm:flex-row flex-wrap justify-center items-center gap-2">
+                  <Badge variant="secondary" className="text-xs sm:text-sm px-2 sm:px-3 py-1 bg-primary/10 text-primary border-primary/20">
+                    <Brain className="w-3 h-3 sm:w-4 sm:h-4 mr-1" />
                     Seviye {sequenceGame.currentLevel}
+                  </Badge>
+                  
+                  {/* 🧠 Miller's 7±2 Rule Working Memory Indicator */}
+                  <Badge 
+                    variant="outline" 
+                    className={`text-xs sm:text-sm px-2 sm:px-3 py-1 ${
+                      sequenceGame.sequence.length >= 5 && sequenceGame.sequence.length <= 9
+                        ? 'bg-green-50 text-green-700 border-green-200 dark:bg-green-900/20 dark:text-green-300 dark:border-green-700'
+                        : sequenceGame.sequence.length > 9
+                          ? 'bg-purple-50 text-purple-700 border-purple-200 dark:bg-purple-900/20 dark:text-purple-300 dark:border-purple-700'
+                          : 'bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-900/20 dark:text-blue-300 dark:border-blue-700'
+                    }`}
+                  >
+                    <span className="hidden sm:inline">{sequenceGame.sequence.length} Digit</span>
+                    <span className="sm:hidden">{sequenceGame.sequence.length}D</span>
+                    {sequenceGame.sequence.length >= 5 && sequenceGame.sequence.length <= 9 && (
+                      <span className="hidden sm:inline"> (Miller 7±2)</span>
+                    )}
+                    {sequenceGame.sequence.length >= 5 && sequenceGame.sequence.length <= 9 && (
+                      <span className="sm:hidden"> ✓</span>
+                    )}
+                    {sequenceGame.sequence.length > 9 && (
+                      <span className="hidden sm:inline"> (Exceptional)</span>
+                    )}
+                    {sequenceGame.sequence.length > 9 && (
+                      <span className="sm:hidden"> ⭐</span>
+                    )}
                   </Badge>
               </div>
               
@@ -190,13 +262,13 @@ const SayiDizisiTakibiSayfasi: React.FC<SayiDizisiTakibiSayfasiProps> = ({ onBac
                   Sayıları Hatırlayın
                 </h3>
                 
-                {/* Sequence Display */}
-                <div className="flex justify-center items-center gap-3 sm:gap-4 mb-6 flex-wrap">
+                {/* Sequence Display - Responsive & Mobile-Optimized */}
+                <div className="flex justify-center items-center gap-2 sm:gap-3 md:gap-4 mb-6 flex-wrap max-w-sm sm:max-w-lg md:max-w-2xl mx-auto">
                   {sequenceGame.sequence.map((number, index) => (
                     <div
                       key={index}
                       className={`
-                        w-16 h-16 sm:w-20 sm:h-20 rounded-xl flex items-center justify-center text-2xl font-bold transition-all duration-300
+                        w-12 h-12 sm:w-16 sm:h-16 md:w-20 md:h-20 rounded-lg sm:rounded-xl flex items-center justify-center text-lg sm:text-xl md:text-2xl font-bold transition-all duration-300
                         ${index === sequenceGame.showingIndex
                           ? 'bg-primary text-white scale-110 shadow-lg'
                           : index < sequenceGame.showingIndex
@@ -223,11 +295,27 @@ const SayiDizisiTakibiSayfasi: React.FC<SayiDizisiTakibiSayfasiProps> = ({ onBac
             <Card className={uiStyles.gameCard.primary}>
               <CardContent className={`${uiStyles.cardContent.standard} text-center`}>
                 
-                {/* Level Badge */}
-                <div className="mb-4">
-                  <Badge variant="secondary" className="text-sm px-3 py-1 bg-primary/10 text-primary border-primary/20">
-                    <Eye className="w-4 h-4 mr-1" />
+                {/* Level Badge & Working Memory Indicator - Mobile Responsive */}
+                <div className="mb-4 flex flex-col sm:flex-row flex-wrap justify-center items-center gap-2">
+                  <Badge variant="secondary" className="text-xs sm:text-sm px-2 sm:px-3 py-1 bg-primary/10 text-primary border-primary/20">
+                    <Eye className="w-3 h-3 sm:w-4 sm:h-4 mr-1" />
                     Seviye {sequenceGame.currentLevel} - Giriş
+                  </Badge>
+                  
+                  {/* 🧠 Miller's 7±2 Rule Working Memory Indicator */}
+                  <Badge 
+                    variant="outline" 
+                    className={`text-xs sm:text-sm px-2 sm:px-3 py-1 ${
+                      sequenceGame.sequence.length >= 5 && sequenceGame.sequence.length <= 9
+                        ? 'bg-green-50 text-green-700 border-green-200 dark:bg-green-900/20 dark:text-green-300 dark:border-green-700'
+                        : sequenceGame.sequence.length > 9
+                          ? 'bg-purple-50 text-purple-700 border-purple-200 dark:bg-purple-900/20 dark:text-purple-300 dark:border-purple-700'
+                          : 'bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-900/20 dark:text-blue-300 dark:border-blue-700'
+                    }`}
+                  >
+                    {sequenceGame.sequence.length} Digit WM
+                    {sequenceGame.sequence.length >= 5 && sequenceGame.sequence.length <= 9 && ' ✓'}
+                    {sequenceGame.sequence.length > 9 && ' ⭐'}
                   </Badge>
                 </div>
 
@@ -238,13 +326,13 @@ const SayiDizisiTakibiSayfasi: React.FC<SayiDizisiTakibiSayfasiProps> = ({ onBac
                   Gördüğünüz sırayla sayıları seçin ({sequenceGame.userInput.length}/{sequenceGame.sequence.length})
                 </p>
                 
-                {/* User Input Display */}
-                <div className="flex justify-center items-center gap-3 sm:gap-4 mb-8 flex-wrap">
+                {/* User Input Display - Mobile Responsive */}
+                <div className="flex justify-center items-center gap-2 sm:gap-3 md:gap-4 mb-6 sm:mb-8 flex-wrap max-w-sm sm:max-w-lg md:max-w-2xl mx-auto">
                   {sequenceGame.sequence.map((_, index) => (
                       <div
                         key={index}
                       className={`
-                        w-16 h-16 sm:w-20 sm:h-20 rounded-xl flex items-center justify-center text-2xl font-bold transition-all duration-300
+                        w-12 h-12 sm:w-16 sm:h-16 md:w-20 md:h-20 rounded-lg sm:rounded-xl flex items-center justify-center text-lg sm:text-xl md:text-2xl font-bold transition-all duration-300
                         ${index < sequenceGame.userInput.length
                           ? 'bg-primary text-white'
                           : index === sequenceGame.userInput.length
@@ -258,8 +346,8 @@ const SayiDizisiTakibiSayfasi: React.FC<SayiDizisiTakibiSayfasiProps> = ({ onBac
                     ))}
                   </div>
 
-                {/* Number Buttons */}
-                <div className="grid grid-cols-5 gap-3 max-w-lg mx-auto">
+                {/* Number Buttons - Mobile Optimized Grid */}
+                <div className="grid grid-cols-5 gap-2 sm:gap-3 max-w-xs sm:max-w-lg mx-auto px-4 sm:px-0">
                   {[0, 1, 2, 3, 4, 5, 6, 7, 8, 9].map((number) => (
                       <Button
                         key={number}
@@ -268,7 +356,7 @@ const SayiDizisiTakibiSayfasi: React.FC<SayiDizisiTakibiSayfasiProps> = ({ onBac
                       onClick={() => handleNumberInput(number)}
                         onTouchStart={(e) => e.preventDefault()} // Prevent double-tap zoom
                         className={cn(
-                          "h-16 text-xl font-bold bg-white/60 dark:bg-gray-800/60 backdrop-blur-sm border-white/20 dark:border-gray-700/20 hover:bg-white/80 dark:hover:bg-gray-800/80 hover:scale-105 transition-all duration-200",
+                          "h-12 sm:h-14 md:h-16 text-lg sm:text-xl font-bold bg-white/60 dark:bg-gray-800/60 backdrop-blur-sm border-white/20 dark:border-gray-700/20 hover:bg-white/80 dark:hover:bg-gray-800/80 hover:scale-105 transition-all duration-200 active:scale-95",
                           touchTargetClasses.gameButton
                         )}
                       >

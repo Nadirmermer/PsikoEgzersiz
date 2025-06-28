@@ -108,7 +108,7 @@ export const LOGIC_SEQUENCES_CONFIG: GameConfig = {
 export const NUMBER_SEQUENCE_CONFIG: GameConfig = {
   id: 'number-sequence',
   title: 'Sayı Dizisi Takibi',
-  description: 'Gösterilen sayı dizisini hatırlayın ve aynı sırayla tekrarlayın.',
+  description: 'Gösterilen sayı dizisini hatırlayın ve aynı sırayla tekrarlayın. Working Memory (çalışma belleği) assessment test.',
   difficulty: 'Artan',
   estimatedTime: '5-10 dk',
   hasLevels: true,
@@ -116,7 +116,7 @@ export const NUMBER_SEQUENCE_CONFIG: GameConfig = {
     {
       step: 1,
       title: 'Sayıları İzleyin',
-      description: 'Ekranda sayılar sırayla gösterilecek'
+      description: 'Ekranda sayılar sırayla gösterilecek, dikkatle izleyin'
     },
     {
       step: 2,
@@ -126,18 +126,23 @@ export const NUMBER_SEQUENCE_CONFIG: GameConfig = {
     {
       step: 3,
       title: 'Seviye Atlayın',
-      description: 'Her seviyede dizi uzunluğu artar'
+      description: 'Her seviyede dizi uzunluğu artar (Miller\'s 7±2 Rule test)'
     },
     {
       step: 4,
-      title: 'Hata Durumu',
-      description: 'Hata yaparsanız aynı seviyeyi tekrar denersiniz'
+      title: '⚠️ DİKKAT: Test Kuralı',
+      description: '3 hata yaparsanız working memory assessment tamamlanır ve sonuçlar değerlendirilir'
+    },
+    {
+      step: 5,
+      title: 'Erken Çıkış Uyarısı',
+      description: 'Testi yarıda bırakırsanız sonuçlar kaydedilmez - lütfen tamamlayın!'
     }
   ],
   stats: [
-    { key: 'hasLevels', label: 'Başlangıç Seviyesi', icon: 'target', color: 'primary' },
-    { key: 'estimatedTime', label: 'Gösterim Süresi', icon: 'eye', color: 'primary' },
-    { key: 'difficulty', label: 'Zorluk', icon: 'trophy', color: 'primary' }
+    { key: 'hasLevels', label: 'Working Memory Test', icon: 'target', color: 'primary' },
+    { key: 'estimatedTime', label: 'Miller\'s 7±2 Rule', icon: 'eye', color: 'primary' },
+    { key: 'difficulty', label: '3 Hata = Test Biter', icon: 'trophy', color: 'primary' }
   ]
 }
 
@@ -183,7 +188,7 @@ export const TOWER_OF_LONDON_CONFIG: GameConfig = {
 export const COLOR_SEQUENCE_CONFIG: GameConfig = {
   id: 'color-sequence',
   title: 'Renk Dizisi Takibi',
-  description: 'Gösterilen renk dizisini hatırlayın ve tekrarlayın. Görsel hafızanızı geliştirin.',
+  description: 'Gösterilen renk dizisini hatırlayın ve tekrarlayın. Visual-Spatial Memory (görsel-uzamsal bellek) assessment test.',
   difficulty: 'Artan',
   estimatedTime: '5-10 dk',
   hasLevels: true,
@@ -191,28 +196,33 @@ export const COLOR_SEQUENCE_CONFIG: GameConfig = {
     {
       step: 1,
       title: 'Renkleri İzleyin',
-      description: 'Ekranda renkler sırayla yanıp sönecek'
+      description: 'Ekranda renkler sırayla yanıp sönecek, dikkatle izleyin'
     },
     {
       step: 2,
       title: 'Sırayı Hatırlayın',
-      description: 'Renklerin gösterilme sırasını hatırlayın'
+      description: 'Renklerin gösterilme sırasını hatırlayın ve aynı sırayla renklere tıklayın'
     },
     {
       step: 3,
-      title: 'Tekrarlayın',
-      description: 'Aynı sırayla renklere tıklayın'
+      title: 'Seviye Atlayın',
+      description: 'Her seviyede dizi uzunluğu artar (Visual-spatial memory assessment)'
     },
     {
       step: 4,
-      title: 'Seviye Atlayın',
-      description: 'Her seviyede dizi uzunluğu artar'
+      title: '⚠️ DİKKAT: Test Kuralı',
+      description: '3 hata yaparsanız görsel-uzamsal bellek assessment tamamlanır ve sonuçlar değerlendirilir'
+    },
+    {
+      step: 5,
+      title: 'Erken Çıkış Uyarısı',
+      description: 'Testi yarıda bırakırsanız sonuçlar kaydedilmez - lütfen tamamlayın!'
     }
   ],
   stats: [
-    { key: 'hasLevels', label: 'Başlangıç Seviyesi', icon: 'target', color: 'primary' },
-    { key: 'estimatedTime', label: 'Gösterim Süresi', icon: 'eye', color: 'primary' },
-    { key: 'difficulty', label: 'Zorluk', icon: 'trophy', color: 'primary' }
+    { key: 'hasLevels', label: 'Visual-Spatial Test', icon: 'target', color: 'primary' },
+    { key: 'estimatedTime', label: 'Renk Ayırt Etme', icon: 'eye', color: 'primary' },
+    { key: 'difficulty', label: '3 Hata = Test Biter', icon: 'trophy', color: 'primary' }
   ]
 }
 

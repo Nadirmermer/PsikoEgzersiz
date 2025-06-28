@@ -76,6 +76,7 @@ export interface GameActions {
   onComplete: (result: GameResult) => void
   onBack: () => void
   onNextLevel?: () => void // 🔧 FIX: Optional next level handler for games with levels
+  onExitEarly?: () => void // 🚨 NEW: Handle early exit with partial results saving
 }
 
 // Oyun bileşeni props

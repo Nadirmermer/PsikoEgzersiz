@@ -403,19 +403,19 @@ export const useImageWordMatching = ({ totalQuestions }: UseImageWordMatchingPro
       resetQuestionGeneration()
       initializeBalancedGeneration(totalQuestions)
       
-      setState({
-        currentQuestion: null,
-        questionNumber: 1,
-        score: 0,
-        isAnswering: false,
-        showFeedback: false,
-        lastAnswerCorrect: false,
-        selectedAnswer: '',
-        questionStartTime: 0,
+    setState({
+      currentQuestion: null,
+      questionNumber: 1,
+      score: 0,
+      isAnswering: false,
+      showFeedback: false,
+      lastAnswerCorrect: false,
+      selectedAnswer: '',
+      questionStartTime: 0,
         currentCategory: '',
         categoryQuestionCounts: initializeCategoryQuestionCounts(),
-        gameQuestions: [],
-        userAnswers: [],
+      gameQuestions: [],
+      userAnswers: [],
         responseTimes: [],
         clinicalData: initializeClinicalData()
       })
@@ -442,7 +442,7 @@ export const useImageWordMatching = ({ totalQuestions }: UseImageWordMatchingPro
     try {
       if (error || isLoading) return
       
-      const question = generateMatchingQuestion('emoji-to-word')
+    const question = generateMatchingQuestion('emoji-to-word')
       if (!question) {
         throw new Error('Question generation failed')
       }
@@ -452,13 +452,13 @@ export const useImageWordMatching = ({ totalQuestions }: UseImageWordMatchingPro
         cat.items.some(item => item.emoji === question.correctAnswer.emoji)
       )?.name || 'Unknown'
       
-      setState(prev => ({
-        ...prev,
-        currentQuestion: question,
+    setState(prev => ({
+      ...prev,
+      currentQuestion: question,
         currentCategory: categoryName,
-        questionStartTime: Date.now(),
-        showFeedback: false,
-        selectedAnswer: '',
+      questionStartTime: Date.now(),
+      showFeedback: false,
+      selectedAnswer: '',
         isAnswering: true,
         categoryQuestionCounts: {
           ...prev.categoryQuestionCounts,
@@ -479,11 +479,11 @@ export const useImageWordMatching = ({ totalQuestions }: UseImageWordMatchingPro
     try {
       if (state.showFeedback || !state.currentQuestion || !state.isAnswering || error || isLoading) return
 
-      const isCorrect = answer === state.currentQuestion.correctAnswer.word
-      const responseTime = Date.now() - state.questionStartTime
+    const isCorrect = answer === state.currentQuestion.correctAnswer.word
+    const responseTime = Date.now() - state.questionStartTime
 
-      // Play sound effect
-      playSound(isCorrect ? 'correct-answer' : 'wrong-answer')
+    // Play sound effect
+    playSound(isCorrect ? 'correct-answer' : 'wrong-answer')
 
       // Create response record for clinical analysis
       const responseRecord = {
@@ -496,16 +496,16 @@ export const useImageWordMatching = ({ totalQuestions }: UseImageWordMatchingPro
         timestamp: new Date().toISOString()
       }
 
-      setState(prev => ({
-        ...prev,
-        selectedAnswer: answer,
-        lastAnswerCorrect: isCorrect,
-        showFeedback: true,
-        isAnswering: false,
-        score: isCorrect ? prev.score + 1 : prev.score,
-        // Update stats
-        gameQuestions: [...prev.gameQuestions, prev.currentQuestion!],
-        userAnswers: [...prev.userAnswers, isCorrect],
+    setState(prev => ({
+      ...prev,
+      selectedAnswer: answer,
+      lastAnswerCorrect: isCorrect,
+      showFeedback: true,
+      isAnswering: false,
+      score: isCorrect ? prev.score + 1 : prev.score,
+      // Update stats
+      gameQuestions: [...prev.gameQuestions, prev.currentQuestion!],
+      userAnswers: [...prev.userAnswers, isCorrect],
         responseTimes: [...prev.responseTimes, responseTime],
         // Update clinical data
         clinicalData: {
@@ -516,9 +516,9 @@ export const useImageWordMatching = ({ totalQuestions }: UseImageWordMatchingPro
             responses: [...prev.clinicalData.rawSessionData.responses, responseRecord]
           }
         }
-      }))
+    }))
 
-      return isCorrect
+    return isCorrect
     } catch (err) {
       console.error('Answer selection error:', err)
       setError({

@@ -15,7 +15,8 @@ interface KelimeResimEslestirmeSayfasiProps {
 }
 
 const KelimeResimEslestirmeSayfasi: React.FC<KelimeResimEslestirmeSayfasiProps> = ({ onBack }) => {
-  const TOTAL_QUESTIONS = 30
+  // 🎯 Optimized question count for reverse processing clinical assessment balance (10 categories × 2 questions each)
+  const TOTAL_QUESTIONS = 20
   // 🔧 FIX: Use unified feedback duration for consistency
   const FEEDBACK_DURATION = gameTimings.matchingGames.feedbackDuration
 
@@ -37,11 +38,12 @@ const KelimeResimEslestirmeSayfasi: React.FC<KelimeResimEslestirmeSayfasiProps> 
     matchingGame.initializeGame()
   }, [])
 
-  // Handle game completion
+  // Handle game completion with reverse processing clinical assessment
   useEffect(() => {
     if (matchingGame.isGameCompleted && !universalGame.gameState.isCompleted) {
       const finalStats = matchingGame.getFinalStats()
       
+      // 🧠 Enhanced result with reverse processing clinical assessment data
       const result: GameResult = {
         exerciseName: 'Kelime-Resim Eşleştirme',
         score: Math.round((finalStats.score / TOTAL_QUESTIONS) * 100),
@@ -60,15 +62,29 @@ const KelimeResimEslestirmeSayfasi: React.FC<KelimeResimEslestirmeSayfasiProps> 
           details: {
             questions: finalStats.gameQuestions,
             user_answers: finalStats.userAnswers,
-            response_times: finalStats.responseTimes
+            response_times: finalStats.responseTimes,
+            
+            // 🧠 Reverse Processing Clinical Assessment Data
+            clinicalData: finalStats.clinicalData,
+            categoryPerformance: finalStats.categoryPerformance
           }
         },
         timestamp: new Date().toISOString()
       }
       
+      console.log('🧠 Reverse Processing Clinical Assessment Results:', {
+        overallReverseProcessing: finalStats.clinicalData.overallReverseProcessing,
+        visualSemanticMapping: finalStats.clinicalData.visualSemanticMapping,
+        reverseProcessingSpeed: finalStats.clinicalData.reverseProcessingSpeed,
+        visualRecognition: finalStats.clinicalData.visualRecognition,
+        crossModalIntegration: finalStats.clinicalData.crossModalIntegration,
+        categoryVisualPerformance: finalStats.clinicalData.categoryVisualPerformance,
+        reverseCognitiveProfile: finalStats.clinicalData.reverseCognitiveProfile
+      })
+      
       universalGame.gameActions.onComplete(result)
     }
-  }, [matchingGame.isGameCompleted, universalGame.gameState.isCompleted])
+  }, [matchingGame.isGameCompleted, universalGame.gameState.isCompleted, TOTAL_QUESTIONS])
 
   // Update game stats
   useEffect(() => {
@@ -213,6 +229,15 @@ const KelimeResimEslestirmeSayfasi: React.FC<KelimeResimEslestirmeSayfasiProps> 
           {/* Question Card - Super Clean & Obvious */}
           <Card className={uiStyles.gameCard.primary}>
             <CardContent className={`${uiStyles.cardContent.standard} text-center`}>
+              
+              {/* 🏷️ Category Indicator for Reverse Processing Clinical Tracking */}
+              {matchingGame.currentCategory && (
+                <div className="mb-4">
+                  <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-primary/10 text-primary border border-primary/20">
+                    📂 {matchingGame.currentCategory}
+                  </span>
+                </div>
+              )}
               
               {/* Large Word Display */}
           <div className="mb-6">

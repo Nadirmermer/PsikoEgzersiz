@@ -23,10 +23,16 @@ const UniversalGameEngine: React.FC<UniversalGameEngineProps> = ({
   // Handle back with progress saving
   const handleBackWithProgress = () => {
     playSound('button-click')
+    
     if (gameState.phase === 'playing' || gameState.phase === 'paused') {
-      // Burada progress kaydetme mantığı gelecek
-      console.log('Saving progress for:', gameConfig.title)
+      // 🚨 EARLY EXIT: Call onExitEarly to save partial results
+      if (gameActions.onExitEarly) {
+        gameActions.onExitEarly()
+      } else {
+        console.warn('onExitEarly not implemented for this game')
+      }
     }
+    
     // Sayfa geçişinde en yukarı git
     window.scrollTo({ top: 0, behavior: 'smooth' })
     onBack()
@@ -116,25 +122,23 @@ const UniversalGameEngine: React.FC<UniversalGameEngineProps> = ({
           stats={gameStats}
           onRestart={gameActions.onRestart}
           onBack={onBack}
-          showNextLevel={gameConfig.hasLevels}
-          onNextLevel={() => {
-            // 🔧 FIX: Proper next level handling for each game
-            playSound('button-click')
-            
-            if (gameConfig.id === 'memory-game') {
-              // Memory Game için özel next level handler
-              if (gameActions.onNextLevel) {
-                gameActions.onNextLevel()
-              } else {
-                console.warn('Memory Game onNextLevel handler not found')
-                gameActions.onRestart()
-              }
+          showNextLevel={(() => {
+            // 🧠 Intelligent showNextLevel logic based on game type and completion context
+            if (gameConfig.id === 'number-sequence') {
+              // Number Sequence: No next level for assessment-style completion
+              return false
+            } else if (gameConfig.id === 'color-sequence') {
+              // Color Sequence: No next level for visual-spatial memory assessment completion
+              return false
+            } else if (gameConfig.id === 'memory-game') {
+              // Memory Game: Show next level if available
+              return gameConfig.hasLevels && Boolean(gameActions.onNextLevel)
             } else {
-              // Diğer oyunlar için varsayılan davranış
-              console.log('Next level for:', gameConfig.title)
-              gameActions.onRestart()
+              // Other games: Default behavior
+              return gameConfig.hasLevels
             }
-          }}
+          })()}
+          onNextLevel={gameActions.onNextLevel}
         />
       </div>
     )
