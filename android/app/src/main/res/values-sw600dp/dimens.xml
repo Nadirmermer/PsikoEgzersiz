@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- 📱 Medium Tablet Dimensions (600dp+) -->
+    
+    <!-- 🎯 Game Components for Tablet -->
+    <dimen name="tablet_card_size">120dp</dimen>
+    <dimen name="tablet_game_padding">24dp</dimen>
+    <dimen name="tablet_button_height">56dp</dimen>
+    <dimen name="tablet_button_padding">16dp</dimen>
+    
+    <!-- 📝 Text Sizes for Better Readability -->
+    <dimen name="tablet_title_text_size">28sp</dimen>
+    <dimen name="tablet_body_text_size">18sp</dimen>
+    <dimen name="tablet_caption_text_size">14sp</dimen>
+    
+    <!-- 🎮 Game Grid Spacing -->
+    <dimen name="tablet_grid_spacing">16dp</dimen>
+    <dimen name="tablet_grid_margin">32dp</dimen>
+    
+    <!-- 🎨 Icon Sizes -->
+    <dimen name="tablet_icon_size">32dp</dimen>
+    <dimen name="tablet_large_icon_size">48dp</dimen>
+    
+    <!-- 📊 Dashboard and Stats -->
+    <dimen name="tablet_card_radius">12dp</dimen>
+    <dimen name="tablet_elevation">8dp</dimen>
+    
+</resources> 
