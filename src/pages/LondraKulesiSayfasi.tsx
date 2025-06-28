@@ -642,7 +642,7 @@ const TowerOfLondonGame: React.FC<{
           </div>
 
           {/* Oyun Alanı - Minimal tasarım */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
             
             {/* Sol: Mevcut Durum */}
             <Card className="bg-gradient-to-br from-blue-50/80 to-indigo-50/80 dark:from-blue-950/40 dark:to-indigo-900/40 border-2 border-blue-200/60 dark:border-blue-800/60 backdrop-blur-sm">

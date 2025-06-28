@@ -144,7 +144,14 @@ const Tower: React.FC<{
 Tower.displayName = 'Tower'
 
 // Ana Oyun Komponenti - UniversalGameEngine ile entegre
-const HanoiTowersGame: React.FC<{ onBack: () => void }> = ({ onBack }) => {
+const HanoiTowersGame: React.FC<{ 
+  onBack: () => void
+  universalGame: ReturnType<typeof useUniversalGame>
+  gameControlRef: React.MutableRefObject<{
+    handleNextLevel: () => void
+    handleRestart: () => void
+  } | null>
+}> = ({ onBack, universalGame, gameControlRef }) => {
   // Error handling states
   const [error, setError] = React.useState<string | null>(null)
   const [isLoading, setIsLoading] = React.useState(false)
@@ -179,14 +186,6 @@ const HanoiTowersGame: React.FC<{ onBack: () => void }> = ({ onBack }) => {
   const currentProblem = HANOI_LEVELS[currentLevel - 1] || HANOI_LEVELS[0]
   const towerLabels = ['Kule A', 'Kule B', 'Kule C']
 
-  // Universal game hook'u kullan
-  const universalGame = useUniversalGame({
-    exerciseName: 'Hanoi Kuleleri',
-    onComplete: (result: GameResult) => {
-      console.log('Hanoi Towers completed:', result)
-    }
-  })
-
   // Level'ı başlat
   const initializeLevel = React.useCallback((level: number) => {
     try {
@@ -208,11 +207,9 @@ const HanoiTowersGame: React.FC<{ onBack: () => void }> = ({ onBack }) => {
       setShowingPreview(true)
       setAutoProgressionHandled(false)
       
-      // 🔧 FIX: Reduce preview time from 3s to 1s for better UX
-      setTimeout(() => {
-        setShowingPreview(false)
-        setIsLoading(false)
-      }, 1000)
+      // Londra Kulesi gibi direkt başlat
+      setShowingPreview(false)
+      setIsLoading(false)
       
     } catch (err) {
       console.error('Level initialization error:', err)
@@ -377,11 +374,25 @@ const HanoiTowersGame: React.FC<{ onBack: () => void }> = ({ onBack }) => {
     initializeLevel(nextLevel)
   }, [autoProgressionHandled, currentLevel, playSound, initializeLevel])
 
+  // Restart handler - MEMOIZED
+  const handleRestart = React.useCallback(() => {
+    initializeLevel(currentLevel)
+    setAutoProgressionHandled(false)
+  }, [initializeLevel, currentLevel])
+
+  // Expose control functions to parent - MEMOIZED
+  React.useEffect(() => {
+    gameControlRef.current = {
+      handleNextLevel,
+      handleRestart
+    }
+  }, [handleNextLevel, handleRestart])
+
   // Seviye tamamlama - UniversalGameEngine ile entegre - FIXED
   React.useEffect(() => {
     const isCompleted = checkCompletion()
     
-    if (isCompleted && !universalGame.gameState.isCompleted && !autoProgressionHandled && !showingPreview && moves > 0) {
+    if (isCompleted && !universalGame.gameState.isCompleted && !autoProgressionHandled && moves > 0) {
       // Planlama süresini hesapla
       const finalPlanningTime = startTime ? Math.round((Date.now() - startTime) / 1000) : 0
       
@@ -424,7 +435,7 @@ const HanoiTowersGame: React.FC<{ onBack: () => void }> = ({ onBack }) => {
       universalGame.gameActions.onComplete(result)
       playSound('exercise-complete')
     }
-  }, [checkCompletion, autoProgressionHandled, showingPreview, startTime, currentProblem.minMoves, currentProblem.name, currentProblem.initialConfig, currentProblem.targetConfig, currentProblem.diskCount, moves, currentLevel, universalGame.gameState.isCompleted, universalGame.gameActions, playSound, calculateClinicalAssessment])
+  }, [checkCompletion, autoProgressionHandled, startTime, currentProblem.minMoves, currentProblem.name, currentProblem.initialConfig, currentProblem.targetConfig, currentProblem.diskCount, moves, currentLevel, universalGame.gameState.isCompleted, universalGame.gameActions, playSound, calculateClinicalAssessment])
 
   // Stats'ları güncelle - FIXED
   React.useEffect(() => {
@@ -439,28 +450,7 @@ const HanoiTowersGame: React.FC<{ onBack: () => void }> = ({ onBack }) => {
     })
   }, [moves, currentProblem.minMoves, currentProblem.name, universalGame.updateGameStats])
 
-  // Custom game hook'u oluştur
-  const gameHook = () => ({
-    ...universalGame,
-    gameActions: {
-      ...universalGame.gameActions,
-      onStart: () => {
-        universalGame.gameActions.onStart()
-      },
-      onPause: () => {
-        universalGame.gameActions.onPause()
-      },
-      onResume: () => {
-        universalGame.gameActions.onResume()
-      },
-      onRestart: () => {
-        initializeLevel(currentLevel)
-        universalGame.gameActions.onRestart()
-        setAutoProgressionHandled(false)
-      },
-      onNextLevel: handleNextLevel
-    }
-  })
+
 
   // Error recovery
   const recoverFromError = React.useCallback(() => {
@@ -473,7 +463,7 @@ const HanoiTowersGame: React.FC<{ onBack: () => void }> = ({ onBack }) => {
 
   // Tower click handler
   const handleTowerClick = React.useCallback((towerIndex: number) => {
-    if (showingPreview || universalGame.gameState.isPaused || universalGame.gameState.isCompleted) return
+    if (universalGame.gameState.isPaused || universalGame.gameState.isCompleted) return
 
     recordFirstMove() // İlk hamle zamanını kaydet
 
@@ -511,7 +501,7 @@ const HanoiTowersGame: React.FC<{ onBack: () => void }> = ({ onBack }) => {
         }
       }
     }
-  }, [selectedTower, currentConfig, targetConfig, moves, showingPreview, universalGame.gameState, playSound, recordFirstMove])
+  }, [selectedTower, currentConfig, targetConfig, moves, universalGame.gameState, playSound, recordFirstMove])
 
     return (
       <div className="w-full max-w-4xl mx-auto space-y-4 sm:space-y-6 p-2 sm:p-4">
@@ -539,14 +529,14 @@ const HanoiTowersGame: React.FC<{ onBack: () => void }> = ({ onBack }) => {
         </Card>
       )}
 
-      {/* Loading/Preview Display */}
-      {(isLoading || showingPreview) && (
+      {/* Loading Display */}
+      {isLoading && (
         <Card className={`mb-4 sm:mb-6 ${uiStyles.statusCard.loading}`}>
           <CardContent className="pt-4 sm:pt-6 text-center px-4">
             <div className="flex flex-col items-center gap-3">
-              <Timer className="w-8 h-8 text-blue-600 dark:text-blue-400" />
+              <Loader2 className="w-8 h-8 text-blue-600 dark:text-blue-400 animate-spin" />
               <p className="text-sm sm:text-base text-blue-800 dark:text-blue-200">
-                {showingPreview ? 'Hedef düzenlemeyi inceleyin...' : 'Seviye yükleniyor...'}
+                Seviye yükleniyor...
               </p>
             </div>
           </CardContent>
@@ -565,7 +555,7 @@ const HanoiTowersGame: React.FC<{ onBack: () => void }> = ({ onBack }) => {
       </div>
 
           {/* Oyun Alanı */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
             
             {/* Sol: Mevcut Durum */}
       <Card className={uiStyles.gameCard.primary}>
@@ -625,17 +615,19 @@ const HanoiTowersGame: React.FC<{ onBack: () => void }> = ({ onBack }) => {
         </Card>
           )}
 
-          {/* Progress Info */}
-          <Card className="bg-gradient-to-r from-gray-50/80 to-white/80 dark:from-gray-900/80 dark:to-gray-800/80 border border-gray-200/60 dark:border-gray-700/60 backdrop-blur-sm">
-            <CardContent className="p-4 text-center">
-              <div className="text-lg sm:text-xl font-bold text-gray-800 dark:text-gray-200 mb-2">
-                {moves} hamle yapıldı
-              </div>
-              <div className="text-sm text-gray-600 dark:text-gray-400">
-                Optimal: {currentProblem.minMoves} hamle
-              </div>
-            </CardContent>
-          </Card>
+          {/* Progress Info - Sadece hamle yapıldığında göster */}
+          {moves > 0 && (
+            <Card className="bg-gradient-to-r from-gray-50/80 to-white/80 dark:from-gray-900/80 dark:to-gray-800/80 border border-gray-200/60 dark:border-gray-700/60 backdrop-blur-sm">
+              <CardContent className="p-4 text-center">
+                <div className="text-lg sm:text-xl font-bold text-gray-800 dark:text-gray-200 mb-2">
+                  {moves} hamle yapıldı
+                </div>
+                <div className="text-sm text-gray-600 dark:text-gray-400">
+                  Optimal: {currentProblem.minMoves} hamle
+                </div>
+              </CardContent>
+            </Card>
+          )}
         </>
       )}
     </div>
@@ -651,8 +643,32 @@ const HanoiKuleleriSayfasi: React.FC<HanoiKuleleriSayfasiProps> = ({ onBack }) =
     }
   })
 
+  // Game control refs - Londra Kulesi benzeri
+  const gameControlRef = React.useRef<{
+    handleNextLevel: () => void
+    handleRestart: () => void
+  } | null>(null)
+
   // Custom game hook'u oluştur
-  const gameHook = () => universalGame
+  const gameHook = () => ({
+    ...universalGame,
+    gameActions: {
+      ...universalGame.gameActions,
+      onRestart: () => {
+        // HanoiTowersGame'in restart metodunu çağır
+        if (gameControlRef.current) {
+          gameControlRef.current.handleRestart()
+        }
+        universalGame.gameActions.onRestart()
+      },
+      onNextLevel: () => {
+        // HanoiTowersGame'in next level metodunu çağır
+        if (gameControlRef.current) {
+          gameControlRef.current.handleNextLevel()
+        }
+      }
+    }
+  })
 
   return (
     <UniversalGameEngine
@@ -660,7 +676,7 @@ const HanoiKuleleriSayfasi: React.FC<HanoiKuleleriSayfasiProps> = ({ onBack }) =
       gameHook={gameHook}
       onBack={onBack}
     >
-      <HanoiTowersGame onBack={onBack} />
+      <HanoiTowersGame onBack={onBack} universalGame={universalGame} gameControlRef={gameControlRef} />
     </UniversalGameEngine>
   )
 }
