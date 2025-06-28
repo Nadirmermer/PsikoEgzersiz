@@ -1045,41 +1045,41 @@ const IstatistiklerSayfasi: React.FC = () => {
           <CardContent className="p-3 sm:p-4">
             <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
               <div className="flex-1">
-                <label htmlFor="exercise-filter" className="text-xs font-medium text-muted-foreground block mb-1">Egzersiz Türü</label>
-                <Select value={selectedExerciseFilter} onValueChange={setSelectedExerciseFilter}>
-                  <SelectTrigger id="exercise-filter" className="mt-1">
+                <label className="text-xs font-medium text-muted-foreground">Egzersiz Türü</label>
+            <Select value={selectedExerciseFilter} onValueChange={setSelectedExerciseFilter}>
+                  <SelectTrigger className="mt-1">
                     <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">Tüm Egzersizler</SelectItem>
-                    <SelectItem value="Hafıza Oyunu">Hafıza Oyunu</SelectItem>
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Tüm Egzersizler</SelectItem>
+                <SelectItem value="Hafıza Oyunu">Hafıza Oyunu</SelectItem>
                     <SelectItem value="Londra Kulesi Testi">Londra Kulesi</SelectItem>
-                    <SelectItem value="Hanoi Kuleleri">Hanoi Kuleleri</SelectItem>
+                <SelectItem value="Hanoi Kuleleri">Hanoi Kuleleri</SelectItem>
                     <SelectItem value="Resim-Kelime Eşleştirme">Resim-Kelime</SelectItem>
                     <SelectItem value="Kelime-Resim Eşleştirme">Kelime-Resim</SelectItem>
                     <SelectItem value="Sayı Dizisi Takibi">Sayı Dizisi</SelectItem>
                     <SelectItem value="Renk Dizisi Takibi">Renk Dizisi</SelectItem>
                     <SelectItem value="Mantık Dizileri">Mantık Dizileri</SelectItem>
-                  </SelectContent>
-                </Select>
+              </SelectContent>
+            </Select>
               </div>
               <div className="flex-1">
-                <label htmlFor="time-range-filter" className="text-xs font-medium text-muted-foreground block mb-1">Zaman Aralığı</label>
-                <Select value={selectedTimeRange} onValueChange={setSelectedTimeRange}>
-                  <SelectTrigger id="time-range-filter" className="mt-1">
+                <label className="text-xs font-medium text-muted-foreground">Zaman Aralığı</label>
+            <Select value={selectedTimeRange} onValueChange={setSelectedTimeRange}>
+                  <SelectTrigger className="mt-1">
                     <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">Tüm Zamanlar</SelectItem>
-                    <SelectItem value="7days">Son 7 Gün</SelectItem>
-                    <SelectItem value="30days">Son 30 Gün</SelectItem>
-                    <SelectItem value="90days">Son 90 Gün</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Tüm Zamanlar</SelectItem>
+                <SelectItem value="7days">Son 7 Gün</SelectItem>
+                <SelectItem value="30days">Son 30 Gün</SelectItem>
+                <SelectItem value="90days">Son 90 Gün</SelectItem>
+              </SelectContent>
+            </Select>
+      </div>
+                </div>
+              </CardContent>
+            </Card>
 
         {filteredResults.length === 0 ? (
           <Card className="bg-white/60 dark:bg-gray-900/60 backdrop-blur-sm border border-white/20 dark:border-gray-800/20 shadow-lg">
@@ -1160,8 +1160,8 @@ const IstatistiklerSayfasi: React.FC = () => {
                         ))}
                       </div>
                       <div className="flex justify-center">
-                        <ChartContainer config={chartConfig} className="h-[200px] w-[200px] min-h-[200px] min-w-[200px]">
-                          <ResponsiveContainer width={200} height={200}>
+                        <ChartContainer config={chartConfig} className="h-[200px] w-[200px]">
+                          <ResponsiveContainer width="100%" height="100%">
                             <PieChart>
                               <Pie
                                 data={exerciseDistribution}
@@ -1186,8 +1186,8 @@ const IstatistiklerSayfasi: React.FC = () => {
                     {/* Desktop: Yan yana */}
                     <div className="hidden lg:grid lg:grid-cols-2 gap-6">
                       <div>
-                        <ChartContainer config={chartConfig} className="h-[300px] w-full min-h-[300px]">
-                          <ResponsiveContainer width="100%" height={300}>
+                        <ChartContainer config={chartConfig} className="h-[300px]">
+                          <ResponsiveContainer width="100%" height="100%">
                             <PieChart>
                               <Pie
                                 data={exerciseDistribution}
@@ -1297,8 +1297,8 @@ const IstatistiklerSayfasi: React.FC = () => {
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <ChartContainer config={chartConfig} className="h-[300px] w-full min-h-[300px]">
-                    <ResponsiveContainer width="100%" height={300}>
+                  <ChartContainer config={chartConfig} className="h-[300px] sm:h-[400px] mb-6">
+                    <ResponsiveContainer width="100%" height="100%">
                       <BarChart data={memoryAnalytics}>
                         <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
                         <XAxis dataKey="level" stroke="hsl(var(--muted-foreground))" fontSize={10} tick={{ fontSize: 10 }} />
@@ -1369,7 +1369,7 @@ const IstatistiklerSayfasi: React.FC = () => {
                 </CardHeader>
                 <CardContent>
                   <ChartContainer config={chartConfig} className="h-[400px] mb-6">
-                    <ResponsiveContainer width=\"100%\" height={300}>
+                    <ResponsiveContainer width="100%" height="100%">
                       <BarChart data={towerOfLondonAnalytics.levelStats}>
                         <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
                         <XAxis dataKey="level" stroke="hsl(var(--muted-foreground))" fontSize={12} />
@@ -1874,7 +1874,7 @@ const IstatistiklerSayfasi: React.FC = () => {
                         Kategori Bazında Performans
                       </h4>
                       <ChartContainer config={chartConfig} className="h-[300px] sm:h-[400px]">
-                    <ResponsiveContainer width=\"100%\" height={300}>
+                    <ResponsiveContainer width="100%" height="100%">
                           <BarChart data={imageWordAnalytics.categoryChartData} layout="horizontal">
                         <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
                             <XAxis type="number" stroke="hsl(var(--muted-foreground))" fontSize={10} />
@@ -2041,7 +2041,7 @@ const IstatistiklerSayfasi: React.FC = () => {
                         Kategori-bazlı Reverse Processing Performansı
                       </h4>
                       <div className="h-80">
-                        <ResponsiveContainer width=\"100%\" height={300}>
+                        <ResponsiveContainer width="100%" height="100%">
                           <BarChart data={wordImageAnalytics.categoryVisualChartData}>
                             <CartesianGrid strokeDasharray="3 3" className="opacity-30" />
                             <XAxis 
@@ -2215,7 +2215,7 @@ const IstatistiklerSayfasi: React.FC = () => {
                         Miller's 7±2 Rule - Working Memory Progression
                       </h4>
                       <div className="h-80">
-                        <ResponsiveContainer width=\"100%\" height={300}>
+                        <ResponsiveContainer width="100%" height="100%">
                           <LineChart data={numberSequenceAnalytics.millerProgressionData}>
                             <CartesianGrid strokeDasharray="3 3" className="opacity-30" />
                             <XAxis dataKey="session" tick={{ fontSize: 12 }} />
@@ -2459,7 +2459,7 @@ const IstatistiklerSayfasi: React.FC = () => {
                         Visual-Spatial Pattern - Capacity Progression
                       </h4>
                       <div className="h-80">
-                        <ResponsiveContainer width=\"100%\" height={300}>
+                        <ResponsiveContainer width="100%" height="100%">
                           <LineChart data={colorSequenceAnalytics.visualSpatialProgressionData}>
                             <CartesianGrid strokeDasharray="3 3" className="opacity-30" />
                             <XAxis dataKey="session" tick={{ fontSize: 12 }} />
@@ -2639,7 +2639,7 @@ const IstatistiklerSayfasi: React.FC = () => {
                 </CardHeader>
                 <CardContent>
                   <ChartContainer config={chartConfig} className="h-[300px]">
-                    <ResponsiveContainer width=\"100%\" height={300}>
+                    <ResponsiveContainer width="100%" height="100%">
                       <AreaChart data={legacyColorSequenceAnalytics}>
                         <defs>
                           <linearGradient id="colorSequenceGradient" x1="0" y1="0" x2="0" y2="1">
@@ -2673,7 +2673,7 @@ const IstatistiklerSayfasi: React.FC = () => {
               <CardContent>
                 {filteredResults.length > 1 ? (
                 <ChartContainer config={chartConfig} className="h-[400px]">
-                  <ResponsiveContainer width=\"100%\" height={300}>
+                  <ResponsiveContainer width="100%" height="100%">
                     <LineChart data={filteredResults.map((result, index) => ({
                       index: index + 1,
                       skor: result.score,

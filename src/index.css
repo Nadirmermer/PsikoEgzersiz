@@ -133,10 +133,12 @@
 }
 
 @layer base {
+  * {
+    @apply border-border;
+  }
+
   body {
-    background-color: hsl(var(--background)); 
-    color: hsl(var(--foreground)); 
-    font-family: system-ui, -apple-system, sans-serif;
+    @apply bg-background text-foreground font-sans;
     /* Enhanced typography with better line height for readability */
     line-height: 1.6;
     /* Better text rendering for crisp fonts */
@@ -170,51 +172,42 @@
 
   /* Enhanced typography hierarchy with proper semantic structure */
   h1 {
-    font-size: 1.875rem; 
-    font-weight: 700; 
-    letter-spacing: -0.025em; 
+    @apply text-3xl md:text-4xl lg:text-5xl font-bold tracking-tight;
     line-height: 1.1;
   }
 
   h2 {
-    font-size: 1.5rem; 
-    font-weight: 600; 
-    letter-spacing: -0.025em; 
+    @apply text-2xl md:text-3xl lg:text-4xl font-semibold tracking-tight;
     line-height: 1.2;
   }
 
   h3 {
-    font-size: 1.25rem; 
-    font-weight: 600; 
-    letter-spacing: -0.025em; 
+    @apply text-xl md:text-2xl lg:text-3xl font-semibold tracking-tight;
     line-height: 1.3;
   }
 
   h4 {
-    font-size: 1.125rem; 
-    font-weight: 500; 
+    @apply text-lg md:text-xl lg:text-2xl font-medium;
     line-height: 1.4;
   }
 
   h5 {
-    font-size: 1rem; 
-    font-weight: 500; 
+    @apply text-base md:text-lg font-medium;
     line-height: 1.5;
   }
 
   h6 {
-    font-size: 0.875rem; 
-    font-weight: 500; 
+    @apply text-sm md:text-base font-medium;
     line-height: 1.5;
   }
 
   p {
-    font-size: 0.875rem; 
+    @apply text-sm md:text-base;
     line-height: 1.6;
   }
 
   small {
-    font-size: 0.75rem; color: hsl(var(--muted-foreground)); line-height: 1.5;
+    @apply text-xs md:text-sm text-muted-foreground;
   }
 
   /* Enhanced focus styles for better accessibility */
@@ -442,18 +435,18 @@
 @layer components {
   /* Enhanced card styles with sophisticated depth */
   .card-enhanced {
-    background-color: hsl(var(--card)); color: hsl(var(--card-foreground)); border-radius: 0.75rem; border: 1px solid hsl(var(--border) / 0.5); transition: all 0.3s ease;
+    @apply bg-card text-card-foreground rounded-xl border border-border/50 transition-all duration-300;
     box-shadow: var(--shadow-sm);
   }
 
   .card-enhanced:hover {
-    border: 1px solid hsl(var(--border));
+    @apply border-border;
     box-shadow: var(--shadow-md);
     transform: translateY(-1px);
   }
 
   .card-interactive {
-    background-color: hsl(var(--card)); color: hsl(var(--card-foreground)); border-radius: 0.75rem; border: 1px solid hsl(var(--border) / 0.5); transition: all 0.3s ease; cursor: pointer;
+    @apply card-enhanced cursor-pointer;
   }
 
   .card-interactive:hover {
@@ -468,7 +461,7 @@
 
   /* Modern button variants with micro-interactions */
   .btn-gradient {
-    background: linear-gradient(to right, hsl(var(--primary)), hsl(var(--primary) / 0.8)); color: hsl(var(--primary-foreground)); transition: all 0.3s ease;
+    @apply bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 text-primary-foreground transition-all duration-300;
     box-shadow: var(--shadow-sm);
   }
 
@@ -483,7 +476,7 @@
   }
 
   .btn-soft {
-    background-color: hsl(var(--primary) / 0.1); color: hsl(var(--primary)); border: 1px solid hsl(var(--primary) / 0.2); transition: all 0.3s ease;
+    @apply bg-primary/10 hover:bg-primary/20 text-primary border-primary/20 hover:border-primary/30 transition-all duration-300;
   }
 
   .btn-soft:hover {
@@ -493,7 +486,7 @@
 
   /* Enhanced focus styles for interactive elements */
   .focus-enhanced {
-    outline: none; transition: all 0.2s ease;
+    @apply focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-background transition-all duration-200;
   }
 
   /* Success, warning, info variants with proper contrast */
@@ -535,29 +528,17 @@
 
   /* Enhanced micro-interactions with accessibility considerations */
   .interactive-scale {
-    transition: transform 0.2s ease;
-  }
-  
-  .interactive-scale:hover,
-  .interactive-scale:focus-visible {
-    transform: scale(1.02);
-  }
-  
-  .interactive-scale:active {
-    transform: scale(0.98);
+    @apply transition-transform duration-200 hover:scale-[1.02] active:scale-[0.98] focus-visible:scale-[1.02];
   }
 
   .interactive-lift {
-    transition: all 0.3s ease;
+    @apply transition-all duration-300 hover:translate-y-[-2px] focus-visible:translate-y-[-2px];
   }
-  
+
   .interactive-lift:hover,
   .interactive-lift:focus-visible {
-    transform: translateY(-2px);
     box-shadow: var(--shadow-md);
   }
-
-
 
   /* Enhanced animations with motion preference respect */
   .fade-in {
@@ -578,57 +559,57 @@
 
   /* Tablet-optimized spacing utilities */
   .section-padding {
-    padding: 1.5rem 1rem;
+    @apply px-4 py-6 md:px-6 md:py-8 lg:px-8 lg:py-10;
   }
 
   .content-spacing {
-    display: flex; flex-direction: column; gap: 1rem;
+    @apply space-y-4 md:space-y-6 lg:space-y-8;
   }
 
   .grid-responsive {
-    display: grid; gap: 1rem;
+    @apply grid gap-4 md:gap-6 lg:gap-8;
   }
 
   /* Enhanced touch targets for mobile and tablet */
   .touch-target {
-    min-height: 44px; min-width: 44px; display: flex; align-items: center; justify-content: center;
+    @apply min-h-[44px] min-w-[44px] flex items-center justify-center;
   }
 
   /* Tablet-optimized navigation */
   .nav-tablet {
-    display: flex; align-items: center; justify-content: center; gap: 0.5rem; padding: 0.75rem 0.5rem;
+    @apply flex items-center justify-center space-x-2 md:space-x-4 px-2 py-3 md:px-4 md:py-4;
   }
 
   /* Loading states with better UX */
   .loading-skeleton {
-    background-color: hsl(var(--muted)); animation: pulse 2s infinite; border-radius: 0.375rem;
+    @apply bg-muted animate-pulse rounded-md;
   }
 
   .loading-shimmer {
-    position: relative; overflow: hidden; background-color: hsl(var(--muted)); border-radius: 0.375rem;
+    @apply relative overflow-hidden bg-muted rounded-md;
   }
 
   .loading-shimmer::after {
     content: '';
-    position: absolute; inset: 0; background: linear-gradient(to right, transparent, rgba(255,255,255,0.1), transparent);
+    @apply absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent;
     animation: shimmer 2s infinite;
   }
 
   /* Enhanced error and success states */
   .state-success {
-    background-color: hsl(var(--success) / 0.1); border: 1px solid hsl(var(--success) / 0.2); color: hsl(var(--success));
+    @apply bg-success/10 border-success/20 text-success;
   }
 
   .state-warning {
-    background-color: hsl(var(--warning) / 0.1); border: 1px solid hsl(var(--warning) / 0.2); color: hsl(var(--warning));
+    @apply bg-warning/10 border-warning/20 text-warning;
   }
 
   .state-error {
-    background-color: hsl(var(--destructive) / 0.1); border: 1px solid hsl(var(--destructive) / 0.2); color: hsl(var(--destructive));
+    @apply bg-destructive/10 border-destructive/20 text-destructive;
   }
 
   .state-info {
-    background-color: hsl(var(--info) / 0.1); border: 1px solid hsl(var(--info) / 0.2); color: hsl(var(--info));
+    @apply bg-info/10 border-info/20 text-info;
   }
 }
 
@@ -769,26 +750,9 @@
   border: 0;
 }
 
-/* Skip navigation for tablet keyboard users */
+/* Skip link for keyboard navigation */
 .skip-link {
-  position: absolute; 
-  top: 1rem; 
-  left: 1rem; 
-  background-color: #000000; /* High contrast black background */
-  color: #ffffff; /* High contrast white text */
-  padding: 0.75rem 1.5rem; 
-  border-radius: 0.375rem;
-  font-weight: 600; /* Bolder font for better visibility */
-  z-index: 9999;
-  transform: translateY(-100%);
-  transition: transform 0.3s;
-  border: 2px solid #ffffff; /* White border for extra contrast */
-}
-
-.skip-link:focus {
-  transform: translateY(0%);
-  outline: 3px solid #fbbf24; /* High contrast yellow outline */
-  outline-offset: 2px;
+  @apply sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 focus:z-50 focus:px-4 focus:py-2 focus:bg-primary focus:text-primary-foreground focus:rounded-md focus:shadow-lg;
 }
 
 /* Disleksi Okuma Modu - Erişilebilirlik İyileştirmesi */
@@ -919,45 +883,23 @@
 @layer components {
   /* Tablet-friendly touch targets - minimum 44px per Apple/Google guidelines */
   .touch-friendly {
-    min-height: 44px;
-    min-width: 44px;
-    touch-action: manipulation;
-    -webkit-user-select: none;
-    user-select: none;
+    @apply min-h-[44px] min-w-[44px] touch-manipulation select-none;
   }
 
   /* Enhanced button styles for tablets */
   .btn-tablet {
-    min-height: 44px;
-    min-width: 44px;
+    @apply touch-friendly active:scale-95 transition-transform duration-150;
+    /* Prevent iOS double-tap zoom */
     touch-action: manipulation;
     -webkit-touch-callout: none;
     -webkit-user-select: none;
     user-select: none;
-    transition: transform 0.15s ease;
-  }
-  
-  .btn-tablet:active {
-    transform: scale(0.95);
   }
 
   /* Game card styles optimized for tablets */
   .game-card-tablet {
-    min-height: 44px;
-    min-width: 44px;
+    @apply touch-friendly active:scale-98 hover:scale-[1.02] transition-all duration-200;
     touch-action: manipulation;
-    -webkit-touch-callout: none;
-    -webkit-user-select: none;
-    user-select: none;
-    transition: all 0.2s ease;
-  }
-  
-  .game-card-tablet:hover {
-    transform: scale(1.02);
-  }
-  
-  .game-card-tablet:active {
-    transform: scale(0.98);
   }
 
   /* Prevent text selection during games */
@@ -971,17 +913,14 @@
   }
 
   /* Enhanced focus styles for tablet navigation */
-  .focus-tablet:focus {
-    outline: none;
-    box-shadow: 0 0 0 4px hsl(var(--primary) / 0.5);
-    border-radius: calc(var(--radius) * 0.5);
+  .focus-tablet {
+    @apply focus:outline-none focus:ring-4 focus:ring-primary/50 focus:ring-offset-2;
   }
 
   /* Smooth scrolling for tablet */
   .scroll-smooth-tablet {
     -webkit-overflow-scrolling: touch;
     scroll-behavior: smooth;
-    overflow-y: auto;
   }
 }
 
@@ -989,22 +928,22 @@
 @media (min-width: 768px) and (max-width: 1024px) {
   /* Optimize button sizes for tablets */
   button, .btn {
-    min-height: 48px; min-width: 48px; font-size: 1rem;
+    @apply min-h-[48px] min-w-[48px] text-base;
   }
 
   /* Larger tap targets for game elements */
   .game-button {
-    min-height: 56px; min-width: 56px; font-size: 1.125rem;
+    @apply min-h-[56px] min-w-[56px] text-lg;
   }
 
   /* Better spacing for tablet layouts */
   .container {
-    padding-left: 1.5rem; padding-right: 1.5rem;
+    @apply px-6;
   }
 
   /* Card spacing optimization */
   .grid {
-    gap: 1rem;
+    @apply gap-4;
   }
 }
 
@@ -1012,12 +951,12 @@
 @media (min-width: 768px) and (max-width: 1024px) and (orientation: landscape) {
   /* Reduce vertical spacing in landscape */
   .game-container {
-    padding-top: 1rem; padding-bottom: 1rem;
+    @apply py-4;
   }
 
   /* Optimize header height */
   .header {
-    height: 4rem;
+    @apply h-16;
   }
 }
 
@@ -1051,17 +990,17 @@
 @layer utilities {
   /* Tablet-specific responsive utilities */
   .tablet-optimized {
-    padding: 1.5rem; font-size: 1.125rem;
+    @apply tablet:p-6 tablet:text-lg tablet:space-y-6;
   }
 
   /* Game elements for tablets */
   .game-element-tablet {
-    min-height: 56px; min-width: 56px; font-size: 1.125rem; border-radius: 0.75rem;
+    @apply tablet:min-h-[56px] tablet:min-w-[56px] tablet:text-lg tablet:rounded-xl;
   }
 
   /* Grid layouts for tablets */
   .grid-tablet-responsive {
-    display: grid; gap: 1rem;
+    @apply grid gap-4 tablet:gap-6 tablet-lg:gap-8;
   }
 
   /* Safe area handling for tablets */
@@ -1076,64 +1015,64 @@
 /* Tablet Portrait Optimizations */
 @media (min-width: 768px) and (max-width: 1024px) and (orientation: portrait) {
   .container {
-    padding: 1.5rem 2rem;
+    @apply px-8 py-6;
   }
 
   /* Game cards in portrait */
   .game-card {
-    padding: 1.5rem; border-radius: 0.75rem;
+    @apply p-6 rounded-xl;
   }
 
   /* Buttons in portrait */
   button, .btn {
-    min-height: 48px; min-width: 48px; font-size: 1rem; padding: 0.75rem 1.5rem;
+    @apply min-h-[48px] min-w-[48px] text-base px-6 py-3;
   }
 
   /* Game buttons larger for better touch */
   .game-button {
-    min-height: 64px; min-width: 64px; font-size: 1.25rem;
+    @apply min-h-[64px] min-w-[64px] text-xl;
   }
 
   /* Header optimizations */
   .header {
-    height: 5rem; padding-left: 2rem; padding-right: 2rem;
+    @apply h-20 px-8;
   }
 
   /* Navigation optimizations */
   .nav-item {
-    padding: 1rem 1.5rem; font-size: 1.125rem;
+    @apply px-6 py-4 text-lg;
   }
 }
 
 /* Tablet Landscape Optimizations */
 @media (min-width: 1024px) and (max-width: 1366px) and (orientation: landscape) {
   .container {
-    padding: 1rem 3rem;
+    @apply px-12 py-4;
   }
 
   /* Reduce vertical spacing in landscape */
   .game-container {
-    padding-top: 1rem; padding-bottom: 1rem;
+    @apply py-4 space-y-4;
   }
 
   /* Header height optimization */
   .header {
-    height: 4rem;
+    @apply h-16;
   }
 
   /* Game cards in landscape */
   .game-card {
-    padding: 1rem;
+    @apply p-4;
   }
 
   /* Grid layouts in landscape */
   .grid {
-    gap: 1.5rem;
+    @apply gap-6;
   }
 
   /* Button optimization for landscape */
   button, .btn {
-    min-height: 44px; min-width: 44px;
+    @apply min-h-[44px] min-w-[44px];
   }
 }
 
@@ -1171,7 +1110,7 @@
 
   /* Larger touch targets */
   button, .btn, .touch-target {
-    min-height: 48px; min-width: 48px;
+    @apply min-h-[48px] min-w-[48px];
   }
 
   /* Better focus indicators for keyboard navigation */
@@ -1205,7 +1144,7 @@
 
   /* Skip navigation for tablet keyboard users */
   .skip-link {
-    position: absolute; top: 1rem; left: 1rem; background-color: hsl(var(--primary)); color: white; padding: 0.5rem 1rem; border-radius: 0.375rem;
+    @apply absolute top-4 left-4 bg-primary text-white px-4 py-2 rounded-md;
     transform: translateY(-100%);
     transition: transform 0.3s;
   }
@@ -1227,20 +1166,13 @@
 
   /* Performance optimized page transitions */
   .page-transition {
-    transform: translate3d(0, 0, 0);
-    will-change: transform;
-    backface-visibility: hidden;
-    -webkit-backface-visibility: hidden;
-    transition: all 0.3s ease-out;
+    @apply gpu-accelerated transition-all duration-300 ease-out;
   }
 
   /* Optimized card animations */
   .card-optimized {
+    @apply gpu-accelerated transition-transform duration-200 ease-out;
     transform: translate3d(0, 0, 0) scale(1);
-    will-change: transform;
-    backface-visibility: hidden;
-    -webkit-backface-visibility: hidden;
-    transition: transform 0.2s ease-out;
   }
 
   .card-optimized:hover {
@@ -1253,11 +1185,8 @@
 
   /* Optimized button animations */
   .btn-optimized {
+    @apply gpu-accelerated transition-transform duration-150 ease-out;
     transform: translate3d(0, 0, 0) scale(1);
-    will-change: transform;
-    backface-visibility: hidden;
-    -webkit-backface-visibility: hidden;
-    transition: transform 0.15s ease-out;
   }
 
   .btn-optimized:hover {
@@ -1275,20 +1204,14 @@
 
   /* Optimized game element animations */
   .game-element-optimized {
+    @apply gpu-accelerated no-layout-shift;
     transform: translate3d(0, 0, 0) scale(1);
-    will-change: transform;
-    backface-visibility: hidden;
-    -webkit-backface-visibility: hidden;
-    contain: layout style paint;
     transition: transform 0.2s cubic-bezier(0.25, 0.46, 0.45, 0.94);
   }
 
   /* Smooth navigation transitions */
   .nav-optimized {
-    transform: translate3d(0, 0, 0);
-    will-change: transform;
-    backface-visibility: hidden;
-    -webkit-backface-visibility: hidden;
+    @apply gpu-accelerated;
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   }
 
@@ -1300,19 +1223,13 @@
 
   /* Memory efficient loading states */
   .loading-optimized {
-    transform: translate3d(0, 0, 0);
-    will-change: transform;
-    backface-visibility: hidden;
-    -webkit-backface-visibility: hidden;
+    @apply gpu-accelerated;
     animation: loadingOptimized 1.5s ease-in-out infinite;
   }
 
   /* Virtualization support */
   .virtual-scroll {
-    transform: translate3d(0, 0, 0);
-    will-change: transform;
-    backface-visibility: hidden;
-    -webkit-backface-visibility: hidden;
+    @apply gpu-accelerated;
     overflow-y: auto;
     -webkit-overflow-scrolling: touch;
     scroll-behavior: smooth;
@@ -1320,10 +1237,7 @@
 
   /* Image loading optimization */
   .image-optimized {
-    transform: translate3d(0, 0, 0);
-    will-change: transform;
-    backface-visibility: hidden;
-    -webkit-backface-visibility: hidden;
+    @apply gpu-accelerated;
     image-rendering: optimizeQuality;
     object-fit: cover;
     transition: opacity 0.3s ease;
@@ -1372,10 +1286,7 @@
   .game-element,
   .modal,
   .dropdown {
-    transform: translate3d(0, 0, 0);
-    will-change: transform;
-    backface-visibility: hidden;
-    -webkit-backface-visibility: hidden;
+    @apply gpu-accelerated;
   }
 
   /* Optimize text rendering */
@@ -1407,10 +1318,7 @@
 
   /* Optimize for 60fps animations */
   .fps-60 {
-    transform: translate3d(0, 0, 0);
-    will-change: transform;
-    backface-visibility: hidden;
-    -webkit-backface-visibility: hidden;
+    @apply gpu-accelerated;
     animation-duration: 16.67ms; /* 1/60th of a second */
   }
 
@@ -1441,8 +1349,8 @@
 @media (min-width: 768px) {
   /* Prioritize above-the-fold content */
   .above-fold {
-    transform: translate3d(0, 0, 0); will-change: transform; backface-visibility: hidden; -webkit-backface-visibility: hidden;
-    
+    @apply gpu-accelerated;
+    critical: true;
   }
 
   /* Defer non-critical animations */
@@ -1452,7 +1360,7 @@
 
   /* Optimize for tablet scroll performance */
   .scroll-optimized {
-    transform: translate3d(0, 0, 0); will-change: transform; backface-visibility: hidden; -webkit-backface-visibility: hidden;
+    @apply gpu-accelerated;
     overflow-y: auto;
     -webkit-overflow-scrolling: touch;
     scroll-behavior: smooth;
@@ -1469,19 +1377,15 @@
 @layer utilities {
   /* Efficient visibility toggle */
   .visible-optimized {
+    @apply gpu-accelerated;
     transform: translate3d(0, 0, 0);
-    will-change: transform;
-    backface-visibility: hidden;
-    -webkit-backface-visibility: hidden;
     opacity: 1;
     visibility: visible;
   }
 
   .hidden-optimized {
+    @apply gpu-accelerated;
     transform: translate3d(0, 0, 0);
-    will-change: transform;
-    backface-visibility: hidden;
-    -webkit-backface-visibility: hidden;
     opacity: 0;
     visibility: hidden;
     pointer-events: none;
@@ -1489,10 +1393,7 @@
 
   /* Performance-first hover states */
   .hover-optimized {
-    transform: translate3d(0, 0, 0);
-    will-change: transform;
-    backface-visibility: hidden;
-    -webkit-backface-visibility: hidden;
+    @apply gpu-accelerated;
     transition: transform 0.15s ease-out;
   }
 
@@ -1502,10 +1403,7 @@
 
   /* Click feedback with minimal layout impact */
   .click-feedback {
-    transform: translate3d(0, 0, 0);
-    will-change: transform;
-    backface-visibility: hidden;
-    -webkit-backface-visibility: hidden;
+    @apply gpu-accelerated;
     transition: transform 0.1s ease-out;
   }
 
@@ -1517,36 +1415,36 @@
 /* 🚀 PERFORMANCE: Page-specific optimizations */
 /* Statistics page optimization */
 .stats-page {
-  contain: layout;
+  @apply contain-layout;
 }
 
 .stats-page .chart-container {
-  transform: translate3d(0, 0, 0); will-change: transform; backface-visibility: hidden; -webkit-backface-visibility: hidden; contain: paint;
+  @apply gpu-accelerated contain-paint;
   isolation: isolate;
 }
 
 /* Game page optimization */
 .game-page {
-  contain: strict; transform: translate3d(0, 0, 0); will-change: transform; backface-visibility: hidden; -webkit-backface-visibility: hidden;
+  @apply contain-strict gpu-accelerated;
 }
 
 .game-page .game-board {
-  contain: layout;
+  @apply contain-layout;
   isolation: isolate;
 }
 
 /* Settings page optimization */
 .settings-page {
-  contain: layout;
+  @apply contain-layout;
 }
 
 .settings-page .form-section {
-  contain: paint;
+  @apply contain-paint;
 }
 
 /* Navigation optimization */
 .navigation {
-  transform: translate3d(0, 0, 0); will-change: transform; backface-visibility: hidden; -webkit-backface-visibility: hidden; contain: layout;
+  @apply gpu-accelerated contain-layout;
   position: sticky;
   top: 0;
   z-index: 50;
@@ -1556,7 +1454,7 @@
 @media (prefers-reduced-motion: no-preference) {
   /* Smooth micro-interactions */
   .micro-interaction {
-    transform: translate3d(0, 0, 0); will-change: transform; backface-visibility: hidden; -webkit-backface-visibility: hidden;
+    @apply gpu-accelerated;
     transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
   }
 
@@ -1589,54 +1487,5 @@
   .essential-feedback:active {
     opacity: 0.8;
   }
-}
-
-/* Custom animations for loading screens */
-@keyframes fade-in {
-  from {
-    opacity: 0;
-    transform: translateY(20px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-.animate-fade-in {
-  animation: fade-in 0.6s ease-out forwards;
-}
-
-/* High contrast fixes for accessibility */
-.high-contrast-text {
-  color: #1f2937 !important; /* Dark gray for light backgrounds */
-}
-
-.dark .high-contrast-text {
-  color: #f9fafb !important; /* Light gray for dark backgrounds */
-}
-
-/* Badge contrast improvements */
-.badge-high-contrast {
-  background-color: #1f2937 !important;
-  color: #ffffff !important;
-  font-weight: 600;
-}
-
-.dark .badge-high-contrast {
-  background-color: #f9fafb !important;
-  color: #1f2937 !important;
-}
-
-/* Small text contrast improvements */
-.text-xs.low-contrast,
-.text-sm.low-contrast {
-  color: #1f2937 !important;
-  font-weight: 500;
-}
-
-.dark .text-xs.low-contrast,
-.dark .text-sm.low-contrast {
-  color: #f3f4f6 !important;
 }
 

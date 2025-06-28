@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, lazy, Suspense } from "react";
-// Logo-based loading, no card needed
+import { Card, CardContent } from "@/components/ui/card"
 import { Loader2 } from "lucide-react"
 import BottomNavigation from "../components/BottomNavigation";
 import ClientModeHandler from "../components/ClientModeHandler";
@@ -23,31 +23,15 @@ const RenkDizisiTakibiSayfasi = lazy(() => import("./RenkDizisiTakibiSayfasi"));
 const MantikDizileriSayfasi = lazy(() => import("./MantikDizileriSayfasi"));
 const HanoiKuleleriSayfasi = lazy(() => import("./HanoiKuleleriSayfasi"));
 
-// 🚀 PERFORMANCE: Loading fallback component with logo
+// 🚀 PERFORMANCE: Loading fallback component
 const LoadingFallback = () => (
   <div className="min-h-screen bg-background flex items-center justify-center">
-    <div className="text-center space-y-4">
-      {/* Logo */}
-      <div className="w-24 h-24 mx-auto mb-6 bg-gradient-to-br from-primary to-primary/80 rounded-2xl flex items-center justify-center shadow-lg p-3">
-        <img 
-          src="/logo.png" 
-          alt="PsikoEgzersiz Logo" 
-          className="w-full h-full object-contain drop-shadow-sm"
-        />
-      </div>
-      
-      {/* Loading spinner */}
-      <div className="relative">
-        <Loader2 className="h-8 w-8 animate-spin mx-auto text-primary" />
-        <div className="absolute inset-0 h-8 w-8 mx-auto border-2 border-primary/20 rounded-full"></div>
-      </div>
-      
-      {/* Loading text */}
-      <div className="space-y-2">
-        <p className="text-lg font-medium text-foreground">PsikoEgzersiz</p>
-        <p className="text-sm text-muted-foreground">Beyin gücünüzü artırın...</p>
-      </div>
-    </div>
+    <Card className="w-full max-w-md mx-4">
+      <CardContent className="p-8 text-center">
+        <Loader2 className="h-8 w-8 animate-spin mx-auto mb-4 text-primary" />
+        <p className="text-muted-foreground">Sayfa yükleniyor...</p>
+      </CardContent>
+    </Card>
   </div>
 )
 
@@ -180,9 +164,9 @@ const Index = () => {
     
     // Use requestAnimationFrame to defer the heavy operation
     requestAnimationFrame(() => {
-      playSound('button-click')
-      console.log('Index - Page changed to:', page)
-      setActivePage(page);
+    playSound('button-click')
+    console.log('Index - Page changed to:', page)
+    setActivePage(page);
     });
   }, [isClientMode, playSound]);
 
@@ -229,7 +213,7 @@ const Index = () => {
       <>
         <SkipNavigation />
         <Suspense fallback={<LoadingFallback />}>
-          <HafizaOyunuSayfasi onBack={handleMemoryGameEnd} />
+        <HafizaOyunuSayfasi onBack={handleMemoryGameEnd} />
         </Suspense>
         <ClientModeHandler 
           isClientMode={isClientMode}
@@ -245,7 +229,7 @@ const Index = () => {
       <>
         <SkipNavigation />
         <Suspense fallback={<LoadingFallback />}>
-          <ResimKelimeEslestirmeSayfasi onBack={handleImageWordMatchingEnd} />
+        <ResimKelimeEslestirmeSayfasi onBack={handleImageWordMatchingEnd} />
         </Suspense>
         <ClientModeHandler 
           isClientMode={isClientMode}
@@ -261,7 +245,7 @@ const Index = () => {
       <>
         <SkipNavigation />
         <Suspense fallback={<LoadingFallback />}>
-          <KelimeResimEslestirmeSayfasi onBack={handleWordImageMatchingEnd} />
+        <KelimeResimEslestirmeSayfasi onBack={handleWordImageMatchingEnd} />
         </Suspense>
         <ClientModeHandler 
           isClientMode={isClientMode}
@@ -277,7 +261,7 @@ const Index = () => {
       <>
         <SkipNavigation />
         <Suspense fallback={<LoadingFallback />}>
-          <LondraKulesiSayfasi onBack={handleTowerOfLondonEnd} />
+        <LondraKulesiSayfasi onBack={handleTowerOfLondonEnd} />
         </Suspense>
         <ClientModeHandler 
           isClientMode={isClientMode}
@@ -293,7 +277,7 @@ const Index = () => {
       <>
         <SkipNavigation />
         <Suspense fallback={<LoadingFallback />}>
-          <SayiDizisiTakibiSayfasi onBack={handleNumberSequenceEnd} />
+        <SayiDizisiTakibiSayfasi onBack={handleNumberSequenceEnd} />
         </Suspense>
         <ClientModeHandler 
           isClientMode={isClientMode}
@@ -309,7 +293,7 @@ const Index = () => {
       <>
         <SkipNavigation />
         <Suspense fallback={<LoadingFallback />}>
-          <RenkDizisiTakibiSayfasi onBack={handleColorSequenceEnd} />
+        <RenkDizisiTakibiSayfasi onBack={handleColorSequenceEnd} />
         </Suspense>
         <ClientModeHandler 
           isClientMode={isClientMode}
@@ -325,7 +309,7 @@ const Index = () => {
       <>
         <SkipNavigation />
         <Suspense fallback={<LoadingFallback />}>
-          <MantikDizileriSayfasi onBack={handleLogicSequencesEnd} />
+        <MantikDizileriSayfasi onBack={handleLogicSequencesEnd} />
         </Suspense>
         <ClientModeHandler 
           isClientMode={isClientMode}
@@ -341,7 +325,7 @@ const Index = () => {
       <>
         <SkipNavigation />
         <Suspense fallback={<LoadingFallback />}>
-          <HanoiKuleleriSayfasi onBack={handleHanoiTowersEnd} />
+        <HanoiKuleleriSayfasi onBack={handleHanoiTowersEnd} />
         </Suspense>
         <ClientModeHandler 
           isClientMode={isClientMode}
@@ -356,7 +340,7 @@ const Index = () => {
       <SkipNavigation />
       <main className="min-h-screen bg-background text-foreground">
         <Suspense fallback={<LoadingFallback />}>
-          {renderActivePage()}
+        {renderActivePage()}
         </Suspense>
       </main>
       

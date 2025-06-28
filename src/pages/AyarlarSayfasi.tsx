@@ -611,7 +611,6 @@ const AyarlarSayfasi: React.FC = () => {
                       onChange={(e) => setEmail(e.target.value)}
                       placeholder="uzman@ornek.com"
                       disabled={isLoading}
-                      autoComplete="username"
                     />
                   </div>
 
