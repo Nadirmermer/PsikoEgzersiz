@@ -195,51 +195,51 @@ const TOWER_PROBLEMS = [
     initial: [['K', 'Y'], [], ['M']], 
     target: [[], ['M', 'K'], ['Y']], 
     minMoves: 10,
-    difficulty: 'Ultimate'
+    difficulty: 'Son Derece Zor'
   },
   { 
     id: 25,
     initial: [['K'], ['Y'], ['M']], 
     target: [['Y', 'M'], ['K'], []], 
     minMoves: 11,
-    difficulty: 'Ultimate'
+    difficulty: 'Son Derece Zor'
   },
 
-  // ⚫ MASTER SEVİYE (Seviye 26-30): Cognitive peak performance
+  // ⚫ MASTER SEVİYE (Seviye 26-30): Bilişsel zirve performansı
   { 
     id: 26,
     initial: [['K', 'Y'], ['M'], []], 
     target: [[], [], ['K']], 
     minMoves: 11,
-    difficulty: 'Impossible'
+    difficulty: 'İmkansız'
   },
   { 
     id: 27,
     initial: [['K'], ['Y', 'M'], []], 
     target: [['M'], [], ['Y']], 
     minMoves: 12,
-    difficulty: 'Impossible'
+    difficulty: 'İmkansız'
   },
   { 
     id: 28,
     initial: [['K', 'Y', 'M'], [], []], 
     target: [[], ['Y'], ['K']], 
     minMoves: 12,
-    difficulty: 'Mythical'
+    difficulty: 'Efsanevi'
   },
   { 
     id: 29,
     initial: [[], ['K', 'Y'], ['M']], 
     target: [['K'], ['M'], ['Y']], 
     minMoves: 13,
-    difficulty: 'Mythical'
+    difficulty: 'Efsanevi'
   },
   { 
     id: 30,
     initial: [['K'], ['Y', 'M'], []], 
     target: [[], ['K', 'M'], ['Y']], 
     minMoves: 15,
-    difficulty: 'Divine'
+    difficulty: 'İlahi'
   }
 ]
 

@@ -280,11 +280,11 @@ export const useImageWordMatching = ({ totalQuestions }: UseImageWordMatchingPro
       profile.recommendedInterventions.push('Task-switching exercises')
     }
 
-    // Generate clinical notes
-    profile.clinicalNotes.push(`Semantic accuracy: ${overallMetrics.semantic}%`)
-    profile.clinicalNotes.push(`Processing efficiency: ${overallMetrics.speed}%`)
-    profile.clinicalNotes.push(`Pattern consistency: ${overallMetrics.pattern}%`)
-    profile.clinicalNotes.push(`Cognitive flexibility: ${overallMetrics.flexibility}%`)
+      // Generate clinical notes
+  profile.clinicalNotes.push(`Semantik doğruluk: ${overallMetrics.semantic}%`)
+  profile.clinicalNotes.push(`İşleme verimliliği: ${overallMetrics.speed}%`)
+  profile.clinicalNotes.push(`Desen tutarlılığı: ${overallMetrics.pattern}%`)
+  profile.clinicalNotes.push(`Bilişsel esneklik: ${overallMetrics.flexibility}%`)
 
     return profile
   }

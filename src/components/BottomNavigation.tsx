@@ -41,7 +41,7 @@ const BottomNavigation: React.FC<BottomNavigationProps> = ({
   if (showUzmanDashboard) {
     navigationItems.splice(2, 0, {
       id: "uzman-dashboard",
-      label: "Dashboard",
+              label: "Uzman Paneli",
       icon: UserCheck,
       description: "Uzman dashboard ve danışan yönetimi",
       color: "text-orange-600 dark:text-orange-400"

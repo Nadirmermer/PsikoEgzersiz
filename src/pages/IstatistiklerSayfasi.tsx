@@ -271,19 +271,19 @@ const IstatistiklerSayfasi: React.FC = () => {
         const cognitiveFlexibility = (clinical.cognitiveFlexibility as number) || 0
         
         if (planningAbility >= 80) {
-          acc.clinicalInsights.push("Excellent planning and foresight abilities")
+          acc.clinicalInsights.push("Mükemmel planlama ve öngörü becerileri")
         }
         if (workingMemoryLoad >= 85) {
-          acc.clinicalInsights.push("Strong working memory capacity")
+          acc.clinicalInsights.push("Güçlü işleyen bellek kapasitesi")
         }
         if (inhibitoryControl >= 80) {
-          acc.clinicalInsights.push("Good impulse control and response inhibition")
+          acc.clinicalInsights.push("İyi dürtü kontrolü ve tepki inhibisyonu")
         }
         if (cognitiveFlexibility >= 75) {
-          acc.clinicalInsights.push("Adaptive problem-solving approach")
+          acc.clinicalInsights.push("Uyarlanabilir problem çözme yaklaşımı")
         }
         if (clinical.isOptimalSolution) {
-          acc.clinicalInsights.push("Demonstrates efficient executive planning")
+          acc.clinicalInsights.push("Etkili yönetici planlama gösterir")
         }
       }
       
@@ -411,19 +411,19 @@ const IstatistiklerSayfasi: React.FC = () => {
         
         // Mathematical thinking insights based on performance
         if (clinical.mathematicalThinking >= 85) {
-          acc.clinicalInsights.push("Excellent mathematical and recursive reasoning")
+          acc.clinicalInsights.push("Mükemmel matematiksel ve özyineli muhakeme")
         }
         if (clinical.recursiveProblemSolving >= 80) {
-          acc.clinicalInsights.push("Strong recursive problem-solving abilities")
+          acc.clinicalInsights.push("Güçlü özyineli problem çözme becerileri")
         }
         if (clinical.spatialReasoning >= 85) {
-          acc.clinicalInsights.push("Superior spatial reasoning and visualization")
+          acc.clinicalInsights.push("Üstün uzamsal muhakeme ve görselleştirme")
         }
         if (clinical.algorithmicThinking >= 80) {
-          acc.clinicalInsights.push("Advanced algorithmic thinking patterns")
+          acc.clinicalInsights.push("İleri düzey algoritmik düşünce kalıpları")
         }
         if (clinical.logicalDeduction >= 85) {
-          acc.clinicalInsights.push("Exceptional logical deduction skills")
+          acc.clinicalInsights.push("İstisnaî mantıksal çıkarım becerileri")
         }
       }
       
@@ -1464,7 +1464,7 @@ const IstatistiklerSayfasi: React.FC = () => {
                         {hanoiTowersAnalytics.avgClinicalScore && (
                           <div className="text-center p-3 bg-background/40 rounded-lg border border-border/30">
                             <div className="text-2xl font-bold text-orange-600 dark:text-orange-400">{hanoiTowersAnalytics.avgClinicalScore}</div>
-                            <div className="text-xs text-muted-foreground mt-1">Overall Cognitive</div>
+                                                          <div className="text-xs text-muted-foreground mt-1">Genel Bilişsel</div>
                           </div>
                         )}
                         {hanoiTowersAnalytics.avgMathematicalThinking && (
@@ -1524,7 +1524,7 @@ const IstatistiklerSayfasi: React.FC = () => {
                     <div className="p-4 bg-gradient-to-r from-orange-50/50 to-amber-50/50 dark:from-orange-950/20 dark:to-amber-950/20 rounded-xl border border-orange-200/50 dark:border-orange-700/50 mt-6">
                       <h4 className="text-lg font-semibold mb-3 flex items-center gap-2 text-orange-700 dark:text-orange-300">
                         <Brain className="w-5 h-5" />
-                        Mathematical Thinking Clinical Insights
+                        Matematiksel Düşünce Klinik Değerlendirmeleri
                       </h4>
                       <div className="grid gap-3 sm:gap-4">
                         {hanoiTowersAnalytics.topClinicalInsights.map((insight, idx) => (
@@ -1586,7 +1586,7 @@ const IstatistiklerSayfasi: React.FC = () => {
                     <div className="p-4 bg-gradient-to-r from-amber-50/50 to-orange-50/50 dark:from-amber-950/20 dark:to-orange-950/20 rounded-xl border border-amber-200/50 dark:border-amber-700/50">
                       <h4 className="text-lg font-semibold mb-3 flex items-center gap-2 text-amber-700 dark:text-amber-300">
                         <Brain className="w-5 h-5" />
-                        Analytical Thinking Clinical Metrics
+                        Analitik Düşünce Klinik Ölçümleri
                       </h4>
                       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
                         {/* Calculate average clinical scores */}
@@ -1606,31 +1606,31 @@ const IstatistiklerSayfasi: React.FC = () => {
                             <>
                               <div className="text-center p-3 bg-background/40 rounded-lg border border-border/30">
                                 <div className="text-2xl font-bold text-amber-600 dark:text-amber-400">{avgOverallCognitive}</div>
-                                <div className="text-xs text-muted-foreground mt-1">Overall Cognitive</div>
+                                <div className="text-xs text-muted-foreground mt-1">Genel Bilişsel</div>
                               </div>
                               <div className="text-center p-3 bg-background/40 rounded-lg border border-border/30">
                                 <div className="text-2xl font-bold text-amber-600 dark:text-amber-400">{avgAnalyticalThinking}</div>
-                                <div className="text-xs text-muted-foreground mt-1">Analytical Thinking</div>
+                                <div className="text-xs text-muted-foreground mt-1">Analitik Düşünce</div>
                               </div>
                               <div className="text-center p-3 bg-background/40 rounded-lg border border-border/30">
                                 <div className="text-2xl font-bold text-amber-600 dark:text-amber-400">{avgPatternRecognition}</div>
-                                <div className="text-xs text-muted-foreground mt-1">Pattern Recognition</div>
+                                <div className="text-xs text-muted-foreground mt-1">Patern Tanıma</div>
                               </div>
                               <div className="text-center p-3 bg-background/40 rounded-lg border border-border/30">
                                 <div className="text-2xl font-bold text-amber-600 dark:text-amber-400">{avgMathematicalReasoning}</div>
-                                <div className="text-xs text-muted-foreground mt-1">Mathematical Reasoning</div>
+                                <div className="text-xs text-muted-foreground mt-1">Matematiksel Muhakeme</div>
                               </div>
                               <div className="text-center p-3 bg-background/40 rounded-lg border border-border/30">
                                 <div className="text-2xl font-bold text-amber-600 dark:text-amber-400">{avgSequentialLogic}</div>
-                                <div className="text-xs text-muted-foreground mt-1">Sequential Logic</div>
+                                <div className="text-xs text-muted-foreground mt-1">Sıralı Mantık</div>
                               </div>
                               <div className="text-center p-3 bg-background/40 rounded-lg border border-border/30">
                                 <div className="text-2xl font-bold text-amber-600 dark:text-amber-400">{avgAbstractReasoning}</div>
-                                <div className="text-xs text-muted-foreground mt-1">Abstract Reasoning</div>
+                                <div className="text-xs text-muted-foreground mt-1">Soyut Muhakeme</div>
                               </div>
                               <div className="text-center p-3 bg-background/40 rounded-lg border border-border/30">
                                 <div className="text-2xl font-bold text-amber-600 dark:text-amber-400">{avgCognitiveFlexibility}</div>
-                                <div className="text-xs text-muted-foreground mt-1">Cognitive Flexibility</div>
+                                <div className="text-xs text-muted-foreground mt-1">Bilişsel Esneklik</div>
                               </div>
                             </>
                           )
@@ -1642,7 +1642,7 @@ const IstatistiklerSayfasi: React.FC = () => {
                   {/* Pattern Performance Analysis */}
                   {logicSequenceResults.some(result => result.details?.clinicalData?.patternPerformance) && (
                     <div className="p-4 bg-white/40 dark:bg-gray-800/40 rounded-xl border border-amber-200/50 dark:border-amber-700/50">
-                      <h4 className="text-lg font-semibold mb-3 text-amber-700 dark:text-amber-300">Pattern Türü Performansları</h4>
+                      <h4 className="text-lg font-semibold mb-3 text-amber-700 dark:text-amber-300">Desen Türü Performansları</h4>
                       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
                         {(() => {
                           // Aggregate pattern performance from all games
@@ -1695,7 +1695,7 @@ const IstatistiklerSayfasi: React.FC = () => {
                               <div className="mt-3 pt-2 border-t border-border/30">
                                 {perf.accuracy >= 80 ? (
                                   <Badge className="bg-green-100 text-green-800 border-green-200 text-xs">
-                                    ⭐ Güçlü Pattern
+                                    ⭐ Güçlü Desen
                                   </Badge>
                                 ) : perf.accuracy >= 60 ? (
                                   <Badge className="bg-yellow-100 text-yellow-800 border-yellow-200 text-xs">
@@ -1719,7 +1719,7 @@ const IstatistiklerSayfasi: React.FC = () => {
                     <div className="p-4 bg-gradient-to-r from-amber-50/50 to-orange-50/50 dark:from-amber-950/20 dark:to-orange-950/20 rounded-xl border border-amber-200/50 dark:border-amber-700/50 mt-6">
                       <h4 className="text-lg font-semibold mb-3 flex items-center gap-2 text-amber-700 dark:text-amber-300">
                         <Brain className="w-5 h-5" />
-                        Analytical Thinking Clinical Insights
+                        Analitik Düşünce Klinik Değerlendirmeleri
                       </h4>
                       <div className="grid gap-3 sm:gap-4">
                         {(() => {
@@ -1978,10 +1978,10 @@ const IstatistiklerSayfasi: React.FC = () => {
                     <div className="p-2 bg-purple-500/10 rounded-lg">
                       <ArrowRightLeft className="w-6 h-6 text-purple-600" />
                     </div>
-                    Kelime-Resim Eşleştirme - Reverse Processing Analizi
+                    Kelime-Resim Eşleştirme - Ters İşlem Analizi
                   </CardTitle>
                   <CardDescription className="text-base">
-                    Semantic→Visual pathway assessment ve kategori-bazlı reverse processing performansı
+                    Semantik→Görsel yol değerlendirmesi ve kategori-bazlı ters işlem performansı
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-8">
@@ -1994,7 +1994,7 @@ const IstatistiklerSayfasi: React.FC = () => {
                           {wordImageAnalytics.avgClinicalScore !== null ? `${wordImageAnalytics.avgClinicalScore}%` : 'N/A'}
                         </div>
                         <div className="text-sm text-purple-600 dark:text-purple-400 font-medium">
-                          Genel Reverse Processing
+                          Genel Ters İşlem
                         </div>
                       </CardContent>
                     </Card>
@@ -2390,7 +2390,7 @@ const IstatistiklerSayfasi: React.FC = () => {
                     <div className="p-2 bg-cyan-500/10 rounded-lg">
                       <Palette className="w-6 h-6 text-cyan-600" />
                     </div>
-                    Renk Dizisi Takibi - Visual-Spatial Memory Assessment
+                    Renk Dizisi Takibi - Görsel-Uzamsal Bellek Değerlendirmesi
                   </CardTitle>
                   <CardDescription className="text-base">
                     Görsel-uzamsal bellek analizi ve klinik değerlendirme sonuçları
@@ -2402,7 +2402,7 @@ const IstatistiklerSayfasi: React.FC = () => {
                   <div>
                     <h4 className="text-lg font-semibold mb-4 flex items-center gap-2">
                       <Brain className="w-5 h-5 text-cyan-600" />
-                      Visual-Spatial Memory Clinical Overview
+                      Görsel-Uzamsal Bellek Klinik Genel Bakış
                     </h4>
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
                       <Card className="bg-gradient-to-br from-cyan-50 to-cyan-100 dark:from-cyan-900/20 dark:to-cyan-800/20 border-cyan-200 dark:border-cyan-700">
@@ -2422,7 +2422,7 @@ const IstatistiklerSayfasi: React.FC = () => {
                             {colorSequenceAnalytics.avgVisualSpanCapacity !== null ? `${colorSequenceAnalytics.avgVisualSpanCapacity}` : 'N/A'}
                           </div>
                           <div className="text-sm text-green-600 dark:text-green-400 font-medium">
-                            Visual Span Kapasitesi
+                            Görsel Aralık Kapasitesi
                           </div>
                         </CardContent>
                       </Card>
@@ -2433,7 +2433,7 @@ const IstatistiklerSayfasi: React.FC = () => {
                             {colorSequenceAnalytics.avgSpatialProcessingSpeed !== null ? `${colorSequenceAnalytics.avgSpatialProcessingSpeed}%` : 'N/A'}
                           </div>
                           <div className="text-sm text-blue-600 dark:text-blue-400 font-medium">
-                            Spatial Processing Speed
+                            Uzamsal İşleme Hızı
                           </div>
                         </CardContent>
                       </Card>
@@ -2444,7 +2444,7 @@ const IstatistiklerSayfasi: React.FC = () => {
                             {colorSequenceAnalytics.avgColorRecognitionAccuracy !== null ? `${colorSequenceAnalytics.avgColorRecognitionAccuracy}%` : 'N/A'}
                           </div>
                           <div className="text-sm text-purple-600 dark:text-purple-400 font-medium">
-                            Color Recognition
+                            Renk Tanıma
                           </div>
                         </CardContent>
                       </Card>
@@ -2456,7 +2456,7 @@ const IstatistiklerSayfasi: React.FC = () => {
                     <div>
                       <h4 className="text-lg font-semibold mb-4 flex items-center gap-2">
                         <BarChart3 className="w-5 h-5 text-cyan-600" />
-                        Visual-Spatial Pattern - Capacity Progression
+                        Görsel-Uzamsal Patern - Kapasite İlerlemesi
                       </h4>
                       <div className="h-80">
                         <ResponsiveContainer width="100%" height="100%">
@@ -2494,7 +2494,7 @@ const IstatistiklerSayfasi: React.FC = () => {
                     <div>
                       <h4 className="text-lg font-semibold mb-4 flex items-center gap-2">
                         <Target className="w-5 h-5 text-green-600" />
-                        Visual Pattern Complexity Analysis
+                        Görsel Patern Karmaşıklık Analizi
                       </h4>
                       <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
                         <Card className="bg-gray-50 dark:bg-gray-800/50">
@@ -2514,7 +2514,7 @@ const IstatistiklerSayfasi: React.FC = () => {
                               {colorSequenceAnalytics.visualPatternStats.mediumComplexity}
                             </div>
                             <div className="text-sm text-blue-600 dark:text-blue-400">
-                              Medium Complexity
+                              Orta Karmaşıklık
                             </div>
                           </CardContent>
                         </Card>
@@ -2525,7 +2525,7 @@ const IstatistiklerSayfasi: React.FC = () => {
                               {colorSequenceAnalytics.visualPatternStats.highComplexity}
                             </div>
                             <div className="text-sm text-green-600 dark:text-green-400">
-                              High Complexity
+                              Yüksek Karmaşıklık
                             </div>
                           </CardContent>
                         </Card>
@@ -2536,7 +2536,7 @@ const IstatistiklerSayfasi: React.FC = () => {
                               {colorSequenceAnalytics.visualPatternStats.exceptionalComplexity}
                             </div>
                             <div className="text-sm text-purple-600 dark:text-purple-400">
-                              Exceptional
+                              İstisnaî
                             </div>
                           </CardContent>
                         </Card>
@@ -2560,7 +2560,7 @@ const IstatistiklerSayfasi: React.FC = () => {
                     <div>
                       <h4 className="text-lg font-semibold mb-4 flex items-center gap-2">
                         <Lightbulb className="w-5 h-5 text-yellow-600" />
-                        Visual-Spatial Memory Clinical Insights
+                        Görsel-Uzamsal Bellek Klinik Değerlendirmeleri
                       </h4>
                       <div className="bg-gradient-to-r from-cyan-50 to-blue-50 dark:from-cyan-900/10 dark:to-blue-900/10 p-4 rounded-lg border border-cyan-200 dark:border-cyan-800">
                         <ul className="list-disc list-inside space-y-2 text-cyan-800 dark:text-cyan-200">

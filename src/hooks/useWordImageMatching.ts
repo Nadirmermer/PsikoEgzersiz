@@ -287,10 +287,10 @@ export const useWordImageMatching = ({ totalQuestions }: UseWordImageMatchingPro
     }
 
     // Generate reverse processing clinical notes
-    profile.reverseProcessingNotes.push(`Visual-semantic mapping: ${overallMetrics.mapping}%`)
-    profile.reverseProcessingNotes.push(`Reverse processing speed: ${overallMetrics.speed}%`)
-    profile.reverseProcessingNotes.push(`Visual recognition: ${overallMetrics.recognition}%`)
-    profile.reverseProcessingNotes.push(`Cross-modal integration: ${overallMetrics.integration}%`)
+    profile.reverseProcessingNotes.push(`Görsel-semantik haritalama: ${overallMetrics.mapping}%`)
+    profile.reverseProcessingNotes.push(`Ters işlem hızı: ${overallMetrics.speed}%`)
+    profile.reverseProcessingNotes.push(`Görsel tanıma: ${overallMetrics.recognition}%`)
+    profile.reverseProcessingNotes.push(`Çapraz modal entegrasyon: ${overallMetrics.integration}%`)
 
     return profile
   }

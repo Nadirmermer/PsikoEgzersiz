@@ -19,7 +19,7 @@ export interface ClinicalWorkingMemoryData {
   millerCompliance: {
     spanRange: string                // e.g., "5±2", "7±2", "9±2"
     isWithinNormalRange: boolean     // 5-9 digit span normal range
-    capacityCategory: 'below-average' | 'average' | 'above-average' | 'exceptional'
+    capacityCategory: 'ortalamanın altı' | 'ortalama' | 'ortalamanın üstü' | 'istisnai'
     millerDeviation: number          // How far from 7±2 optimal range
   }
   
@@ -125,7 +125,7 @@ export const useNumberSequence = ({ initialLevel = 1 }: UseNumberSequenceProps =
     millerCompliance: {
       spanRange: '0±0',
       isWithinNormalRange: false,
-      capacityCategory: 'below-average',
+      capacityCategory: 'ortalamanın altı',
       millerDeviation: 7
     },
     levelWorkingMemoryPerformance: {},
@@ -253,15 +253,15 @@ export const useNumberSequence = ({ initialLevel = 1 }: UseNumberSequenceProps =
     if (maxSpan <= 4) {
       spanRange = `${maxSpan}±2`
       isWithinNormalRange = false
-      capacityCategory = 'below-average'
+      capacityCategory = 'ortalamanın altı'
     } else if (maxSpan <= 9) {
       spanRange = `7±${Math.max(2, deviation)}`
       isWithinNormalRange = true
-      capacityCategory = maxSpan < 6 ? 'below-average' : maxSpan > 8 ? 'above-average' : 'average'
+      capacityCategory = maxSpan < 6 ? 'ortalamanın altı' : maxSpan > 8 ? 'ortalamanın üstü' : 'ortalama'
     } else {
       spanRange = `${maxSpan}±2`
       isWithinNormalRange = false
-      capacityCategory = 'exceptional'
+      capacityCategory = 'istisnai'
     }
     
     return {
@@ -295,37 +295,37 @@ export const useNumberSequence = ({ initialLevel = 1 }: UseNumberSequenceProps =
     }
 
     // Identify strengths
-    if (overallMetrics.processing >= 80) profile.capacityStrengths.push('Excellent processing speed')
-    if (overallMetrics.attention >= 80) profile.capacityStrengths.push('Strong attention control')
-    if (overallMetrics.load >= 80) profile.capacityStrengths.push('Good cognitive load management')
-    if (capacity >= 8) profile.capacityStrengths.push('High digit span capacity')
+    if (overallMetrics.processing >= 80) profile.capacityStrengths.push('Mükemmel işleme hızı')
+    if (overallMetrics.attention >= 80) profile.capacityStrengths.push('Güçlü dikkat kontrolü')
+          if (overallMetrics.load >= 80) profile.capacityStrengths.push('İyi bilişsel yük yönetimi')
+      if (capacity >= 8) profile.capacityStrengths.push('Yüksek rakam aralığı kapasitesi')
 
-    // Identify areas for improvement
-    if (overallMetrics.processing < 60) profile.processingWeaknesses.push('Processing speed enhancement needed')
-    if (overallMetrics.attention < 60) profile.processingWeaknesses.push('Attention control training recommended')
-    if (overallMetrics.load < 60) profile.processingWeaknesses.push('Cognitive load management practice needed')
-    if (capacity < 5) profile.processingWeaknesses.push('Working memory capacity building required')
+          // Identify areas for improvement
+      if (overallMetrics.processing < 60) profile.processingWeaknesses.push('İşleme hızı geliştirme gerekli')
+      if (overallMetrics.attention < 60) profile.processingWeaknesses.push('Dikkat kontrolü eğitimi önerilir')
+      if (overallMetrics.load < 60) profile.processingWeaknesses.push('Bilişsel yük yönetimi pratiği gerekli')
+      if (capacity < 5) profile.processingWeaknesses.push('İşleyen bellek kapasitesi geliştirme gerekli')
 
-    // Generate recommendations
-    if (capacity < 5) {
-      profile.cognitiveRecommendations.push('Working memory span training exercises')
-      profile.cognitiveRecommendations.push('Chunking strategy instruction')
-    }
-    
-    if (overallMetrics.processing < 60) {
-      profile.cognitiveRecommendations.push('Processing speed enhancement activities')
-      profile.cognitiveRecommendations.push('Rapid naming exercises')
-    }
-    
-    if (overallMetrics.attention < 60) {
-      profile.cognitiveRecommendations.push('Sustained attention training')
-      profile.cognitiveRecommendations.push('Mindfulness-based attention exercises')
-    }
-    
-    if (overallMetrics.load < 60) {
-      profile.cognitiveRecommendations.push('Gradual cognitive load increase training')
-      profile.cognitiveRecommendations.push('Dual-task working memory exercises')
-    }
+          // Generate recommendations
+      if (capacity < 5) {
+        profile.cognitiveRecommendations.push('İşleyen bellek aralığı antrenman egzersizleri')
+        profile.cognitiveRecommendations.push('Parçalama stratejisi eğitimi')
+      }
+      
+      if (overallMetrics.processing < 60) {
+        profile.cognitiveRecommendations.push('İşleme hızı geliştirme aktiviteleri')
+        profile.cognitiveRecommendations.push('Hızlı isimlendirme egzersizleri')
+      }
+      
+      if (overallMetrics.attention < 60) {
+        profile.cognitiveRecommendations.push('Sürekli dikkat antrenmanı')
+        profile.cognitiveRecommendations.push('Farkındalık temelli dikkat egzersizleri')
+      }
+      
+      if (overallMetrics.load < 60) {
+        profile.cognitiveRecommendations.push('Kademeli bilişsel yük artırma antrenmanı')
+        profile.cognitiveRecommendations.push('Çift görev işleyen bellek egzersizleri')
+      }
 
     // Generate clinical notes
     profile.workingMemoryNotes.push(`Working memory capacity: ${capacity} digits`)

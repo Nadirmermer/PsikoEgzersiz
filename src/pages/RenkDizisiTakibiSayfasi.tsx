@@ -145,7 +145,7 @@ const RenkDizisiTakibiSayfasi: React.FC<RenkDizisiTakibiSayfasiProps> = ({ onBac
         }
         
         // 🧠 Color Sequence specific: Add visual-spatial memory context to early exit
-        toast.warning('⚠️ Görsel-Uzamsal Bellek Assessment yarıda kesildi! Klinik analiz için test tamamlanmalı.')
+        toast.warning('⚠️ Görsel-Uzamsal Bellek Değerlendirmesi yarıda kesildi! Klinik analiz için test tamamlanmalı.')
       }
     }
   })
@@ -241,15 +241,15 @@ const RenkDizisiTakibiSayfasi: React.FC<RenkDizisiTakibiSayfasiProps> = ({ onBac
                       >
                         <span className="md:hidden">
                           {sequenceGame.currentLevel}R
-                          {sequenceGame.currentLevel <= 4 ? ' Base' : sequenceGame.currentLevel <= 7 ? ' ✓' : ' ⭐'}
+                          {sequenceGame.currentLevel <= 4 ? ' Temel' : sequenceGame.currentLevel <= 7 ? ' ✓' : ' ⭐'}
                         </span>
                         <span className="hidden md:inline">
-                          {sequenceGame.currentLevel} Renk Pattern 
+                          {sequenceGame.currentLevel} Renk Deseni 
                           {sequenceGame.currentLevel <= 4 
-                            ? ' (Baseline)' 
+                            ? ' (Temel)' 
                             : sequenceGame.currentLevel <= 7 
-                              ? ' (Normal Visual Range) ✓' 
-                              : ' (Exceptional) ⭐'
+                              ? ' (Normal Görsel Aralık) ✓' 
+                              : ' (İstisnaî) ⭐'
                           }
                         </span>
                       </Badge>
@@ -388,7 +388,7 @@ const RenkDizisiTakibiSayfasi: React.FC<RenkDizisiTakibiSayfasiProps> = ({ onBac
                             variant="outline" 
                             className="bg-green-50 text-green-700 border-green-200 dark:bg-green-900/20 dark:text-green-300 dark:border-green-800 text-xs md:text-sm"
                           >
-                            🧠 Görsel-Uzamsal Bellek: {sequenceGame.currentLevel} renk pattern
+                            🧠 Görsel-Uzamsal Bellek: {sequenceGame.currentLevel} renk deseni
                           </Badge>
                         </div>
                       )}
@@ -399,7 +399,7 @@ const RenkDizisiTakibiSayfasi: React.FC<RenkDizisiTakibiSayfasiProps> = ({ onBac
                       <h3 className="text-2xl md:text-3xl font-bold mb-2">Üzgünüm!</h3>
                       <p className="text-lg md:text-xl">
                         {sequenceGame.isGameCompleted 
-                          ? `Assessment tamamlandı! ${sequenceGame.incorrectCount}/3 hata`
+                          ? `Değerlendirme tamamlandı! ${sequenceGame.incorrectCount}/3 hata`
                           : 'Tekrar deneyin'
                         }
                       </p>
@@ -411,7 +411,7 @@ const RenkDizisiTakibiSayfasi: React.FC<RenkDizisiTakibiSayfasiProps> = ({ onBac
                             variant="outline" 
                             className="bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-900/20 dark:text-blue-300 dark:border-blue-800 text-xs md:text-sm"
                           >
-                            🏁 Görsel-Uzamsal Bellek Assessment Tamamlandı
+                            🏁 Görsel-Uzamsal Bellek Değerlendirmesi Tamamlandı
                           </Badge>
                         </div>
                       )}

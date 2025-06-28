@@ -140,7 +140,7 @@ class ErrorBoundary extends Component<Props, State> {
       userAgent: navigator.userAgent
     }
 
-    const mailtoLink = `mailto:support@psikoegzersiz.com?subject=Bug Report - ${this.state.errorId}&body=${encodeURIComponent(
+    const mailtoLink = `mailto:nadirmermer@gmail.com?subject=Hata Raporu - ${this.state.errorId}&body=${encodeURIComponent(
       `Hata Raporu:\n\n` +
       `Hata ID: ${errorDetails.errorId}\n` +
       `Zaman: ${errorDetails.timestamp}\n` +

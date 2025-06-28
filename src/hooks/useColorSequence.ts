@@ -19,8 +19,8 @@ export interface ClinicalVisualSpatialData {
   // Visual pattern analysis
   visualPatternCompliance: {
     sequenceRange: string             // e.g., "4-color", "6-color" patterns
-    visualComplexity: 'low' | 'medium' | 'high' | 'exceptional'
-    patternRecognitionCategory: 'below-average' | 'average' | 'above-average' | 'exceptional'
+    visualComplexity: 'düşük' | 'orta' | 'yüksek' | 'istisnai'
+    patternRecognitionCategory: 'ortalamanın altı' | 'ortalama' | 'ortalamanın üstü' | 'istisnai'
     visualProcessingDeviation: number // How far from optimal visual processing
   }
   
@@ -163,8 +163,8 @@ export const useColorSequence = ({ initialLevel = 1 }: UseColorSequenceProps = {
       overallVisualSpatialMemory: 0,
       visualPatternCompliance: {
         sequenceRange: "",
-        visualComplexity: "low",
-        patternRecognitionCategory: "below-average",
+        visualComplexity: "düşük",
+        patternRecognitionCategory: "ortalamanın altı",
         visualProcessingDeviation: 0
       },
       levelVisualPerformance: {},
@@ -249,8 +249,8 @@ export const useColorSequence = ({ initialLevel = 1 }: UseColorSequenceProps = {
           overallVisualSpatialMemory: 0,
           visualPatternCompliance: {
             sequenceRange: "",
-            visualComplexity: "low",
-            patternRecognitionCategory: "below-average",
+            visualComplexity: "düşük",
+            patternRecognitionCategory: "ortalamanın altı",
             visualProcessingDeviation: 0
           },
           levelVisualPerformance: {},
@@ -709,18 +709,18 @@ export const useColorSequence = ({ initialLevel = 1 }: UseColorSequenceProps = {
     const maxSpan = calculateVisualSpanCapacity(levelData)
     const sequenceRange = `${maxSpan}-color pattern`
     
-    let visualComplexity: 'low' | 'medium' | 'high' | 'exceptional' = 'low'
-    let patternRecognitionCategory: 'below-average' | 'average' | 'above-average' | 'exceptional' = 'below-average'
+    let visualComplexity: 'düşük' | 'orta' | 'yüksek' | 'istisnai' = 'düşük'
+    let patternRecognitionCategory: 'ortalamanın altı' | 'ortalama' | 'ortalamanın üstü' | 'istisnai' = 'ortalamanın altı'
     
     if (maxSpan >= 8) {
-      visualComplexity = 'exceptional'
-      patternRecognitionCategory = 'exceptional'
+      visualComplexity = 'istisnai'
+      patternRecognitionCategory = 'istisnai'
     } else if (maxSpan >= 6) {
-      visualComplexity = 'high'
-      patternRecognitionCategory = 'above-average'
+      visualComplexity = 'yüksek'
+      patternRecognitionCategory = 'ortalamanın üstü'
     } else if (maxSpan >= 4) {
-      visualComplexity = 'medium'
-      patternRecognitionCategory = 'average'
+      visualComplexity = 'orta'
+      patternRecognitionCategory = 'ortalama'
     }
     
     // Visual processing deviation from optimal (4-7 color span)

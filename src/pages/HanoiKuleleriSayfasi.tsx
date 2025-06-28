@@ -292,13 +292,13 @@ const HanoiTowersGame: React.FC<{ onBack: () => void }> = ({ onBack }) => {
     
     // Generate clinical insights
     const insights: string[] = []
-    if (mathematicalThinking >= 85) insights.push("Excellent mathematical and recursive thinking abilities")
-    if (recursiveProblemSolving >= 80) insights.push("Strong recursive problem-solving skills")
-    if (spatialReasoning >= 85) insights.push("Superior spatial reasoning and visualization")
-    if (sequentialPlanning >= 80) insights.push("Effective sequential planning capabilities")
-    if (algorithmicThinking >= 85) insights.push("Advanced algorithmic thinking patterns")
-    if (isOptimal) insights.push("Demonstrates optimal solution finding")
-    if (efficiency >= 90) insights.push("Highly efficient problem-solving approach")
+    if (mathematicalThinking >= 85) insights.push("Mükemmel matematiksel ve özyineli düşünce yetenekleri")
+    if (recursiveProblemSolving >= 80) insights.push("Güçlü özyineli problem çözme becerileri")
+    if (spatialReasoning >= 85) insights.push("Üstün uzamsal muhakeme ve görselleştirme")
+    if (sequentialPlanning >= 80) insights.push("Etkili sıralı planlama kapasitesi")
+    if (algorithmicThinking >= 85) insights.push("İleri düzey algoritmik düşünce kalıpları")
+    if (isOptimal) insights.push("Optimal çözüm bulma gösterir")
+    if (efficiency >= 90) insights.push("Son derece verimli problem çözme yaklaşımı")
     
     // Level performance tracking
     const levelPerf = { ...clinicalData.levelPerformance }
@@ -337,9 +337,9 @@ const HanoiTowersGame: React.FC<{ onBack: () => void }> = ({ onBack }) => {
   // Helper functions for clinical assessment
   const generateRecommendations = (cognitive: number, efficiency: number): string[] => {
     const recommendations: string[] = []
-    if (cognitive < 70) recommendations.push("Practice with simpler recursive problems")
-    if (efficiency < 80) recommendations.push("Focus on planning before executing moves")
-    if (cognitive >= 90) recommendations.push("Challenge with advanced mathematical puzzles")
+    if (cognitive < 70) recommendations.push("Daha basit özyineli problemlerle pratik yapın")
+    if (efficiency < 80) recommendations.push("Hamleleri gerçekleştirmeden önce planlamaya odaklanın")
+    if (cognitive >= 90) recommendations.push("İleri düzey matematiksel bulmacalarla kendinizi zorlayın")
     return recommendations
   }
 

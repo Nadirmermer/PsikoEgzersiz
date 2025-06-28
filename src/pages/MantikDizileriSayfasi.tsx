@@ -177,14 +177,14 @@ const MantikDizileriSayfasi: React.FC<MantikDizileriSayfasiProps> = ({ onBack })
     
     // Generate clinical insights
     const insights: string[] = []
-    if (analyticalThinking >= 85) insights.push("Excellent analytical and logical thinking abilities")
-    if (patternRecognition >= 80) insights.push("Strong pattern recognition and identification skills")
-    if (mathematicalReasoning >= 85) insights.push("Superior mathematical reasoning capabilities")
-    if (sequentialLogic >= 80) insights.push("Effective sequential and step-by-step thinking")
-    if (abstractReasoning >= 75) insights.push("Good abstract reasoning and conceptual thinking")
-    if (cognitiveFlexibility >= 80) insights.push("Excellent cognitive flexibility and adaptability")
-    if (overallAccuracy >= 90) insights.push("Demonstrates exceptional logical problem-solving")
-    if (averageResponseTime < 5000) insights.push("Quick analytical processing and decision making")
+    if (analyticalThinking >= 85) insights.push("Mükemmel analitik ve mantıksal düşünce yetenekleri")
+    if (patternRecognition >= 80) insights.push("Güçlü desen tanıma ve belirleme becerileri")
+    if (mathematicalReasoning >= 85) insights.push("Üstün matematiksel muhakeme kapasitesi")
+    if (sequentialLogic >= 80) insights.push("Etkili sıralı ve adım adım düşünce")
+    if (abstractReasoning >= 75) insights.push("İyi soyut muhakeme ve kavramsal düşünce")
+    if (cognitiveFlexibility >= 80) insights.push("Mükemmel bilişsel esneklik ve uyarlanabilirlik")
+    if (overallAccuracy >= 90) insights.push("İstisnaî mantıksal problem çözme gösterir")
+    if (averageResponseTime < 5000) insights.push("Hızlı analitik işleme ve karar verme")
     
     return {
       analyticalThinking,
@@ -207,25 +207,25 @@ const MantikDizileriSayfasi: React.FC<MantikDizileriSayfasiProps> = ({ onBack })
   // Helper functions for clinical assessment
   const generateRecommendations = (cognitive: number, analytical: number): string[] => {
     const recommendations: string[] = []
-    if (cognitive < 70) recommendations.push("Practice with simpler logical reasoning exercises")
-    if (analytical < 80) recommendations.push("Focus on step-by-step problem analysis")
-    if (cognitive >= 90) recommendations.push("Challenge with advanced mathematical sequences")
+    if (cognitive < 70) recommendations.push("Daha basit mantıksal muhakeme egzersizleriyle pratik yapın")
+    if (analytical < 80) recommendations.push("Adım adım problem analizine odaklanın")
+    if (cognitive >= 90) recommendations.push("İleri düzey matematiksel dizilerle kendinizi zorlayın")
     return recommendations
   }
 
   const generateStrengths = (pattern: number, math: number, abstract: number): string[] => {
     const strengths: string[] = []
-    if (pattern >= 80) strengths.push("Pattern recognition")
-    if (math >= 80) strengths.push("Mathematical reasoning")
-    if (abstract >= 80) strengths.push("Abstract thinking")
+    if (pattern >= 80) strengths.push("Desen tanıma")
+    if (math >= 80) strengths.push("Matematiksel muhakeme")
+    if (abstract >= 80) strengths.push("Soyut düşünce")
     return strengths
   }
 
   const generateImprovementAreas = (sequential: number, flexibility: number, analytical: number): string[] => {
     const areas: string[] = []
-    if (sequential < 70) areas.push("Sequential logic")
-    if (flexibility < 70) areas.push("Cognitive flexibility")
-    if (analytical < 70) areas.push("Analytical thinking")
+    if (sequential < 70) areas.push("Sıralı mantık")
+    if (flexibility < 70) areas.push("Bilişsel esneklik")
+    if (analytical < 70) areas.push("Analitik düşünce")
     return areas
   }
 
@@ -456,7 +456,7 @@ const MantikDizileriSayfasi: React.FC<MantikDizileriSayfasiProps> = ({ onBack })
                 </div>
 
                 <p className="text-sm sm:text-base lg:text-lg text-gray-600 dark:text-gray-400 max-w-2xl mx-auto text-center">
-                  Pattern'i analiz edin ve doğru sayıyı bulun
+                  Deseni analiz edin ve doğru sayıyı bulun
                 </p>
               </div>
 

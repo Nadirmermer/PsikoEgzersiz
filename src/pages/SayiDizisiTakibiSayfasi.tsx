@@ -86,9 +86,9 @@ const SayiDizisiTakibiSayfasi: React.FC<SayiDizisiTakibiSayfasiProps> = ({ onBac
     if (sequenceGame.isGameCompleted && sequenceGame.phase === 'feedback') {
       // Show completion message based on why game ended
       if (sequenceGame.incorrectCount >= 3) {
-        toast.info('🎯 Working Memory Assessment tamamlandı! 3 hata ile test sona erdi.')
+        toast.info('🎯 İşleyen Bellek Değerlendirmesi tamamlandı! 3 hata ile test sona erdi.')
       } else if (sequenceGame.currentLevel > 10) {
-        toast.success('🏆 Mükemmel! Exceptional working memory capacity (12+ digits) ulaştınız!')
+        toast.success('🏆 Mükemmel! İstisnaî işleyen bellek kapasitesi (12+ rakam) ulaştınız!')
       }
     }
   }, [sequenceGame.isGameCompleted, sequenceGame.phase, sequenceGame.incorrectCount, sequenceGame.currentLevel])
@@ -148,7 +148,7 @@ const SayiDizisiTakibiSayfasi: React.FC<SayiDizisiTakibiSayfasiProps> = ({ onBac
         }
         
         // 🧠 Number Sequence specific: Add working memory context to early exit
-        toast.warning('⚠️ Working Memory Assessment yarıda kesildi! Klinik analiz için test tamamlanmalı.')
+        toast.warning('⚠️ İşleyen Bellek Değerlendirmesi yarıda kesildi! Klinik analiz için test tamamlanmalı.')
         console.log('🧠 Number Sequence Early Exit - Working Memory assessment incomplete')
       }
     }
@@ -250,7 +250,7 @@ const SayiDizisiTakibiSayfasi: React.FC<SayiDizisiTakibiSayfasiProps> = ({ onBac
                       <span className="sm:hidden"> ✓</span>
                     )}
                     {sequenceGame.sequence.length > 9 && (
-                      <span className="hidden sm:inline"> (Exceptional)</span>
+                      <span className="hidden sm:inline"> (İstisnai)</span>
                     )}
                     {sequenceGame.sequence.length > 9 && (
                       <span className="sm:hidden"> ⭐</span>

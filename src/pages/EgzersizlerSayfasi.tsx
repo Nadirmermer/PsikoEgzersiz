@@ -99,7 +99,7 @@ const EgzersizlerSayfasi: React.FC<EgzersizlerSayfasiProps> = ({
     {
       id: 'tower-of-london',
       title: 'Londra Kulesi',
-      description: 'Planlama ve executive function geliştirin',
+      description: 'Planlama ve yürütücü işlev geliştirin',
       motto: 'Planla ve çöz',
       icon: Layers,
       iconColor: 'text-purple-600 dark:text-purple-400',
@@ -113,7 +113,7 @@ const EgzersizlerSayfasi: React.FC<EgzersizlerSayfasiProps> = ({
         onTowerOfLondonStart()
       },
       currentProgress: '30 Artan Seviye',
-      highlights: ['Executive Function', 'Clinical Assessment']
+              highlights: ['Yürütücü İşlev', 'Klinik Değerlendirme']
     },
     {
       id: 'number-sequence',
@@ -157,8 +157,8 @@ const EgzersizlerSayfasi: React.FC<EgzersizlerSayfasiProps> = ({
     {
       id: 'logic-sequences',
       title: 'Mantık Dizileri',
-      description: 'Analytical thinking assessment',
-      motto: 'Pattern recognition master',
+              description: 'Analitik düşünce değerlendirmesi',
+        motto: 'Desen tanıma ustası',
       icon: Calculator,
       iconColor: 'text-amber-600 dark:text-amber-400',
       bgGradient: 'bg-gradient-to-br from-amber-50 via-yellow-50 to-lime-50 dark:from-amber-950/40 dark:via-yellow-900/30 dark:to-lime-900/40',
@@ -171,7 +171,7 @@ const EgzersizlerSayfasi: React.FC<EgzersizlerSayfasiProps> = ({
         onLogicSequencesStart()
       },
       currentProgress: '25 Soru • 8 Level',
-      highlights: ['12 Pattern Türü', 'Clinical Assessment']
+              highlights: ['12 Desen Türü', 'Klinik Değerlendirme']
     },
     {
       id: 'hanoi-towers',
