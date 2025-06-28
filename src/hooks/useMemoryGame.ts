@@ -362,6 +362,7 @@ export const useMemoryGame = ({ level }: UseMemoryGameProps) => {
         // 🧠 CLINICAL STORAGE: Save comprehensive assessment data
         try {
       LocalStorageManager.saveExerciseResult({
+        id: Date.now().toString(),
         exerciseName: finalStats.exercise_name,
         score: finalStats.score,
         duration: finalStats.duration_seconds,
@@ -429,7 +430,17 @@ export const useMemoryGame = ({ level }: UseMemoryGameProps) => {
       first_match_time_seconds: firstMatchTime || undefined,
       card_flips_total: cardFlips,
       exercise_name: 'Hafıza Oyunu',
-      score: calculateScore(moves, incorrectMoves, finalDuration, totalPairs),
+      score: calculateScore({
+        level_identifier: `${level.name} (${level.gridSize.rows}x${level.gridSize.cols})`,
+        grid_size: `${level.gridSize.rows}x${level.gridSize.cols}`,
+        duration_seconds: finalDuration,
+        moves_count: moves,
+        incorrect_moves_count: incorrectMoves,
+        pairs_found: totalPairs,
+        total_pairs: totalPairs,
+        first_match_time_seconds: firstMatchTime || undefined,
+        card_flips_total: cardFlips
+      }),
       timestamp: new Date().toISOString(),
       working_memory_span: totalPairs,
       attention_span_seconds: firstMatchTime || finalDuration,

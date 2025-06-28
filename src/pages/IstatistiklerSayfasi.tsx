@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useMemo, useCallback } from 'react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
@@ -24,62 +24,89 @@ const IstatistiklerSayfasi: React.FC = () => {
     setExerciseResults(results)
   }, [])
 
-  // Filter exercises based on selected filters
-  const filteredResults = exerciseResults.filter(result => {
-    let matchesExercise = true
-    let matchesTime = true
+  // Filter exercises based on selected filters - MEMOIZED for performance
+  const filteredResults = useMemo(() => {
+    return exerciseResults.filter(result => {
+      let matchesExercise = true
+      let matchesTime = true
 
-    if (selectedExerciseFilter !== 'all') {
-      matchesExercise = result.exerciseName === selectedExerciseFilter
-    }
-
-    if (selectedTimeRange !== 'all') {
-      const resultDate = new Date(result.date)
-      const now = new Date()
-      const daysDiff = (now.getTime() - resultDate.getTime()) / (1000 * 3600 * 24)
-      
-      switch (selectedTimeRange) {
-        case '7days':
-          matchesTime = daysDiff <= 7
-          break
-        case '30days':
-          matchesTime = daysDiff <= 30
-          break
-        case '90days':
-          matchesTime = daysDiff <= 90
-          break
+      if (selectedExerciseFilter !== 'all') {
+        matchesExercise = result.exerciseName === selectedExerciseFilter
       }
+
+      if (selectedTimeRange !== 'all') {
+        const resultDate = new Date(result.date)
+        const now = new Date()
+        const daysDiff = (now.getTime() - resultDate.getTime()) / (1000 * 3600 * 24)
+        
+        switch (selectedTimeRange) {
+          case '7days':
+            matchesTime = daysDiff <= 7
+            break
+          case '30days':
+            matchesTime = daysDiff <= 30
+            break
+          case '90days':
+            matchesTime = daysDiff <= 90
+            break
+        }
+      }
+
+      return matchesExercise && matchesTime
+    })
+  }, [exerciseResults, selectedExerciseFilter, selectedTimeRange])
+
+  // Exercise type specific results - MEMOIZED for performance
+  const {
+    memoryGameResults,
+    towerOfLondonResults,
+    hanoiTowersResults,
+    imageWordResults,
+    wordImageResults,
+    numberSequenceResults,
+    colorSequenceResults,
+    logicSequenceResults
+  } = useMemo(() => {
+    return {
+      memoryGameResults: filteredResults.filter(result => result.exerciseName === 'Hafıza Oyunu'),
+      towerOfLondonResults: filteredResults.filter(result => result.exerciseName === 'Londra Kulesi Testi'),
+      hanoiTowersResults: filteredResults.filter(result => result.exerciseName === 'Hanoi Kuleleri'),
+      imageWordResults: filteredResults.filter(result => result.exerciseName === 'Resim-Kelime Eşleştirme'),
+      wordImageResults: filteredResults.filter(result => result.exerciseName === 'Kelime-Resim Eşleştirme'),
+      numberSequenceResults: filteredResults.filter(result => result.exerciseName === 'Sayı Dizisi Takibi'),
+      colorSequenceResults: filteredResults.filter(result => result.exerciseName === 'Renk Dizisi Takibi'),
+      logicSequenceResults: filteredResults.filter(result => result.exerciseName === 'Mantık Dizileri')
     }
-
-    return matchesExercise && matchesTime
-  })
-
-  // Exercise type specific results
-  const memoryGameResults = filteredResults.filter(result => result.exerciseName === 'Hafıza Oyunu')
-  const towerOfLondonResults = filteredResults.filter(result => result.exerciseName === 'Londra Kulesi Testi')
-  const hanoiTowersResults = filteredResults.filter(result => result.exerciseName === 'Hanoi Kuleleri')
-  const imageWordResults = filteredResults.filter(result => result.exerciseName === 'Resim-Kelime Eşleştirme')
-  const wordImageResults = filteredResults.filter(result => result.exerciseName === 'Kelime-Resim Eşleştirme')
-  const numberSequenceResults = filteredResults.filter(result => result.exerciseName === 'Sayı Dizisi Takibi')
-  const colorSequenceResults = filteredResults.filter(result => result.exerciseName === 'Renk Dizisi Takibi')
-
-  const logicSequenceResults = filteredResults.filter(result => result.exerciseName === 'Mantık Dizileri')
+  }, [filteredResults])
 
   const totalExercises = filteredResults.length
   
-  // Enhanced statistics
-  const completedExercises = filteredResults.filter(result => result.completed === true).length
-  const exitedEarlyCount = filteredResults.filter(result => result.exitedEarly === true).length
-  const completionRate = totalExercises > 0 ? Math.round((completedExercises / totalExercises) * 100) : 0
-  const averageScore = totalExercises > 0 
-    ? (filteredResults.reduce((sum, result) => sum + result.score, 0) / totalExercises).toFixed(1)
-    : '0'
-  const totalTime = filteredResults.reduce((sum, result) => sum + result.duration, 0)
-  const highestScore = totalExercises > 0 
-    ? Math.max(...filteredResults.map(result => result.score))
-    : 0
+  // Enhanced statistics - MEMOIZED for performance
+  const stats = useMemo(() => {
+    const completedExercises = filteredResults.filter(result => result.completed === true).length
+    const exitedEarlyCount = filteredResults.filter(result => result.exitedEarly === true).length
+    const completionRate = totalExercises > 0 ? Math.round((completedExercises / totalExercises) * 100) : 0
+    const averageScore = totalExercises > 0 
+      ? (filteredResults.reduce((sum, result) => sum + result.score, 0) / totalExercises).toFixed(1)
+      : '0'
+    const totalTime = filteredResults.reduce((sum, result) => sum + result.duration, 0)
+    const highestScore = totalExercises > 0 
+      ? Math.max(...filteredResults.map(result => result.score))
+      : 0
 
-  const formatTime = (seconds: number) => {
+    return {
+      completedExercises,
+      exitedEarlyCount,
+      completionRate,
+      averageScore,
+      totalTime,
+      highestScore
+    }
+  }, [filteredResults, totalExercises])
+
+  const { completedExercises, exitedEarlyCount, completionRate, averageScore, totalTime, highestScore } = stats
+
+  const formatTime = useCallback((seconds: number) => {
     const hours = Math.floor(seconds / 3600)
     const minutes = Math.floor((seconds % 3600) / 60)
     const secs = seconds % 60
@@ -91,9 +118,9 @@ const IstatistiklerSayfasi: React.FC = () => {
     } else {
       return `${secs}sn`
     }
-  }
+  }, [])
 
-  const clearData = () => {
+  const clearData = useCallback(() => {
     playSound('button-click')
     
     // 🔧 FIX: Comprehensive data clearing
@@ -111,23 +138,24 @@ const IstatistiklerSayfasi: React.FC = () => {
     window.location.reload()
     
     console.log('All exercise data cleared successfully')
-  }
+  }, [playSound])
 
-  // Exercise distribution for pie chart
-  const exerciseDistribution = [
-    { name: 'Hafıza Oyunu', count: memoryGameResults.length, color: '#3B82F6' },
-    { name: 'Londra Kulesi', count: towerOfLondonResults.length, color: '#8B5CF6' },
-    { name: 'Hanoi Kuleleri', count: hanoiTowersResults.length, color: '#F59E0B' },
-    { name: 'Resim-Kelime', count: imageWordResults.length, color: '#10B981' },
-    { name: 'Kelime-Resim', count: wordImageResults.length, color: '#EF4444' },
-    { name: 'Sayı Dizisi', count: numberSequenceResults.length, color: '#06B6D4' },
-    { name: 'Renk Dizisi', count: colorSequenceResults.length, color: '#84CC16' },
+  // Exercise distribution for pie chart - MEMOIZED for performance
+  const exerciseDistribution = useMemo(() => {
+    return [
+      { name: 'Hafıza Oyunu', count: memoryGameResults.length, color: '#3B82F6' },
+      { name: 'Londra Kulesi', count: towerOfLondonResults.length, color: '#8B5CF6' },
+      { name: 'Hanoi Kuleleri', count: hanoiTowersResults.length, color: '#F59E0B' },
+      { name: 'Resim-Kelime', count: imageWordResults.length, color: '#10B981' },
+      { name: 'Kelime-Resim', count: wordImageResults.length, color: '#EF4444' },
+      { name: 'Sayı Dizisi', count: numberSequenceResults.length, color: '#06B6D4' },
+      { name: 'Renk Dizisi', count: colorSequenceResults.length, color: '#84CC16' },
+      { name: 'Mantık Dizileri', count: logicSequenceResults.length, color: '#EC4899' }
+    ].filter(item => item.count > 0)
+  }, [memoryGameResults.length, towerOfLondonResults.length, hanoiTowersResults.length, imageWordResults.length, wordImageResults.length, numberSequenceResults.length, colorSequenceResults.length, logicSequenceResults.length])
 
-    { name: 'Mantık Dizileri', count: logicSequenceResults.length, color: '#EC4899' }
-  ].filter(item => item.count > 0)
-
-  // Memory Game specific analytics - 🧠 CLINICAL ENHANCEMENT
-  const prepareMemoryGameAnalytics = () => {
+  // Memory Game specific analytics - 🧠 CLINICAL ENHANCEMENT - MEMOIZED
+  const prepareMemoryGameAnalytics = useCallback(() => {
     if (memoryGameResults.length === 0) return null
 
     const levelPerformance = memoryGameResults.reduce((acc, result) => {
@@ -154,15 +182,16 @@ const IstatistiklerSayfasi: React.FC = () => {
       
       // 🧠 Add clinical data if available
       if (result.details?.clinical_scores) {
-        acc[level].clinicalScores.push(result.details.clinical_scores.total_score)
-        acc[level].accuracyScores.push(result.details.clinical_scores.accuracy_score)
-        acc[level].efficiencyScores.push(result.details.clinical_scores.efficiency_score)
-        acc[level].speedScores.push(result.details.clinical_scores.speed_score)
-        acc[level].workingMemoryScores.push(result.details.clinical_scores.working_memory_score)
+        const clinicalScores = result.details.clinical_scores as Record<string, unknown>
+        acc[level].clinicalScores.push((clinicalScores.total_score as number) || 0)
+        acc[level].accuracyScores.push((clinicalScores.accuracy_score as number) || 0)
+        acc[level].efficiencyScores.push((clinicalScores.efficiency_score as number) || 0)
+        acc[level].speedScores.push((clinicalScores.speed_score as number) || 0)
+        acc[level].workingMemoryScores.push((clinicalScores.working_memory_score as number) || 0)
       }
       
-      if (result.details?.clinical_insights) {
-        acc[level].clinicalInsights.push(...result.details.clinical_insights)
+      if (result.details?.clinical_insights && Array.isArray(result.details.clinical_insights)) {
+        acc[level].clinicalInsights.push(...(result.details.clinical_insights as string[]))
       }
       
       return acc
@@ -194,10 +223,10 @@ const IstatistiklerSayfasi: React.FC = () => {
       avgWorkingMemoryScore: data.workingMemoryScores.length > 0 ? Math.round(data.workingMemoryScores.reduce((a, b) => a + b, 0) / data.workingMemoryScores.length) : null,
       topClinicalInsights: [...new Set(data.clinicalInsights)].slice(0, 3) // Unique insights, top 3
     }))
-  }
+  }, [memoryGameResults])
 
-  // Tower of London specific analytics - 🧠 EXECUTIVE FUNCTION CLINICAL ENHANCEMENT
-  const prepareTowerOfLondonAnalytics = () => {
+  // Tower of London specific analytics - 🧠 EXECUTIVE FUNCTION CLINICAL ENHANCEMENT - MEMOIZED
+  const prepareTowerOfLondonAnalytics = useCallback(() => {
     if (towerOfLondonResults.length === 0) return null
 
     const analytics = towerOfLondonResults.reduce((acc, result) => {
@@ -208,18 +237,18 @@ const IstatistiklerSayfasi: React.FC = () => {
       acc.levels.push((result.details?.level_number as number) || 1)
       
       // 🧠 Executive Function clinical data processing
-      if (result.details?.clinicalData && 'executiveFunctionScore' in result.details.clinicalData) {
+      if (result.details?.clinicalData && typeof result.details.clinicalData === 'object') {
         const clinical = result.details.clinicalData as Record<string, unknown>
-        acc.clinicalScores.push(clinical.executiveFunctionScore || 0)
-        acc.planningScores.push(clinical.planningAbility || 0)
-        acc.workingMemoryScores.push(clinical.workingMemoryLoad || 0)
-        acc.inhibitoryScores.push(clinical.inhibitoryControl || 0)
-        acc.flexibilityScores.push(clinical.cognitiveFlexibility || 0)
-        acc.planningTimes.push(clinical.planningTimeSeconds || 0)
+        acc.clinicalScores.push((clinical.executiveFunctionScore as number) || 0)
+        acc.planningScores.push((clinical.planningAbility as number) || 0)
+        acc.workingMemoryScores.push((clinical.workingMemoryLoad as number) || 0)
+        acc.inhibitoryScores.push((clinical.inhibitoryControl as number) || 0)
+        acc.flexibilityScores.push((clinical.cognitiveFlexibility as number) || 0)
+        acc.planningTimes.push((clinical.planningTimeSeconds as number) || 0)
         acc.optimalSolutions.push(clinical.isOptimalSolution ? 1 : 0)
         
         // Level-based performance tracking
-        const levelKey = `level_${clinical.levelCompleted}`
+        const levelKey = `level_${clinical.levelCompleted || 1}`
         if (!acc.levelPerformance[levelKey]) {
           acc.levelPerformance[levelKey] = {
             attempts: 0,
@@ -231,21 +260,26 @@ const IstatistiklerSayfasi: React.FC = () => {
         }
         acc.levelPerformance[levelKey].attempts++
         if (clinical.isOptimalSolution) acc.levelPerformance[levelKey].optimalSolutions++
-        acc.levelPerformance[levelKey].averageMoves.push(clinical.totalMoves)
-        acc.levelPerformance[levelKey].averagePlanningTime.push(clinical.planningTimeSeconds)
-        acc.levelPerformance[levelKey].efficiencies.push(clinical.efficiencyPercentage)
+        acc.levelPerformance[levelKey].averageMoves.push((clinical.totalMoves as number) || 0)
+        acc.levelPerformance[levelKey].averagePlanningTime.push((clinical.planningTimeSeconds as number) || 0)
+        acc.levelPerformance[levelKey].efficiencies.push((clinical.efficiencyPercentage as number) || 0)
         
         // Executive function insights based on performance
-        if (clinical.planningAbility >= 80) {
+        const planningAbility = (clinical.planningAbility as number) || 0
+        const workingMemoryLoad = (clinical.workingMemoryLoad as number) || 0
+        const inhibitoryControl = (clinical.inhibitoryControl as number) || 0
+        const cognitiveFlexibility = (clinical.cognitiveFlexibility as number) || 0
+        
+        if (planningAbility >= 80) {
           acc.clinicalInsights.push("Excellent planning and foresight abilities")
         }
-        if (clinical.workingMemoryLoad >= 85) {
+        if (workingMemoryLoad >= 85) {
           acc.clinicalInsights.push("Strong working memory capacity")
         }
-        if (clinical.inhibitoryControl >= 80) {
+        if (inhibitoryControl >= 80) {
           acc.clinicalInsights.push("Good impulse control and response inhibition")
         }
-        if (clinical.cognitiveFlexibility >= 75) {
+        if (cognitiveFlexibility >= 75) {
           acc.clinicalInsights.push("Adaptive problem-solving approach")
         }
         if (clinical.isOptimalSolution) {
@@ -328,10 +362,10 @@ const IstatistiklerSayfasi: React.FC = () => {
         fill: `hsl(${240 + (index * 15)}, 70%, 50%)` // Purple gradient
       }))
     }
-  }
+  }, [towerOfLondonResults])
 
-  // Hanoi Towers specific analytics - 🧠 MATHEMATICAL THINKING CLINICAL ENHANCEMENT
-  const prepareHanoiTowersAnalytics = () => {
+  // Hanoi Towers specific analytics - 🧠 MATHEMATICAL THINKING CLINICAL ENHANCEMENT - MEMOIZED
+  const prepareHanoiTowersAnalytics = useCallback(() => {
     if (hanoiTowersResults.length === 0) return null
 
     const analytics = hanoiTowersResults.reduce((acc, result) => {
@@ -466,10 +500,10 @@ const IstatistiklerSayfasi: React.FC = () => {
         fill: `hsl(${30 + (index * 15)}, 70%, 50%)` // Orange gradient
       }))
     }
-  }
+  }, [hanoiTowersResults])
 
-  // Sequence exercises analytics
-  const prepareSequenceAnalytics = (results: ExerciseResult[], exerciseName: string) => {
+  // Sequence exercises analytics - MEMOIZED
+  const prepareSequenceAnalytics = useCallback((results: ExerciseResult[], exerciseName: string) => {
     if (results.length === 0) return null
 
     const levelPerformance = results.reduce((acc, result) => {
@@ -490,10 +524,10 @@ const IstatistiklerSayfasi: React.FC = () => {
       attempts: data.attempts,
       maxLevel: parseInt(level)
     })).sort((a, b) => a.maxLevel - b.maxLevel)
-  }
+  }, [])
 
-  // Image-Word Matching specific analytics - 🧠 CLINICAL ENHANCEMENT  
-  const prepareImageWordAnalytics = () => {
+  // Image-Word Matching specific analytics - 🧠 CLINICAL ENHANCEMENT - MEMOIZED
+  const prepareImageWordAnalytics = useCallback(() => {
     if (imageWordResults.length === 0) return null
 
     const analytics = imageWordResults.reduce((acc, result) => {
@@ -602,10 +636,10 @@ const IstatistiklerSayfasi: React.FC = () => {
         fill: `hsl(${200 + (index * 40)}, 70%, 50%)` // Dynamic colors
       }))
     }
-  }
+  }, [imageWordResults])
 
-  // Word-Image Matching specific analytics - 🧠 REVERSE PROCESSING CLINICAL ENHANCEMENT  
-  const prepareWordImageAnalytics = () => {
+  // Word-Image Matching specific analytics - 🧠 REVERSE PROCESSING CLINICAL ENHANCEMENT - MEMOIZED
+  const prepareWordImageAnalytics = useCallback(() => {
     if (wordImageResults.length === 0) return null
 
     const analytics = wordImageResults.reduce((acc, result) => {
@@ -714,13 +748,10 @@ const IstatistiklerSayfasi: React.FC = () => {
         fill: `hsl(${280 + (index * 40)}, 70%, 50%)` // Dynamic colors (purple-ish range)
       }))
     }
-  }
+  }, [wordImageResults])
 
-  const memoryAnalytics = prepareMemoryGameAnalytics()
-  const towerOfLondonAnalytics = prepareTowerOfLondonAnalytics()
-  const hanoiTowersAnalytics = prepareHanoiTowersAnalytics()
-  // Number Sequence specific analytics - 🧠 WORKING MEMORY CLINICAL ENHANCEMENT  
-  const prepareNumberSequenceAnalytics = () => {
+  // Number Sequence specific analytics - 🧠 WORKING MEMORY CLINICAL ENHANCEMENT - MEMOIZED
+  const prepareNumberSequenceAnalytics = useCallback(() => {
     if (numberSequenceResults.length === 0) return null
 
     const analytics = numberSequenceResults.reduce((acc, result) => {
@@ -823,12 +854,10 @@ const IstatistiklerSayfasi: React.FC = () => {
         fill: compliance.isWithinNormal ? '#10B981' : compliance.capacity > 9 ? '#8B5CF6' : '#3B82F6'
       }))
     }
-  }
+  }, [numberSequenceResults])
 
-  const numberSequenceAnalytics = prepareNumberSequenceAnalytics()
-  
-  // Color Sequence specific analytics - 🧠 VISUAL-SPATIAL MEMORY CLINICAL ENHANCEMENT  
-  const prepareColorSequenceAnalytics = () => {
+  // Color Sequence specific analytics - 🧠 VISUAL-SPATIAL MEMORY CLINICAL ENHANCEMENT - MEMOIZED
+  const prepareColorSequenceAnalytics = useCallback(() => {
     if (colorSequenceResults.length === 0) return null
 
     const analytics = colorSequenceResults.reduce((acc, result) => {
@@ -940,12 +969,17 @@ const IstatistiklerSayfasi: React.FC = () => {
               compliance.complexity === 'medium' ? '#06B6D4' : '#3B82F6'
       }))
     }
-  }
+  }, [colorSequenceResults])
 
-  const colorSequenceAnalytics = prepareColorSequenceAnalytics()
-  const legacyColorSequenceAnalytics = prepareSequenceAnalytics(colorSequenceResults, 'Renk Dizisi Takibi')
-  const imageWordAnalytics = prepareImageWordAnalytics()
-  const wordImageAnalytics = prepareWordImageAnalytics()
+  // Memoized analytics results to prevent recalculation
+  const memoryAnalytics = useMemo(() => prepareMemoryGameAnalytics(), [prepareMemoryGameAnalytics])
+  const towerOfLondonAnalytics = useMemo(() => prepareTowerOfLondonAnalytics(), [prepareTowerOfLondonAnalytics])
+  const hanoiTowersAnalytics = useMemo(() => prepareHanoiTowersAnalytics(), [prepareHanoiTowersAnalytics])
+  const numberSequenceAnalytics = useMemo(() => prepareNumberSequenceAnalytics(), [prepareNumberSequenceAnalytics])
+  const colorSequenceAnalytics = useMemo(() => prepareColorSequenceAnalytics(), [prepareColorSequenceAnalytics])
+  const legacyColorSequenceAnalytics = useMemo(() => prepareSequenceAnalytics(colorSequenceResults, 'Renk Dizisi Takibi'), [prepareSequenceAnalytics, colorSequenceResults])
+  const imageWordAnalytics = useMemo(() => prepareImageWordAnalytics(), [prepareImageWordAnalytics])
+  const wordImageAnalytics = useMemo(() => prepareWordImageAnalytics(), [prepareWordImageAnalytics])
 
   const chartConfig = {
     skor: { label: "Skor", color: "hsl(var(--primary))" },
@@ -953,88 +987,6 @@ const IstatistiklerSayfasi: React.FC = () => {
     verimlilik: { label: "Verimlilik (%)", color: "hsl(var(--chart-3))" },
     hamle: { label: "Hamle", color: "hsl(var(--chart-4))" },
   }
-
-  const stats = [
-    {
-      title: 'Toplam Egzersiz',
-      value: totalExercises.toString(),
-      description: selectedExerciseFilter === 'all' ? 'Başlatılan egzersiz sayısı' : `${selectedExerciseFilter} egzersizi`,
-      icon: Target,
-      color: 'text-blue-600 dark:text-blue-400',
-      bgColor: 'bg-blue-50 dark:bg-blue-950/30'
-    },
-    {
-      title: 'Tamamlanan',
-      value: completedExercises.toString(),
-      description: `%${completionRate} tamamlanma oranı`,
-      icon: CheckCircle,
-      color: 'text-emerald-600 dark:text-emerald-400',
-      bgColor: 'bg-emerald-50 dark:bg-emerald-950/30'
-    },
-    {
-      title: 'Ortalama Skor',
-      value: averageScore,
-      description: 'Performans ortalaması',
-      icon: TrendingUp,
-      color: 'text-purple-600 dark:text-purple-400',
-      bgColor: 'bg-purple-50 dark:bg-purple-950/30'
-    },
-    {
-      title: 'En Yüksek Skor',
-      value: highestScore.toString(),
-      description: 'En iyi performans',
-      icon: Trophy,
-      color: 'text-amber-600 dark:text-amber-400',
-      bgColor: 'bg-amber-50 dark:bg-amber-950/30'
-    },
-    {
-      title: 'Toplam Süre',
-      value: formatTime(totalTime),
-      description: 'Egzersizlerde geçirilen süre',
-      icon: Clock,
-      color: 'text-violet-600 dark:text-violet-400',
-      bgColor: 'bg-violet-50 dark:bg-violet-950/30'
-    },
-    {
-      title: 'Erken Çıkış',
-      value: exitedEarlyCount.toString(),
-      description: 'Yarıda bırakılan egzersizler',
-      icon: XCircle,
-      color: 'text-red-600 dark:text-red-400',
-      bgColor: 'bg-red-50 dark:bg-red-950/30'
-    }
-  ]
-
-  const exerciseTypeSummary = [
-    {
-      name: 'Hafıza Oyunu',
-      count: memoryGameResults.length,
-      icon: Brain,
-      color: 'text-blue-600',
-      bgColor: 'bg-blue-50 dark:bg-blue-950/30'
-    },
-    {
-      name: 'Londra Kulesi',
-      count: towerOfLondonResults.length,
-      icon: Layers,
-      color: 'text-purple-600',
-      bgColor: 'bg-purple-50 dark:bg-purple-950/30'
-    },
-    {
-      name: 'Resim-Kelime',
-      count: imageWordResults.length,
-      icon: Target,
-      color: 'text-emerald-600',
-      bgColor: 'bg-emerald-50 dark:bg-emerald-950/30'
-    },
-    {
-      name: 'Kelime-Resim',
-      count: wordImageResults.length,
-      icon: Trophy,
-      color: 'text-amber-600',
-      bgColor: 'bg-amber-50 dark:bg-amber-950/30'
-    }
-  ]
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 dark:from-gray-950 dark:via-blue-950 dark:to-indigo-950 p-3 sm:p-4 lg:p-6">
@@ -1093,41 +1045,41 @@ const IstatistiklerSayfasi: React.FC = () => {
           <CardContent className="p-3 sm:p-4">
             <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
               <div className="flex-1">
-                <label className="text-xs font-medium text-muted-foreground">Egzersiz Türü</label>
-            <Select value={selectedExerciseFilter} onValueChange={setSelectedExerciseFilter}>
-                  <SelectTrigger className="mt-1">
+                <label htmlFor="exercise-filter" className="text-xs font-medium text-muted-foreground block mb-1">Egzersiz Türü</label>
+                <Select value={selectedExerciseFilter} onValueChange={setSelectedExerciseFilter}>
+                  <SelectTrigger id="exercise-filter" className="mt-1">
                     <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">Tüm Egzersizler</SelectItem>
-                <SelectItem value="Hafıza Oyunu">Hafıza Oyunu</SelectItem>
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">Tüm Egzersizler</SelectItem>
+                    <SelectItem value="Hafıza Oyunu">Hafıza Oyunu</SelectItem>
                     <SelectItem value="Londra Kulesi Testi">Londra Kulesi</SelectItem>
-                <SelectItem value="Hanoi Kuleleri">Hanoi Kuleleri</SelectItem>
+                    <SelectItem value="Hanoi Kuleleri">Hanoi Kuleleri</SelectItem>
                     <SelectItem value="Resim-Kelime Eşleştirme">Resim-Kelime</SelectItem>
                     <SelectItem value="Kelime-Resim Eşleştirme">Kelime-Resim</SelectItem>
                     <SelectItem value="Sayı Dizisi Takibi">Sayı Dizisi</SelectItem>
                     <SelectItem value="Renk Dizisi Takibi">Renk Dizisi</SelectItem>
                     <SelectItem value="Mantık Dizileri">Mantık Dizileri</SelectItem>
-              </SelectContent>
-            </Select>
+                  </SelectContent>
+                </Select>
               </div>
               <div className="flex-1">
-                <label className="text-xs font-medium text-muted-foreground">Zaman Aralığı</label>
-            <Select value={selectedTimeRange} onValueChange={setSelectedTimeRange}>
-                  <SelectTrigger className="mt-1">
+                <label htmlFor="time-range-filter" className="text-xs font-medium text-muted-foreground block mb-1">Zaman Aralığı</label>
+                <Select value={selectedTimeRange} onValueChange={setSelectedTimeRange}>
+                  <SelectTrigger id="time-range-filter" className="mt-1">
                     <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">Tüm Zamanlar</SelectItem>
-                <SelectItem value="7days">Son 7 Gün</SelectItem>
-                <SelectItem value="30days">Son 30 Gün</SelectItem>
-                <SelectItem value="90days">Son 90 Gün</SelectItem>
-              </SelectContent>
-            </Select>
-      </div>
-                </div>
-              </CardContent>
-            </Card>
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">Tüm Zamanlar</SelectItem>
+                    <SelectItem value="7days">Son 7 Gün</SelectItem>
+                    <SelectItem value="30days">Son 30 Gün</SelectItem>
+                    <SelectItem value="90days">Son 90 Gün</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
 
         {filteredResults.length === 0 ? (
           <Card className="bg-white/60 dark:bg-gray-900/60 backdrop-blur-sm border border-white/20 dark:border-gray-800/20 shadow-lg">
@@ -1208,8 +1160,8 @@ const IstatistiklerSayfasi: React.FC = () => {
                         ))}
                       </div>
                       <div className="flex justify-center">
-                        <ChartContainer config={chartConfig} className="h-[200px] w-[200px]">
-                          <ResponsiveContainer width="100%" height="100%">
+                        <ChartContainer config={chartConfig} className="h-[200px] w-[200px] min-h-[200px] min-w-[200px]">
+                          <ResponsiveContainer width={200} height={200}>
                             <PieChart>
                               <Pie
                                 data={exerciseDistribution}
@@ -1234,8 +1186,8 @@ const IstatistiklerSayfasi: React.FC = () => {
                     {/* Desktop: Yan yana */}
                     <div className="hidden lg:grid lg:grid-cols-2 gap-6">
                       <div>
-                        <ChartContainer config={chartConfig} className="h-[300px]">
-                          <ResponsiveContainer width="100%" height="100%">
+                        <ChartContainer config={chartConfig} className="h-[300px] w-full min-h-[300px]">
+                          <ResponsiveContainer width="100%" height={300}>
                             <PieChart>
                               <Pie
                                 data={exerciseDistribution}
@@ -1345,8 +1297,8 @@ const IstatistiklerSayfasi: React.FC = () => {
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <ChartContainer config={chartConfig} className="h-[300px] sm:h-[400px] mb-6">
-                    <ResponsiveContainer width="100%" height="100%">
+                  <ChartContainer config={chartConfig} className="h-[300px] w-full min-h-[300px]">
+                    <ResponsiveContainer width="100%" height={300}>
                       <BarChart data={memoryAnalytics}>
                         <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
                         <XAxis dataKey="level" stroke="hsl(var(--muted-foreground))" fontSize={10} tick={{ fontSize: 10 }} />
@@ -1417,7 +1369,7 @@ const IstatistiklerSayfasi: React.FC = () => {
                 </CardHeader>
                 <CardContent>
                   <ChartContainer config={chartConfig} className="h-[400px] mb-6">
-                    <ResponsiveContainer width="100%" height="100%">
+                    <ResponsiveContainer width=\"100%\" height={300}>
                       <BarChart data={towerOfLondonAnalytics.levelStats}>
                         <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
                         <XAxis dataKey="level" stroke="hsl(var(--muted-foreground))" fontSize={12} />
@@ -1922,7 +1874,7 @@ const IstatistiklerSayfasi: React.FC = () => {
                         Kategori Bazında Performans
                       </h4>
                       <ChartContainer config={chartConfig} className="h-[300px] sm:h-[400px]">
-                    <ResponsiveContainer width="100%" height="100%">
+                    <ResponsiveContainer width=\"100%\" height={300}>
                           <BarChart data={imageWordAnalytics.categoryChartData} layout="horizontal">
                         <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
                             <XAxis type="number" stroke="hsl(var(--muted-foreground))" fontSize={10} />
@@ -2089,7 +2041,7 @@ const IstatistiklerSayfasi: React.FC = () => {
                         Kategori-bazlı Reverse Processing Performansı
                       </h4>
                       <div className="h-80">
-                        <ResponsiveContainer width="100%" height="100%">
+                        <ResponsiveContainer width=\"100%\" height={300}>
                           <BarChart data={wordImageAnalytics.categoryVisualChartData}>
                             <CartesianGrid strokeDasharray="3 3" className="opacity-30" />
                             <XAxis 
@@ -2263,7 +2215,7 @@ const IstatistiklerSayfasi: React.FC = () => {
                         Miller's 7±2 Rule - Working Memory Progression
                       </h4>
                       <div className="h-80">
-                        <ResponsiveContainer width="100%" height="100%">
+                        <ResponsiveContainer width=\"100%\" height={300}>
                           <LineChart data={numberSequenceAnalytics.millerProgressionData}>
                             <CartesianGrid strokeDasharray="3 3" className="opacity-30" />
                             <XAxis dataKey="session" tick={{ fontSize: 12 }} />
@@ -2507,7 +2459,7 @@ const IstatistiklerSayfasi: React.FC = () => {
                         Visual-Spatial Pattern - Capacity Progression
                       </h4>
                       <div className="h-80">
-                        <ResponsiveContainer width="100%" height="100%">
+                        <ResponsiveContainer width=\"100%\" height={300}>
                           <LineChart data={colorSequenceAnalytics.visualSpatialProgressionData}>
                             <CartesianGrid strokeDasharray="3 3" className="opacity-30" />
                             <XAxis dataKey="session" tick={{ fontSize: 12 }} />
@@ -2687,7 +2639,7 @@ const IstatistiklerSayfasi: React.FC = () => {
                 </CardHeader>
                 <CardContent>
                   <ChartContainer config={chartConfig} className="h-[300px]">
-                    <ResponsiveContainer width="100%" height="100%">
+                    <ResponsiveContainer width=\"100%\" height={300}>
                       <AreaChart data={legacyColorSequenceAnalytics}>
                         <defs>
                           <linearGradient id="colorSequenceGradient" x1="0" y1="0" x2="0" y2="1">
@@ -2721,7 +2673,7 @@ const IstatistiklerSayfasi: React.FC = () => {
               <CardContent>
                 {filteredResults.length > 1 ? (
                 <ChartContainer config={chartConfig} className="h-[400px]">
-                  <ResponsiveContainer width="100%" height="100%">
+                  <ResponsiveContainer width=\"100%\" height={300}>
                     <LineChart data={filteredResults.map((result, index) => ({
                       index: index + 1,
                       skor: result.score,
@@ -2798,9 +2750,8 @@ const IstatistiklerSayfasi: React.FC = () => {
                             )}
                             {result.exerciseName === 'Londra Kulesi Testi' && (
                               <span>
-                                Hamle: {(result.details?.user_moves_taken as number) || '-'}/{(result.details?.min_moves_required as number) || '-'}, 
                                 Verimlilik: {(result.details?.efficiency_percentage as number) || '-'}%
-                                {result.details?.completed_optimally && <Star className="w-3 h-3 inline ml-1 text-amber-500" />}
+                                {result.score >= 80 && <Star className="w-3 h-3 inline ml-1 text-amber-500" />}
                               </span>
                             )}
                             {typeof result.exerciseName === 'string' && result.exerciseName.includes('Eşleştirme') && (

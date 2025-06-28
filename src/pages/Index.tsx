@@ -1,17 +1,6 @@
-import { useState, useEffect } from "react";
-import EgzersizlerSayfasi from "./EgzersizlerSayfasi";
-import IstatistiklerSayfasi from "./IstatistiklerSayfasi";
-import AyarlarSayfasi from "./AyarlarSayfasi";
-import UzmanDashboardSayfasi from "./UzmanDashboardSayfasi";
-import HafizaOyunuSayfasi from "./HafizaOyunuSayfasi";
-import ResimKelimeEslestirmeSayfasi from "./ResimKelimeEslestirmeSayfasi";
-import KelimeResimEslestirmeSayfasi from "./KelimeResimEslestirmeSayfasi";
-import LondraKulesiSayfasi from "./LondraKulesiSayfasi";
-import SayiDizisiTakibiSayfasi from "./SayiDizisiTakibiSayfasi";
-import RenkDizisiTakibiSayfasi from "./RenkDizisiTakibiSayfasi";
-
-import MantikDizileriSayfasi from "./MantikDizileriSayfasi";
-import HanoiKuleleriSayfasi from "./HanoiKuleleriSayfasi";
+import { useState, useEffect, useCallback, lazy, Suspense } from "react";
+// Logo-based loading, no card needed
+import { Loader2 } from "lucide-react"
 import BottomNavigation from "../components/BottomNavigation";
 import ClientModeHandler from "../components/ClientModeHandler";
 import SkipNavigation from "../components/SkipNavigation";
@@ -19,6 +8,48 @@ import { useClientMode } from "../hooks/useClientMode";
 import { useAuth } from "../contexts/AuthContext";
 import { syncPendingData } from "../lib/supabaseClient";
 import { useAudio } from "../hooks/useAudio";
+
+// 🚀 PERFORMANCE: Lazy load page components to reduce initial bundle size
+const EgzersizlerSayfasi = lazy(() => import("./EgzersizlerSayfasi"));
+const IstatistiklerSayfasi = lazy(() => import("./IstatistiklerSayfasi"));
+const AyarlarSayfasi = lazy(() => import("./AyarlarSayfasi"));
+const UzmanDashboardSayfasi = lazy(() => import("./UzmanDashboardSayfasi"));
+const HafizaOyunuSayfasi = lazy(() => import("./HafizaOyunuSayfasi"));
+const ResimKelimeEslestirmeSayfasi = lazy(() => import("./ResimKelimeEslestirmeSayfasi"));
+const KelimeResimEslestirmeSayfasi = lazy(() => import("./KelimeResimEslestirmeSayfasi"));
+const LondraKulesiSayfasi = lazy(() => import("./LondraKulesiSayfasi"));
+const SayiDizisiTakibiSayfasi = lazy(() => import("./SayiDizisiTakibiSayfasi"));
+const RenkDizisiTakibiSayfasi = lazy(() => import("./RenkDizisiTakibiSayfasi"));
+const MantikDizileriSayfasi = lazy(() => import("./MantikDizileriSayfasi"));
+const HanoiKuleleriSayfasi = lazy(() => import("./HanoiKuleleriSayfasi"));
+
+// 🚀 PERFORMANCE: Loading fallback component with logo
+const LoadingFallback = () => (
+  <div className="min-h-screen bg-background flex items-center justify-center">
+    <div className="text-center space-y-4">
+      {/* Logo */}
+      <div className="w-24 h-24 mx-auto mb-6 bg-gradient-to-br from-primary to-primary/80 rounded-2xl flex items-center justify-center shadow-lg p-3">
+        <img 
+          src="/logo.png" 
+          alt="PsikoEgzersiz Logo" 
+          className="w-full h-full object-contain drop-shadow-sm"
+        />
+      </div>
+      
+      {/* Loading spinner */}
+      <div className="relative">
+        <Loader2 className="h-8 w-8 animate-spin mx-auto text-primary" />
+        <div className="absolute inset-0 h-8 w-8 mx-auto border-2 border-primary/20 rounded-full"></div>
+      </div>
+      
+      {/* Loading text */}
+      <div className="space-y-2">
+        <p className="text-lg font-medium text-foreground">PsikoEgzersiz</p>
+        <p className="text-sm text-muted-foreground">Beyin gücünüzü artırın...</p>
+      </div>
+    </div>
+  </div>
+)
 
 const Index = () => {
   const { playSound } = useAudio()
@@ -29,7 +60,6 @@ const Index = () => {
   const [isTowerOfLondonActive, setIsTowerOfLondonActive] = useState(false);
   const [isNumberSequenceActive, setIsNumberSequenceActive] = useState(false);
   const [isColorSequenceActive, setIsColorSequenceActive] = useState(false);
-
   const [isLogicSequencesActive, setIsLogicSequencesActive] = useState(false);
   const [isHanoiTowersActive, setIsHanoiTowersActive] = useState(false);
   const { isClientMode, exitClientMode } = useClientMode();
@@ -60,104 +90,147 @@ const Index = () => {
     }
   }, [isClientMode, activePage]);
 
-  const handleMemoryGameStart = () => {
+  // 🚀 PERFORMANCE: Memoized game state handlers to prevent re-renders
+  const handleMemoryGameStart = useCallback(() => {
     playSound('button-click')
     setIsMemoryGameActive(true);
-  };
+  }, [playSound]);
 
-  const handleMemoryGameEnd = () => {
+  const handleMemoryGameEnd = useCallback(() => {
     playSound('button-click')
     setIsMemoryGameActive(false);
-  };
+  }, [playSound]);
 
-  const handleImageWordMatchingStart = () => {
+  const handleImageWordMatchingStart = useCallback(() => {
     playSound('button-click')
     setIsImageWordMatchingActive(true);
-  };
+  }, [playSound]);
 
-  const handleImageWordMatchingEnd = () => {
+  const handleImageWordMatchingEnd = useCallback(() => {
     playSound('button-click')
     setIsImageWordMatchingActive(false);
-  };
+  }, [playSound]);
 
-  const handleWordImageMatchingStart = () => {
+  const handleWordImageMatchingStart = useCallback(() => {
     playSound('button-click')
     setIsWordImageMatchingActive(true);
-  };
+  }, [playSound]);
 
-  const handleWordImageMatchingEnd = () => {
+  const handleWordImageMatchingEnd = useCallback(() => {
     playSound('button-click')
     setIsWordImageMatchingActive(false);
-  };
+  }, [playSound]);
 
-  const handleTowerOfLondonStart = () => {
+  const handleTowerOfLondonStart = useCallback(() => {
     playSound('button-click')
     setIsTowerOfLondonActive(true);
-  };
+  }, [playSound]);
 
-  const handleTowerOfLondonEnd = () => {
+  const handleTowerOfLondonEnd = useCallback(() => {
     playSound('button-click')
     setIsTowerOfLondonActive(false);
-  };
+  }, [playSound]);
 
-  const handleNumberSequenceStart = () => {
+  const handleNumberSequenceStart = useCallback(() => {
     playSound('button-click')
     setIsNumberSequenceActive(true);
-  };
+  }, [playSound]);
 
-  const handleNumberSequenceEnd = () => {
+  const handleNumberSequenceEnd = useCallback(() => {
     playSound('button-click')
     setIsNumberSequenceActive(false);
-  };
+  }, [playSound]);
 
-  const handleColorSequenceStart = () => {
+  const handleColorSequenceStart = useCallback(() => {
     playSound('button-click')
     setIsColorSequenceActive(true);
-  };
+  }, [playSound]);
 
-  const handleColorSequenceEnd = () => {
+  const handleColorSequenceEnd = useCallback(() => {
     playSound('button-click')
     setIsColorSequenceActive(false);
-  };
+  }, [playSound]);
 
-
-
-  const handleLogicSequencesStart = () => {
+  const handleLogicSequencesStart = useCallback(() => {
     playSound('button-click')
     setIsLogicSequencesActive(true);
-  };
+  }, [playSound]);
 
-  const handleLogicSequencesEnd = () => {
+  const handleLogicSequencesEnd = useCallback(() => {
     playSound('button-click')
     setIsLogicSequencesActive(false);
-  };
+  }, [playSound]);
 
-  const handleHanoiTowersStart = () => {
+  const handleHanoiTowersStart = useCallback(() => {
     playSound('button-click')
     setIsHanoiTowersActive(true);
-  };
+  }, [playSound]);
 
-  const handleHanoiTowersEnd = () => {
+  const handleHanoiTowersEnd = useCallback(() => {
     playSound('button-click')
     setIsHanoiTowersActive(false);
-  };
+  }, [playSound]);
 
-  const handlePageChange = (page: string) => {
+  // 🚀 PERFORMANCE: Optimized page change handler with useCallback
+  const handlePageChange = useCallback((page: string) => {
     if (isClientMode && page !== "egzersizler") {
       console.log('Index - Page change blocked in client mode:', page)
       return;
     }
-    playSound('button-click')
-    console.log('Index - Page changed to:', page)
-    setActivePage(page);
-  };
+    
+    // Use requestAnimationFrame to defer the heavy operation
+    requestAnimationFrame(() => {
+      playSound('button-click')
+      console.log('Index - Page changed to:', page)
+      setActivePage(page);
+    });
+  }, [isClientMode, playSound]);
+
+  // 🚀 PERFORMANCE: Memoized page renderer to prevent unnecessary re-renders
+  const renderActivePage = useCallback(() => {
+    const commonProps = {
+      onMemoryGameStart: handleMemoryGameStart,
+      onImageWordMatchingStart: handleImageWordMatchingStart,
+      onWordImageMatchingStart: handleWordImageMatchingStart,
+      onTowerOfLondonStart: handleTowerOfLondonStart,
+      onNumberSequenceStart: handleNumberSequenceStart,
+      onColorSequenceStart: handleColorSequenceStart,
+      onLogicSequencesStart: handleLogicSequencesStart,
+      onHanoiTowersStart: handleHanoiTowersStart,
+    };
+
+    switch (activePage) {
+      case "egzersizler":
+        return <EgzersizlerSayfasi {...commonProps} />;
+      case "istatistikler":
+        return <IstatistiklerSayfasi />;
+      case "ayarlar":
+        return <AyarlarSayfasi />;
+      case "uzman-dashboard":
+        return <UzmanDashboardSayfasi />;
+      default:
+        return <EgzersizlerSayfasi {...commonProps} />;
+    }
+  }, [
+    activePage,
+    handleMemoryGameStart,
+    handleImageWordMatchingStart,
+    handleWordImageMatchingStart,
+    handleTowerOfLondonStart,
+    handleNumberSequenceStart,
+    handleColorSequenceStart,
+    handleLogicSequencesStart,
+    handleHanoiTowersStart,
+  ]);
 
   // Render memory game
   if (isMemoryGameActive) {
     return (
       <>
         <SkipNavigation />
-        <HafizaOyunuSayfasi onBack={handleMemoryGameEnd} />
+        <Suspense fallback={<LoadingFallback />}>
+          <HafizaOyunuSayfasi onBack={handleMemoryGameEnd} />
+        </Suspense>
         <ClientModeHandler 
           isClientMode={isClientMode}
           onExitClientMode={exitClientMode}
@@ -171,7 +244,9 @@ const Index = () => {
     return (
       <>
         <SkipNavigation />
-        <ResimKelimeEslestirmeSayfasi onBack={handleImageWordMatchingEnd} />
+        <Suspense fallback={<LoadingFallback />}>
+          <ResimKelimeEslestirmeSayfasi onBack={handleImageWordMatchingEnd} />
+        </Suspense>
         <ClientModeHandler 
           isClientMode={isClientMode}
           onExitClientMode={exitClientMode}
@@ -185,7 +260,9 @@ const Index = () => {
     return (
       <>
         <SkipNavigation />
-        <KelimeResimEslestirmeSayfasi onBack={handleWordImageMatchingEnd} />
+        <Suspense fallback={<LoadingFallback />}>
+          <KelimeResimEslestirmeSayfasi onBack={handleWordImageMatchingEnd} />
+        </Suspense>
         <ClientModeHandler 
           isClientMode={isClientMode}
           onExitClientMode={exitClientMode}
@@ -199,7 +276,9 @@ const Index = () => {
     return (
       <>
         <SkipNavigation />
-        <LondraKulesiSayfasi onBack={handleTowerOfLondonEnd} />
+        <Suspense fallback={<LoadingFallback />}>
+          <LondraKulesiSayfasi onBack={handleTowerOfLondonEnd} />
+        </Suspense>
         <ClientModeHandler 
           isClientMode={isClientMode}
           onExitClientMode={exitClientMode}
@@ -213,7 +292,9 @@ const Index = () => {
     return (
       <>
         <SkipNavigation />
-        <SayiDizisiTakibiSayfasi onBack={handleNumberSequenceEnd} />
+        <Suspense fallback={<LoadingFallback />}>
+          <SayiDizisiTakibiSayfasi onBack={handleNumberSequenceEnd} />
+        </Suspense>
         <ClientModeHandler 
           isClientMode={isClientMode}
           onExitClientMode={exitClientMode}
@@ -227,7 +308,9 @@ const Index = () => {
     return (
       <>
         <SkipNavigation />
-        <RenkDizisiTakibiSayfasi onBack={handleColorSequenceEnd} />
+        <Suspense fallback={<LoadingFallback />}>
+          <RenkDizisiTakibiSayfasi onBack={handleColorSequenceEnd} />
+        </Suspense>
         <ClientModeHandler 
           isClientMode={isClientMode}
           onExitClientMode={exitClientMode}
@@ -236,14 +319,14 @@ const Index = () => {
     );
   }
 
-
-
   // Render Logic Sequences game
   if (isLogicSequencesActive) {
     return (
       <>
         <SkipNavigation />
-        <MantikDizileriSayfasi onBack={handleLogicSequencesEnd} />
+        <Suspense fallback={<LoadingFallback />}>
+          <MantikDizileriSayfasi onBack={handleLogicSequencesEnd} />
+        </Suspense>
         <ClientModeHandler 
           isClientMode={isClientMode}
           onExitClientMode={exitClientMode}
@@ -257,7 +340,9 @@ const Index = () => {
     return (
       <>
         <SkipNavigation />
-        <HanoiKuleleriSayfasi onBack={handleHanoiTowersEnd} />
+        <Suspense fallback={<LoadingFallback />}>
+          <HanoiKuleleriSayfasi onBack={handleHanoiTowersEnd} />
+        </Suspense>
         <ClientModeHandler 
           isClientMode={isClientMode}
           onExitClientMode={exitClientMode}
@@ -266,48 +351,13 @@ const Index = () => {
     );
   }
 
-  const renderActivePage = () => {
-    switch (activePage) {
-      case "egzersizler":
-        return (
-          <EgzersizlerSayfasi 
-            onMemoryGameStart={handleMemoryGameStart}
-            onImageWordMatchingStart={handleImageWordMatchingStart}
-            onWordImageMatchingStart={handleWordImageMatchingStart}
-            onTowerOfLondonStart={handleTowerOfLondonStart}
-            onNumberSequenceStart={handleNumberSequenceStart}
-            onColorSequenceStart={handleColorSequenceStart}
-            onLogicSequencesStart={handleLogicSequencesStart}
-            onHanoiTowersStart={handleHanoiTowersStart}
-          />
-        );
-      case "istatistikler":
-        return <IstatistiklerSayfasi />;
-      case "ayarlar":
-        return <AyarlarSayfasi />;
-      case "uzman-dashboard":
-        return <UzmanDashboardSayfasi />;
-      default:
-        return (
-          <EgzersizlerSayfasi 
-            onMemoryGameStart={handleMemoryGameStart}
-            onImageWordMatchingStart={handleImageWordMatchingStart}
-            onWordImageMatchingStart={handleWordImageMatchingStart}
-            onTowerOfLondonStart={handleTowerOfLondonStart}
-            onNumberSequenceStart={handleNumberSequenceStart}
-            onColorSequenceStart={handleColorSequenceStart}
-            onLogicSequencesStart={handleLogicSequencesStart}
-            onHanoiTowersStart={handleHanoiTowersStart}
-          />
-        );
-    }
-  };
-
   return (
     <>
       <SkipNavigation />
       <main className="min-h-screen bg-background text-foreground">
-        {renderActivePage()}
+        <Suspense fallback={<LoadingFallback />}>
+          {renderActivePage()}
+        </Suspense>
       </main>
       
       <BottomNavigation 

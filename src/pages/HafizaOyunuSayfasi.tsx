@@ -246,12 +246,12 @@ const HafizaOyunuSayfasi: React.FC<HafizaOyunuSayfasiProps> = ({ onBack }) => {
             <CardContent className={uiStyles.cardContent.compact}>
               <div 
                 className={`grid w-full mx-auto ${
-                  // 🔧 FIX: Responsive grid with proper square layout
+                  // 🔧 FIX: Tablet-optimized responsive grid
                   currentLevel.gridSize.rows * currentLevel.gridSize.cols <= 12 
-                    ? 'gap-2 sm:gap-3 max-w-[320px] sm:max-w-[400px]' 
+                    ? 'gap-2 sm:gap-3 tablet:gap-4 max-w-[320px] sm:max-w-[400px] tablet:max-w-[480px] tablet-lg:max-w-[560px]' 
                     : currentLevel.gridSize.rows * currentLevel.gridSize.cols <= 16
-                    ? 'gap-1.5 sm:gap-2 max-w-[300px] sm:max-w-[380px]'
-                    : 'gap-1 sm:gap-1.5 max-w-[280px] sm:max-w-[360px]' // 20+ kart için kompakt
+                    ? 'gap-1.5 sm:gap-2 tablet:gap-3 max-w-[300px] sm:max-w-[380px] tablet:max-w-[450px] tablet-lg:max-w-[520px]'
+                    : 'gap-1 sm:gap-1.5 tablet:gap-2 max-w-[280px] sm:max-w-[360px] tablet:max-w-[420px] tablet-lg:max-w-[480px]' // 20+ kart için tablet optimized
                 }`}
             style={{ 
               gridTemplateColumns: `repeat(${currentLevel.gridSize.cols}, 1fr)`,

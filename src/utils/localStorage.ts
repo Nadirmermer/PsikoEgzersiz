@@ -9,7 +9,36 @@ interface ClinicalScores {
   working_memory_score: number
 }
 
-interface TowerOfLondonClinicalData {
+// Common properties for all exercise details
+interface BaseExerciseDetails {
+  // Common identifiers
+  level_identifier?: string
+  level_number?: number
+  level?: number
+  
+  // Common game metrics
+  moves_count?: number
+  incorrect_moves_count?: number
+  efficiency_percentage?: number
+  accuracy?: number
+  correct_answers?: number
+  total_questions?: number
+  max_level_reached?: number
+  max_sequence_length?: number
+  
+  // Clinical data
+  clinical_scores?: ClinicalScores
+  clinical_insights?: string[]
+  clinicalData?: any
+  
+  // Exercise metadata
+  exercise_name?: string
+  timestamp?: string
+  completed?: boolean
+  exited_early?: boolean
+}
+
+interface TowerOfLondonClinicalData extends BaseExerciseDetails {
   executiveFunctionScore: number
   planningAbility: number
   workingMemoryLoad: number
@@ -22,7 +51,7 @@ interface TowerOfLondonClinicalData {
   efficiencyPercentage: number
 }
 
-interface HanoiTowersClinicalData {
+interface HanoiTowersClinicalData extends BaseExerciseDetails {
   overallCognitive: number
   mathematicalThinking: number
   recursiveProblemSolving: number
@@ -44,7 +73,7 @@ interface CategoryPerformance {
   questionsAsked: number
 }
 
-interface ImageWordClinicalData {
+interface ImageWordClinicalData extends BaseExerciseDetails {
   overallCognition: number
   semanticAccuracy: number
   processingSpeed: number
@@ -57,7 +86,7 @@ interface ImageWordClinicalData {
   }
 }
 
-interface WordImageClinicalData {
+interface WordImageClinicalData extends BaseExerciseDetails {
   overallReverseProcessing: number
   visualSemanticMapping: number
   reverseProcessingSpeed: number
@@ -74,7 +103,7 @@ interface WordImageClinicalData {
   }
 }
 
-interface NumberSequenceClinicalData {
+interface NumberSequenceClinicalData extends BaseExerciseDetails {
   overallWorkingMemory: number
   digitSpanCapacity: number
   processingSpeed: number
@@ -91,7 +120,7 @@ interface NumberSequenceClinicalData {
   }
 }
 
-interface ColorSequenceClinicalData {
+interface ColorSequenceClinicalData extends BaseExerciseDetails {
   overallVisualSpatialMemory: number
   visualSpanCapacity: number
   visualMemoryScore: number
@@ -109,7 +138,7 @@ interface ColorSequenceClinicalData {
   }
 }
 
-interface LogicSequenceClinicalData {
+interface LogicSequenceClinicalData extends BaseExerciseDetails {
   overallCognitive: number
   analyticalThinking: number
   patternRecognition: number
@@ -156,7 +185,7 @@ export interface ExerciseResult {
   details?: ExerciseDetails
 }
 
-export interface MemoryGameDetails {
+export interface MemoryGameDetails extends BaseExerciseDetails {
   level_identifier: string
   grid_size: string
   duration_seconds: number
@@ -169,7 +198,7 @@ export interface MemoryGameDetails {
   card_flips_total: number
 }
 
-export interface TowerOfLondonDetails {
+export interface TowerOfLondonDetails extends BaseExerciseDetails {
   level_identifier: string
   level_number: number
   initial_config: Record<string, unknown>

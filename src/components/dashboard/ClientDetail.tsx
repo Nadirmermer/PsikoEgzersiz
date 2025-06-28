@@ -461,16 +461,16 @@ const ClientDetail: React.FC<ClientDetailProps> = ({
                       </TableCell>
                       <TableCell>
                         <Badge variant="outline">
-                          {(session.exercise_data.details as Record<string, unknown>)?.level_identifier || 'Bilinmiyor'}
+                          {String((session.exercise_data.details as Record<string, unknown>)?.level_identifier || 'Bilinmiyor')}
                         </Badge>
                       </TableCell>  
                       <TableCell className="font-bold text-primary">
                         {getExerciseValue(session.exercise_data, 'score')}
                       </TableCell>
                       <TableCell>{getExerciseValue(session.exercise_data, 'duration')}sn</TableCell>
-                      <TableCell>{(session.exercise_data.details as Record<string, unknown>)?.moves_count || 0}</TableCell>
+                      <TableCell>{Number((session.exercise_data.details as Record<string, unknown>)?.moves_count) || 0}</TableCell>
                       <TableCell className="text-destructive">
-                        {(session.exercise_data.details as Record<string, unknown>)?.incorrect_moves_count || 0}
+                        {Number((session.exercise_data.details as Record<string, unknown>)?.incorrect_moves_count) || 0}
                       </TableCell>
                       <TableCell>
                         <Badge variant={session.is_client_mode_session ? "default" : "secondary"}>

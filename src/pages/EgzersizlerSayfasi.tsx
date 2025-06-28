@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useState, useEffect } from 'react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -29,9 +29,28 @@ const EgzersizlerSayfasi: React.FC<EgzersizlerSayfasiProps> = ({
   onHanoiTowersStart
 }) => {
   const { playSound } = useAudio()
+  const [userHasInteracted, setUserHasInteracted] = useState(false)
   const currentLevel = LocalStorageManager.getCurrentMemoryGameLevel()
   const currentLevelData = MEMORY_GAME_LEVELS[currentLevel - 1] || MEMORY_GAME_LEVELS[0]
   const progressPercentage = ((currentLevel - 1) / MEMORY_GAME_LEVELS.length) * 100
+  
+  // 🔧 FIX: Track user interaction to enable hover sounds
+  useEffect(() => {
+    const handleFirstInteraction = () => {
+      setUserHasInteracted(true)
+    }
+    
+    // Listen for first user interaction
+    document.addEventListener('click', handleFirstInteraction, { once: true })
+    document.addEventListener('keydown', handleFirstInteraction, { once: true })
+    document.addEventListener('touchstart', handleFirstInteraction, { once: true })
+    
+    return () => {
+      document.removeEventListener('click', handleFirstInteraction)
+      document.removeEventListener('keydown', handleFirstInteraction)
+      document.removeEventListener('touchstart', handleFirstInteraction)
+    }
+  }, [])
 
   const exerciseCategories = [
     {
@@ -247,7 +266,7 @@ const EgzersizlerSayfasi: React.FC<EgzersizlerSayfasiProps> = ({
 
       {/* Mobile-First Exercise Grid */}
       <div className="px-4 pb-24 sm:px-6 lg:px-8">
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-4 lg:gap-6">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 tablet:grid-cols-3 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-4 tablet:gap-5 lg:gap-6">
           {exerciseCategories.map((category, index) => {
             const IconComponent = category.icon;
             
@@ -255,7 +274,7 @@ const EgzersizlerSayfasi: React.FC<EgzersizlerSayfasiProps> = ({
               <Card 
                 key={category.id} 
                 className="group relative overflow-hidden bg-white/80 dark:bg-gray-900/80 backdrop-blur-sm border border-border/50 rounded-2xl shadow-sm hover:shadow-lg transition-all duration-300 hover:-translate-y-1 active:scale-[0.98]"
-                onMouseEnter={() => playSound('button-hover')}
+                onMouseEnter={() => userHasInteracted && playSound('button-hover')}
                 style={{ 
                   animationDelay: `${index * 100}ms`,
                   backgroundImage: `linear-gradient(135deg, ${category.bgGradient.includes('blue') ? 'rgba(59, 130, 246, 0.03)' : 
