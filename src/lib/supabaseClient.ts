@@ -1,11 +1,10 @@
-
 import { supabase } from './supabase'
 import { ExerciseResult } from '../utils/localStorage'
 
 export interface ClientStatisticData {
   professional_id: string
   client_identifier: string
-  exercise_data: any
+  exercise_data: Record<string, unknown> | ExerciseResult
   is_client_mode_session: boolean
 }
 

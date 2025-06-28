@@ -1,12 +1,146 @@
+import { saveToSupabase, addToPendingSync } from '../lib/supabaseClient'
+
+// Clinical data type definitions for better type safety
+interface ClinicalScores {
+  total_score: number
+  accuracy_score: number
+  efficiency_score: number
+  speed_score: number
+  working_memory_score: number
+}
+
+interface TowerOfLondonClinicalData {
+  executiveFunctionScore: number
+  planningAbility: number
+  workingMemoryLoad: number
+  inhibitoryControl: number
+  cognitiveFlexibility: number
+  planningTimeSeconds: number
+  isOptimalSolution: boolean
+  levelCompleted: number
+  totalMoves: number
+  efficiencyPercentage: number
+}
+
+interface HanoiTowersClinicalData {
+  overallCognitive: number
+  mathematicalThinking: number
+  recursiveProblemSolving: number
+  spatialReasoning: number
+  sequentialPlanning: number
+  algorithmicThinking: number
+  logicalDeduction: number
+  levelPerformance: Record<string, {
+    attempts: number
+    optimalSolutions: number
+    efficiency: number
+    planningTime: number
+  }>
+}
+
+interface CategoryPerformance {
+  accuracy: number
+  averageResponseTime: number
+  questionsAsked: number
+}
+
+interface ImageWordClinicalData {
+  overallCognition: number
+  semanticAccuracy: number
+  processingSpeed: number
+  patternRecognition: number
+  cognitiveFlexibility: number
+  categoryPerformance: Record<string, CategoryPerformance>
+  cognitiveProfile?: {
+    recommendedInterventions: string[]
+    clinicalNotes: string[]
+  }
+}
+
+interface WordImageClinicalData {
+  overallReverseProcessing: number
+  visualSemanticMapping: number
+  reverseProcessingSpeed: number
+  visualRecognition: number
+  crossModalIntegration: number
+  categoryVisualPerformance: Record<string, {
+    semanticToVisualAccuracy: number
+    visualRecognitionSpeed: number
+    questionsAsked: number
+  }>
+  reverseCognitiveProfile?: {
+    crossModalRecommendations: string[]
+    reverseProcessingNotes: string[]
+  }
+}
+
+interface NumberSequenceClinicalData {
+  overallWorkingMemory: number
+  digitSpanCapacity: number
+  processingSpeed: number
+  cognitiveLoad: number
+  attentionControl: number
+  millerCompliance: {
+    isWithinNormalRange: boolean
+    capacityCategory: string
+    millerDeviation: number
+  }
+  workingMemoryCognitiveProfile?: {
+    cognitiveRecommendations: string[]
+    workingMemoryNotes: string[]
+  }
+}
+
+interface ColorSequenceClinicalData {
+  overallVisualSpatialMemory: number
+  visualSpanCapacity: number
+  visualMemoryScore: number
+  spatialProcessingSpeed: number
+  colorRecognitionAccuracy: number
+  visualAttentionSpan: number
+  visualPatternCompliance: {
+    visualComplexity: string
+    patternRecognitionCategory: string
+    visualProcessingDeviation: number
+  }
+  visualSpatialCognitiveProfile?: {
+    visualCognitiveRecommendations: string[]
+    spatialMemoryNotes: string[]
+  }
+}
+
+interface LogicSequenceClinicalData {
+  overallCognitive: number
+  analyticalThinking: number
+  patternRecognition: number
+  mathematicalReasoning: number
+  sequentialLogic: number
+  abstractReasoning: number
+  cognitiveFlexibility: number
+  patternPerformance: Record<string, {
+    attempts: number
+    correctAnswers: number
+    averageResponseTime: number
+  }>
+  clinicalInsights: string[]
+  cognitiveProfile?: {
+    strengths: string[]
+    improvementAreas: string[]
+    recommendations: string[]
+  }
+}
+
+// Enhanced ExerciseResult interface with proper typing
 export interface ExerciseResult {
+  id: string
+  date: string
   exerciseName: string
   score: number
   duration: number
-  date: string
-  details?: any
-  completed?: boolean
+  completed: boolean
   exitedEarly?: boolean
-  currentProgress?: any
+  accuracy?: number
+  details?: any // Temporarily using any to avoid complex union type issues
 }
 
 export interface MemoryGameDetails {
@@ -25,8 +159,8 @@ export interface MemoryGameDetails {
 export interface TowerOfLondonDetails {
   level_identifier: string
   level_number: number
-  initial_config: any
-  target_config: any
+  initial_config: Record<string, unknown>
+  target_config: Record<string, unknown>
   min_moves_required: number
   user_moves_taken: number
   time_seconds: number
@@ -132,7 +266,68 @@ export const MEMORY_GAME_LEVELS: MemoryGameLevel[] = [
   // But NOT recommended for clinical or therapeutic assessment
 ]
 
-import { saveToSupabase, addToPendingSync } from '../lib/supabaseClient'
+export interface ConnectionData {
+  professionalId: string
+  clientIdentifier: string
+}
+
+export interface AudioSettings {
+  masterVolume: number
+  buttonClickEnabled: boolean
+  gameActionEnabled: boolean
+  notificationEnabled: boolean
+  backgroundMusicEnabled: boolean
+}
+
+export interface GameProgress {
+  unlockedLevels: number[]
+  completedLevels: number[]
+  highScores: Record<number, number>
+}
+
+interface MemoryGameProgress extends GameProgress {
+  currentDifficulty: 'easy' | 'medium' | 'hard'
+  preferredGridSize: string
+}
+
+interface AppSettings {
+  theme?: 'light' | 'dark' | 'system'
+  language?: 'tr' | 'en'
+  notifications?: boolean
+  sound?: boolean
+  difficulty?: 'easy' | 'medium' | 'hard'
+  [key: string]: unknown
+}
+
+interface LocalStorageData {
+  exerciseResults: ExerciseResult[]
+  connectionData?: ConnectionData
+  pendingSyncData: Record<string, unknown>
+  audioSettings: AudioSettings
+  memoryGameProgress: MemoryGameProgress
+  // ... other data types
+}
+
+// 🔧 Type-safe localStorage wrapper
+const safeGetItem = <T>(key: string, defaultValue: T): T => {
+  try {
+    const item = localStorage.getItem(key)
+    if (item === null) return defaultValue
+    return JSON.parse(item) as T
+  } catch (error) {
+    console.error(`localStorage getItem error for key "${key}":`, error)
+    return defaultValue
+  }
+}
+
+const safeSetItem = (key: string, value: unknown): void => {
+  try {
+    localStorage.setItem(key, JSON.stringify(value))
+  } catch (error) {
+    console.error(`localStorage setItem error for key "${key}":`, error)
+    throw error
+  }
+}
 
 export const LocalStorageManager = {
   getExerciseResults(): ExerciseResult[] {
@@ -230,19 +425,20 @@ export const LocalStorageManager = {
   },
 
   // Save partial progress when exiting early
-  savePartialProgress(exerciseName: string, currentProgress: any, duration: number): void {
+  savePartialProgress(exerciseName: string, currentProgress: Record<string, unknown>, duration: number): void {
     // exerciseName'in string olduğundan emin olalım
     const normalizedExerciseName = typeof exerciseName === 'string' ? exerciseName : 'Bilinmeyen Egzersiz'
     
     const partialResult: ExerciseResult = {
+      id: Date.now().toString(),
       exerciseName: normalizedExerciseName,
       score: 0,
       duration: duration || 0,
       date: new Date().toISOString(),
       completed: false,
       exitedEarly: true,
-      currentProgress,
       details: {
+        currentProgress,
         exercise_name: normalizedExerciseName,
         session_duration_seconds: duration || 0,
         completed: false,
@@ -275,12 +471,12 @@ export const LocalStorageManager = {
     return false
   },
 
-  getSettings(): any {
+  getSettings(): AppSettings {
     const data = localStorage.getItem('appSettings')
     return data ? JSON.parse(data) : {}
   },
 
-  saveSetting(key: string, value: any): void {
+  saveSetting(key: string, value: unknown): void {
     const settings = this.getSettings()
     settings[key] = value
     localStorage.setItem('appSettings', JSON.stringify(settings))

@@ -33,7 +33,7 @@ export interface GameStatConfig {
   color: string
 }
 
-// Oyun durumu
+// Oyun durumu (unified)
 export interface GameState {
   phase: GamePhase
   isPlaying: boolean
@@ -43,6 +43,12 @@ export interface GameState {
   currentTime: number
   pausedTime: number
   duration: number
+  // Additional state properties
+  isActive: boolean
+  currentLevel: number
+  score: number
+  timeElapsed: number
+  data: Record<string, unknown>
 }
 
 // Oyun istatistikleri
@@ -52,10 +58,10 @@ export interface GameStats {
   progress: string
   time?: string
   accuracy?: number
-  [key: string]: any
+  [key: string]: unknown
 }
 
-// Oyun sonucu
+// Oyun sonucu (unified)
 export interface GameResult {
   exerciseName: string
   score: number
@@ -63,11 +69,11 @@ export interface GameResult {
   completed: boolean
   accuracy?: number
   level?: number
-  details: any
+  details?: Record<string, unknown>
   timestamp: string
 }
 
-// Oyun aksiyonları
+// Oyun aksiyonları (unified)
 export interface GameActions {
   onStart: () => void
   onPause: () => void
@@ -75,15 +81,24 @@ export interface GameActions {
   onRestart: () => void
   onComplete: (result: GameResult) => void
   onBack: () => void
-  onNextLevel?: () => void // 🔧 FIX: Optional next level handler for games with levels
-  onExitEarly?: () => void // 🚨 NEW: Handle early exit with partial results saving
+  onNextLevel?: () => void
+  onExitEarly?: () => void
+  // Additional action methods
+  start: () => void
+  pause: () => void
+  resume: () => void
+  stop: () => void
+  reset: () => void
+  updateScore: (score: number) => void
+  updateLevel: (level: number) => void
+  setData: (data: Record<string, unknown>) => void
 }
 
 // Oyun bileşeni props
 export interface GameComponentProps {
   gameState: GameState
   gameStats: GameStats
-  onAction: (action: string, data?: any) => void
+  onAction: (action: string, data?: Record<string, unknown>) => void
 }
 
 // Oyun hook return type - helper methodları da dahil
@@ -91,10 +106,10 @@ export interface GameHookReturn {
   gameState: GameState
   gameStats: GameStats
   gameActions: GameActions
-  gameData: any
+  gameData: Record<string, unknown>
   // Helper methods
   updateGameStats: (newStats: Partial<GameStats>) => void
-  updateGameData: (newData: any) => void
+  updateGameData: (newData: Record<string, unknown>) => void
   updateGameState: (newState: Partial<GameState>) => void
   formatTime: (seconds: number) => string
 }
@@ -105,4 +120,67 @@ export interface UniversalGameEngineProps {
   gameHook: () => GameHookReturn
   children: React.ReactNode
   onBack: () => void
+}
+
+// Extended Exercise Configs
+export interface BaseExerciseConfig {
+  id: string
+  name: string
+  description: string
+  difficulty: 'easy' | 'medium' | 'hard'
+  estimatedDuration: number
+  category: string
+  tags: string[]
+  cognitiveAreas: string[]
+}
+
+export interface MemoryGameConfig extends BaseExerciseConfig {
+  type: 'memory'
+  gridSize: {
+    rows: number
+    cols: number
+  }
+  cardCount: number
+  timeLimit?: number
+  showTime: number
+  categories: string[]
+}
+
+export interface SequenceGameConfig extends BaseExerciseConfig {
+  type: 'sequence'
+  maxSequenceLength: number
+  timePerElement: number
+  sequenceType: 'numbers' | 'colors' | 'shapes'
+  startLength: number
+  incrementRate: number
+}
+
+export interface MatchingGameConfig extends BaseExerciseConfig {
+  type: 'matching'
+  questionCount: number
+  timePerQuestion: number
+  categories: string[]
+  shuffleOptions: boolean
+  showImages: boolean
+}
+
+export interface TowerGameConfig extends BaseExerciseConfig {
+  type: 'tower'
+  diskCount: number
+  minMoves: number
+  timeLimit?: number
+  showOptimalPath: boolean
+  allowHints: boolean
+}
+
+export type ExerciseConfig = MemoryGameConfig | SequenceGameConfig | MatchingGameConfig | TowerGameConfig
+
+export interface GameSession {
+  sessionId: string
+  exerciseId: string
+  startTime: Date
+  endTime?: Date
+  score: number
+  completed: boolean
+  data: Record<string, unknown>
 } 

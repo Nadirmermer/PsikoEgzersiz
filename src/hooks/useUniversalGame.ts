@@ -9,10 +9,13 @@ interface UseUniversalGameProps {
   onComplete?: (result: GameResult) => void
 }
 
+// Generic game data type for flexibility
+type GameData = Record<string, unknown>
+
 export const useUniversalGame = ({ exerciseName, onComplete }: UseUniversalGameProps): GameHookReturn => {
   const { playSound } = useAudio()
   
-  // Game State
+  // Game State - Complete GameState interface'e uygun
   const [gameState, setGameState] = useState<GameState>({
     phase: 'ready',
     isPlaying: false,
@@ -21,7 +24,13 @@ export const useUniversalGame = ({ exerciseName, onComplete }: UseUniversalGameP
     startTime: 0,
     currentTime: 0,
     pausedTime: 0,
-    duration: 0
+    duration: 0,
+    // Additional required properties
+    isActive: false,
+    currentLevel: 1,
+    score: 0,
+    timeElapsed: 0,
+    data: {}
   })
 
   // Game Stats
@@ -34,7 +43,7 @@ export const useUniversalGame = ({ exerciseName, onComplete }: UseUniversalGameP
   })
 
   // Game Data (oyuna özel veriler için)
-  const [gameData, setGameData] = useState<any>({})
+  const [gameData, setGameData] = useState<GameData>({})
 
   // Timer effect
   useEffect(() => {
@@ -47,7 +56,8 @@ export const useUniversalGame = ({ exerciseName, onComplete }: UseUniversalGameP
       setGameState(prev => ({
         ...prev,
         currentTime: now,
-        duration
+        duration,
+        timeElapsed: duration
       }))
       
       setGameStats(prev => ({
@@ -66,8 +76,9 @@ export const useUniversalGame = ({ exerciseName, onComplete }: UseUniversalGameP
     return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`
   }
 
-  // Game Actions
+  // Game Actions - Complete GameActions interface'e uygun
   const gameActions: GameActions = {
+    // Primary actions
     onStart: useCallback(() => {
       playSound('exercise-start')
       const now = Date.now()
@@ -76,6 +87,7 @@ export const useUniversalGame = ({ exerciseName, onComplete }: UseUniversalGameP
         phase: 'playing',
         isPlaying: true,
         isPaused: false,
+        isActive: true,
         startTime: now,
         currentTime: now
       }))
@@ -118,7 +130,12 @@ export const useUniversalGame = ({ exerciseName, onComplete }: UseUniversalGameP
         startTime: 0,
         currentTime: 0,
         pausedTime: 0,
-        duration: 0
+        duration: 0,
+        isActive: false,
+        currentLevel: 1,
+        score: 0,
+        timeElapsed: 0,
+        data: {}
       })
       setGameStats({
         score: 0,
@@ -132,104 +149,155 @@ export const useUniversalGame = ({ exerciseName, onComplete }: UseUniversalGameP
     }, [playSound]),
 
     onComplete: useCallback(async (result: GameResult) => {
-      // Mükemmel skor kontrolü
-      if (result.accuracy === 100) {
-        playSound('perfect-score')
-        toast.success(`🏆 MÜKEMMEL! %100 başarı oranı!`)
-      } else {
-        playSound('exercise-complete')
-      }
+      playSound('exercise-complete')
+      
+      setGameState(prev => ({
+        ...prev,
+        phase: 'completed',
+        isPlaying: false,
+        isCompleted: true,
+        isActive: false,
+        score: result.score
+      }))
 
-      // İlk defa tamamlama kontrolü
-      const previousResults = LocalStorageManager.getExerciseResults()
-      const exerciseResults = previousResults.filter(r => r.exerciseName === exerciseName)
-      if (exerciseResults.length === 0) {
-        setTimeout(() => {
-          playSound('achievement')
-          toast.success(`🎖️ BAŞARI: İlk ${exerciseName} tamamlandı!`)
-        }, 1000)
-      }
-
-      // Sonucu kaydet
+      // Save result to localStorage
       try {
         await LocalStorageManager.saveExerciseResult({
           exerciseName: result.exerciseName,
           score: result.score,
           duration: result.duration,
           date: result.timestamp,
-          details: result.details,
           completed: result.completed,
-          exitedEarly: false
+          exitedEarly: false,
+          accuracy: result.accuracy,
+          details: result.details
         })
         
-        toast.success(`Tebrikler! Skor: ${result.score}`)
+        toast.success('🎉 Oyun tamamlandı!')
+        
+        if (onComplete) {
+          onComplete(result)
+        }
       } catch (error) {
-        console.error('Sonuç kaydedilirken hata:', error)
-        toast.error('Sonuç kaydedilirken hata oluştu')
+        console.error('Failed to save game result:', error)
+        toast.error('Sonuç kaydedilemedi')
       }
+    }, [playSound, onComplete]),
 
+    onExitEarly: useCallback(async () => {
+      playSound('button-click')
+      
+      const partialResult = {
+        exerciseName,
+        currentProgress: gameData,
+        duration: gameState.duration
+      }
+      
+      LocalStorageManager.savePartialProgress(
+        partialResult.exerciseName,
+        partialResult.currentProgress,
+        partialResult.duration
+      )
+      
       setGameState(prev => ({
         ...prev,
         phase: 'completed',
         isPlaying: false,
-        isCompleted: true
+        isActive: false
       }))
-
-      // Custom completion handler
-      if (onComplete) {
-        onComplete(result)
-      }
-    }, [exerciseName, playSound, onComplete]),
-
-    // 🚨 NEW: Handle early exit with partial results saving
-    onExitEarly: useCallback(async () => {
-      playSound('button-click')
       
-      if (gameState.phase === 'playing' || gameState.phase === 'paused') {
-        // 🚨 EARLY EXIT: Save partial results with exitedEarly flag
-        try {
-          const partialResult: GameResult = {
-            exerciseName,
-            score: gameStats.score,
-            duration: gameState.duration,
-            completed: false, // Not fully completed
-            accuracy: gameStats.accuracy || 0,
-            details: {
-              exercise_name: exerciseName,
-              session_duration_seconds: gameState.duration,
-              score: gameStats.score,
-              level_reached: gameStats.level,
-              progress: gameStats.progress,
-              timestamp: new Date().toISOString(),
-              early_exit_reason: 'User navigated back during active session'
-            },
-            timestamp: new Date().toISOString()
-          }
-          
-          await LocalStorageManager.saveExerciseResult({
-            exerciseName: partialResult.exerciseName,
-            score: partialResult.score,
-            duration: partialResult.duration,
-            date: partialResult.timestamp,
-            details: partialResult.details,
-            completed: false,
-            exitedEarly: true // 🚨 CRITICAL FLAG
-          })
-          
-          toast.warning(`⚠️ Egzersiz yarıda kesildi. Kısmi ilerleme kaydedildi (${gameStats.score} puan, ${formatTime(gameState.duration)})`)
-          
-          console.log('🚨 Early exit - Partial results saved:', partialResult)
-        } catch (error) {
-          console.error('Early exit result save error:', error)
-          toast.error('Kısmi sonuç kaydedilirken hata oluştu')
-        }
-      }
-    }, [exerciseName, gameState, gameStats, playSound]),
+      toast.info('Oyun erken sonlandırıldı')
+    }, [playSound, exerciseName, gameData, gameState.duration]),
 
     onBack: useCallback(() => {
       playSound('button-click')
       // Bu default implementation, oyun specific logic için override edilebilir
-    }, [playSound])
+    }, [playSound]),
+
+    // Additional required actions
+    start: useCallback(() => {
+      playSound('exercise-start')
+      const now = Date.now()
+      setGameState(prev => ({
+        ...prev,
+        phase: 'playing',
+        isPlaying: true,
+        isActive: true,
+        startTime: now,
+        currentTime: now
+      }))
+    }, [playSound]),
+
+    pause: useCallback(() => {
+      playSound('button-click')
+      setGameState(prev => ({
+        ...prev,
+        phase: 'paused',
+        isPlaying: false,
+        isPaused: true
+      }))
+    }, [playSound]),
+
+    resume: useCallback(() => {
+      playSound('button-click')
+      setGameState(prev => ({
+        ...prev,
+        phase: 'playing',
+        isPlaying: true,
+        isPaused: false
+      }))
+    }, [playSound]),
+
+    stop: useCallback(() => {
+      playSound('button-click')
+      setGameState(prev => ({
+        ...prev,
+        phase: 'completed',
+        isPlaying: false,
+        isActive: false
+      }))
+    }, [playSound]),
+
+    reset: useCallback(() => {
+      setGameState({
+        phase: 'ready',
+        isPlaying: false,
+        isPaused: false,
+        isCompleted: false,
+        startTime: 0,
+        currentTime: 0,
+        pausedTime: 0,
+        duration: 0,
+        isActive: false,
+        currentLevel: 1,
+        score: 0,
+        timeElapsed: 0,
+        data: {}
+      })
+      setGameStats({
+        score: 0,
+        level: 1,
+        progress: '0%',
+        time: '00:00',
+        accuracy: 0
+      })
+      setGameData({})
+    }, []),
+
+    updateScore: useCallback((score: number) => {
+      setGameState(prev => ({ ...prev, score }))
+      setGameStats(prev => ({ ...prev, score }))
+    }, []),
+
+    updateLevel: useCallback((level: number) => {
+      setGameState(prev => ({ ...prev, currentLevel: level }))
+      setGameStats(prev => ({ ...prev, level }))
+    }, []),
+
+    setData: useCallback((data: Record<string, unknown>) => {
+      setGameState(prev => ({ ...prev, data }))
+      setGameData(data)
+    }, [])
   }
 
   // Public API
@@ -237,7 +305,7 @@ export const useUniversalGame = ({ exerciseName, onComplete }: UseUniversalGameP
     setGameStats(prev => ({ ...prev, ...newStats }))
   }, [])
 
-  const updateGameData = useCallback((newData: any) => {
+  const updateGameData = useCallback((newData: GameData) => {
     setGameData(prev => ({ ...prev, ...newData }))
   }, [])
 

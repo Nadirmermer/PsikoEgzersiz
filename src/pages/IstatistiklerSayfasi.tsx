@@ -131,7 +131,7 @@ const IstatistiklerSayfasi: React.FC = () => {
     if (memoryGameResults.length === 0) return null
 
     const levelPerformance = memoryGameResults.reduce((acc, result) => {
-      const level = result.details?.level_identifier || 'Bilinmiyor'
+      const level = (result.details?.level_identifier as string) || 'Bilinmiyor'
       if (!acc[level]) {
         acc[level] = { 
           scores: [], 
@@ -149,8 +149,8 @@ const IstatistiklerSayfasi: React.FC = () => {
       }
       acc[level].scores.push(result.score)
       acc[level].times.push(result.duration)
-      acc[level].moves.push(result.details?.moves_count || 0)
-      acc[level].incorrectMoves.push(result.details?.incorrect_moves_count || 0)
+      acc[level].moves.push((result.details?.moves_count as number) || 0)
+      acc[level].incorrectMoves.push((result.details?.incorrect_moves_count as number) || 0)
       
       // 🧠 Add clinical data if available
       if (result.details?.clinical_scores) {
@@ -203,13 +203,13 @@ const IstatistiklerSayfasi: React.FC = () => {
     const analytics = towerOfLondonResults.reduce((acc, result) => {
       acc.games.push(result)
       acc.scores.push(result.score)
-      acc.efficiencies.push(result.details?.efficiency_percentage || 0)
+      acc.efficiencies.push((result.details?.efficiency_percentage as number) || 0)
       acc.durations.push(result.duration || 0)
-      acc.levels.push(result.details?.level_number || 1)
+      acc.levels.push((result.details?.level_number as number) || 1)
       
       // 🧠 Executive Function clinical data processing
-      if (result.details?.clinicalData) {
-        const clinical = result.details.clinicalData
+      if (result.details?.clinicalData && 'executiveFunctionScore' in result.details.clinicalData) {
+        const clinical = result.details.clinicalData as any
         acc.clinicalScores.push(clinical.executiveFunctionScore || 0)
         acc.planningScores.push(clinical.planningAbility || 0)
         acc.workingMemoryScores.push(clinical.workingMemoryLoad || 0)
@@ -337,13 +337,13 @@ const IstatistiklerSayfasi: React.FC = () => {
     const analytics = hanoiTowersResults.reduce((acc, result) => {
       acc.games.push(result)
       acc.scores.push(result.score)
-      acc.efficiencies.push(result.details?.efficiency_percentage || 0)
+      acc.efficiencies.push((result.details?.efficiency_percentage as number) || 0)
       acc.durations.push(result.duration || 0)
-      acc.levels.push(result.details?.level_number || 1)
+      acc.levels.push((result.details?.level_number as number) || 1)
       
       // 🧠 Mathematical Thinking clinical data processing
       if (result.details?.clinicalData) {
-        const clinical = result.details.clinicalData
+        const clinical = result.details.clinicalData as any
         acc.clinicalScores.push(clinical.overallCognitive || 0)
         acc.mathematicalThinking.push(clinical.mathematicalThinking || 0)
         acc.recursiveProblemSolving.push(clinical.recursiveProblemSolving || 0)
@@ -473,7 +473,7 @@ const IstatistiklerSayfasi: React.FC = () => {
     if (results.length === 0) return null
 
     const levelPerformance = results.reduce((acc, result) => {
-      const level = result.details?.max_sequence_length || result.details?.level || 1
+      const level = (result.details?.max_sequence_length as number) || (result.details?.level as number) || 1
       if (!acc[level]) {
         acc[level] = { scores: [], times: [], attempts: 0 }
       }
@@ -499,7 +499,7 @@ const IstatistiklerSayfasi: React.FC = () => {
     const analytics = imageWordResults.reduce((acc, result) => {
       acc.games.push(result)
       acc.scores.push(result.score)
-      acc.accuracies.push(result.details?.accuracy || result.score || 0)
+      acc.accuracies.push((result.details?.accuracy as number) || result.score || 0)
       acc.durations.push(result.duration || 0)
       
       // 🧠 Clinical data processing
@@ -611,7 +611,7 @@ const IstatistiklerSayfasi: React.FC = () => {
     const analytics = wordImageResults.reduce((acc, result) => {
       acc.games.push(result)
       acc.scores.push(result.score)
-      acc.accuracies.push(result.details?.accuracy || result.score || 0)
+      acc.accuracies.push((result.details?.accuracy as number) || result.score || 0)
       acc.durations.push(result.duration || 0)
       
       // 🧠 Reverse processing clinical data processing
@@ -726,7 +726,7 @@ const IstatistiklerSayfasi: React.FC = () => {
     const analytics = numberSequenceResults.reduce((acc, result) => {
       acc.games.push(result)
       acc.scores.push(result.score)
-      acc.maxLevels.push(result.details?.max_level_reached || 1)
+      acc.maxLevels.push((result.details?.max_level_reached as number) || 1)
       acc.durations.push(result.duration || 0)
       
       // 🧠 Working memory clinical data processing
@@ -834,7 +834,7 @@ const IstatistiklerSayfasi: React.FC = () => {
     const analytics = colorSequenceResults.reduce((acc, result) => {
       acc.games.push(result)
       acc.scores.push(result.score)
-      acc.maxLevels.push(result.details?.max_level_reached || 1)
+      acc.maxLevels.push((result.details?.max_level_reached as number) || 1)
       acc.durations.push(result.duration || 0)
       
       // 🧠 Visual-spatial memory clinical data processing
@@ -1037,76 +1037,85 @@ const IstatistiklerSayfasi: React.FC = () => {
   ]
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/30 to-indigo-50/50 dark:from-slate-950 dark:via-blue-950/30 dark:to-indigo-950/50">
-      {/* Modern Header */}
-      <div className="relative overflow-hidden">
-        <div className="absolute inset-0 bg-grid-pattern opacity-5" />
-        <div className="absolute top-0 left-0 w-full h-32 bg-gradient-to-b from-primary/5 to-transparent" />
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 dark:from-gray-950 dark:via-blue-950 dark:to-indigo-950 p-3 sm:p-4 lg:p-6">
+      <div className="max-w-7xl mx-auto space-y-4 sm:space-y-6 lg:space-y-8">
         
-        <div className="relative px-4 pt-8 pb-6 sm:px-6 lg:px-8">
-          <div className="text-center space-y-4 animate-fade-in">
-            <div className="relative inline-flex items-center justify-center mb-2">
-              <div className="relative w-12 h-12 sm:w-14 sm:h-14 bg-gradient-to-br from-primary/10 to-purple-500/10 rounded-full border border-primary/20 flex items-center justify-center">
-                <BarChart3 className="w-6 h-6 sm:w-8 sm:h-8 text-primary" />
+        {/* 📱 TABLET: Quick Summary Header */}
+        <div className="text-center space-y-3 sm:space-y-4">
+          <div className="flex items-center justify-center gap-3">
+            <div className="w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-br from-primary/10 to-purple-500/10 rounded-xl flex items-center justify-center">
+              <BarChart3 className="w-5 h-5 sm:w-6 sm:h-6 text-primary" />
               </div>
-            </div>
-            
-            <div className="space-y-2">
-              <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold bg-gradient-to-r from-primary via-purple-600 to-pink-600 bg-clip-text text-transparent leading-tight px-4">
+            <div>
+              <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold bg-gradient-to-r from-primary via-purple-600 to-blue-600 bg-clip-text text-transparent">
                 İstatistikler
               </h1>
-              <p className="text-sm sm:text-base text-muted-foreground px-6 leading-relaxed">
-                Egzersiz performansınızı analiz edin ve <span className="font-medium text-primary">gelişiminizi takip edin</span>
+              <p className="text-sm sm:text-base text-muted-foreground">
+                Bilişsel performans analizi ve gelişim takibi
               </p>
             </div>
           </div>
+          
+          {/* 📱 TABLET: Compact Quick Stats */}
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4 max-w-4xl mx-auto">
+            <div className="bg-white/70 dark:bg-gray-900/70 backdrop-blur-sm rounded-xl p-3 sm:p-4 border border-white/20 dark:border-gray-800/20 shadow-lg">
+              <div className="text-center">
+                <div className="text-lg sm:text-2xl font-bold text-primary">{totalExercises}</div>
+                <div className="text-xs sm:text-sm text-muted-foreground">Toplam Egzersiz</div>
         </div>
       </div>
 
-      <div className="px-4 pb-24 sm:px-6 lg:px-8">
-        <div className="max-w-6xl mx-auto space-y-6">
+            <div className="bg-white/70 dark:bg-gray-900/70 backdrop-blur-sm rounded-xl p-3 sm:p-4 border border-white/20 dark:border-gray-800/20 shadow-lg">
+              <div className="text-center">
+                <div className="text-lg sm:text-2xl font-bold text-green-600">{completionRate}%</div>
+                <div className="text-xs sm:text-sm text-muted-foreground">Tamamlama</div>
+              </div>
+            </div>
+            
+            <div className="bg-white/70 dark:bg-gray-900/70 backdrop-blur-sm rounded-xl p-3 sm:p-4 border border-white/20 dark:border-gray-800/20 shadow-lg">
+              <div className="text-center">
+                <div className="text-lg sm:text-2xl font-bold text-amber-600">{averageScore}</div>
+                <div className="text-xs sm:text-sm text-muted-foreground">Ortalama Skor</div>
+              </div>
+            </div>
+            
+            <div className="bg-white/70 dark:bg-gray-900/70 backdrop-blur-sm rounded-xl p-3 sm:p-4 border border-white/20 dark:border-gray-800/20 shadow-lg">
+              <div className="text-center">
+                <div className="text-lg sm:text-2xl font-bold text-blue-600">{formatTime(totalTime)}</div>
+                <div className="text-xs sm:text-sm text-muted-foreground">Toplam Süre</div>
+              </div>
+            </div>
+          </div>
+        </div>
 
-      {/* Filters */}
-      <div className="grid gap-4 md:grid-cols-2 mb-8">
-        <Card className="card-enhanced">
-          <CardHeader className="pb-3">
-            <CardTitle className="flex items-center gap-2 text-lg">
-              <Filter className="w-5 h-5" />
-              Egzersiz Türü
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
+        {/* 📱 TABLET: Compact Filter Bar */}
+        <Card className="bg-white/60 dark:bg-gray-900/60 backdrop-blur-sm border border-white/20 dark:border-gray-800/20 shadow-lg">
+          <CardContent className="p-3 sm:p-4">
+            <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
+              <div className="flex-1">
+                <label className="text-xs font-medium text-muted-foreground">Egzersiz Türü</label>
             <Select value={selectedExerciseFilter} onValueChange={setSelectedExerciseFilter}>
-              <SelectTrigger>
-                <SelectValue placeholder="Egzersiz türü seçin" />
+                  <SelectTrigger className="mt-1">
+                    <SelectValue />
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">Tüm Egzersizler</SelectItem>
                 <SelectItem value="Hafıza Oyunu">Hafıza Oyunu</SelectItem>
-                <SelectItem value="Londra Kulesi Testi">Londra Kulesi Testi</SelectItem>
-                <SelectItem value="Resim-Kelime Eşleştirme">Resim-Kelime Eşleştirme</SelectItem>
-                <SelectItem value="Kelime-Resim Eşleştirme">Kelime-Resim Eşleştirme</SelectItem>
-                <SelectItem value="Sayı Dizisi Takibi">Sayı Dizisi Takibi</SelectItem>
-                <SelectItem value="Renk Dizisi Takibi">Renk Dizisi Takibi</SelectItem>
-
-                <SelectItem value="Mantık Dizileri">Mantık Dizileri</SelectItem>
+                    <SelectItem value="Londra Kulesi Testi">Londra Kulesi</SelectItem>
                 <SelectItem value="Hanoi Kuleleri">Hanoi Kuleleri</SelectItem>
+                    <SelectItem value="Resim-Kelime Eşleştirme">Resim-Kelime</SelectItem>
+                    <SelectItem value="Kelime-Resim Eşleştirme">Kelime-Resim</SelectItem>
+                    <SelectItem value="Sayı Dizisi Takibi">Sayı Dizisi</SelectItem>
+                    <SelectItem value="Renk Dizisi Takibi">Renk Dizisi</SelectItem>
+                    <SelectItem value="Mantık Dizileri">Mantık Dizileri</SelectItem>
               </SelectContent>
             </Select>
-          </CardContent>
-        </Card>
-
-        <Card className="card-enhanced">
-          <CardHeader className="pb-3">
-            <CardTitle className="flex items-center gap-2 text-lg">
-              <Calendar className="w-5 h-5" />
-              Zaman Aralığı
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
+              </div>
+              <div className="flex-1">
+                <label className="text-xs font-medium text-muted-foreground">Zaman Aralığı</label>
             <Select value={selectedTimeRange} onValueChange={setSelectedTimeRange}>
-              <SelectTrigger>
-                <SelectValue placeholder="Zaman aralığı seçin" />
+                  <SelectTrigger className="mt-1">
+                    <SelectValue />
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">Tüm Zamanlar</SelectItem>
@@ -1115,68 +1124,28 @@ const IstatistiklerSayfasi: React.FC = () => {
                 <SelectItem value="90days">Son 90 Gün</SelectItem>
               </SelectContent>
             </Select>
-          </CardContent>
-        </Card>
       </div>
-
-      {/* Enhanced Stats Cards */}
-      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4 mb-12">
-        {stats.map((stat, index) => {
-          const IconComponent = stat.icon;
-          return (
-            <Card key={index} className="card-enhanced hover:shadow-lg transition-all duration-300 relative overflow-hidden group">
-              <div className={`absolute inset-0 ${stat.bgColor} opacity-50 group-hover:opacity-70 transition-opacity duration-300`} />
-              <CardHeader className="pb-3 relative">
-                <div className="flex items-center justify-between">
-                  <div className={`p-3 rounded-xl bg-background/80 shadow-sm`}>
-                    <IconComponent className={`w-6 h-6 ${stat.color}`} />
-                  </div>
-                  {index === 2 && highestScore > 0 && (
-                    <Badge className="bg-amber-100 text-amber-800 border-amber-200 dark:bg-amber-900/30 dark:text-amber-400">
-                      <Star className="w-3 h-3 mr-1" />
-                      Rekor
-                    </Badge>
-                  )}
-                </div>
-                <CardDescription className="text-xs font-medium text-muted-foreground/80 leading-relaxed">
-                  {stat.description}
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="relative">
-                <div className="text-3xl font-bold text-primary mb-1">
-                  {stat.value}
-                </div>
-                <div className="text-sm font-semibold text-foreground">
-                  {stat.title}
                 </div>
               </CardContent>
             </Card>
-          )
-        })}
-      </div>
 
-      {totalExercises === 0 ? (
-        <Card className="card-enhanced">
-          <CardContent className="text-center py-16">
-            <div className="w-24 h-24 bg-muted/30 rounded-2xl flex items-center justify-center mx-auto mb-6">
-              <Brain className="w-12 h-12 text-muted-foreground" />
+        {filteredResults.length === 0 ? (
+          <Card className="bg-white/60 dark:bg-gray-900/60 backdrop-blur-sm border border-white/20 dark:border-gray-800/20 shadow-lg">
+            <CardContent className="p-8 sm:p-12">
+              <div className="text-center space-y-4 sm:space-y-6">
+                <div className="w-16 h-16 sm:w-20 sm:h-20 bg-gradient-to-br from-muted/20 to-muted/10 rounded-2xl flex items-center justify-center mx-auto">
+                  <BarChart3 className="h-8 w-8 sm:h-10 sm:w-10 text-muted-foreground" />
             </div>
-            <h3 className="text-2xl font-semibold mb-3">
-              {selectedExerciseFilter === 'all' 
-                ? 'Henüz egzersiz yapmadınız' 
-                : `${selectedExerciseFilter} egzersizi için veri bulunamadı`
-              }
-            </h3>
-            <p className="text-muted-foreground mb-6 max-w-md mx-auto">
-              {selectedExerciseFilter === 'all'
-                ? 'İlk egzersiznizi tamamladığınızda performans istatistikleriniz burada görünecek'
-                : 'Bu egzersizi oynadığınızda detaylı analizler burada görünecek'
+                <div className="space-y-2">
+                  <h3 className="text-xl sm:text-2xl font-semibold">Henüz Veri Bulunmuyor</h3>
+                  <p className="text-muted-foreground max-w-md mx-auto text-sm sm:text-base">
+                    {selectedExerciseFilter !== 'all' || selectedTimeRange !== 'all' 
+                      ? "Seçilen filtrelere uygun egzersiz sonucu bulunmuyor. Filtrelerinizi değiştirip tekrar deneyin."
+                      : "Egzersiz yapmaya başladığınızda istatistikleriniz burada görünecek."
               }
             </p>
-            <Badge variant="outline" className="text-sm px-4 py-2">
-              <Zap className="w-4 h-4 mr-2" />
-              Egzersizlere başlayın
-            </Badge>
+                </div>
+              </div>
           </CardContent>
         </Card>
       ) : (
@@ -1343,7 +1312,7 @@ const IstatistiklerSayfasi: React.FC = () => {
                           <div className="text-xs sm:text-sm text-muted-foreground flex items-center gap-2 sm:gap-3">
                             <span>{new Date(result.date).toLocaleDateString('tr-TR')}</span>
                             <span>•</span>
-                            <span className="truncate">{result.details?.level_identifier || 'Detay Yok'}</span>
+                            <span className="truncate">{(result.details?.level_identifier as string) || 'Detay Yok'}</span>
                           </div>
                         </div>
                       </div>
@@ -1725,7 +1694,14 @@ const IstatistiklerSayfasi: React.FC = () => {
                       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
                         {(() => {
                           // Aggregate pattern performance from all games
-                          const allPatternPerformances = {}
+                          const allPatternPerformances: Record<string, {
+                            attempts: number
+                            correctAnswers: number
+                            totalResponseTime: number
+                            accuracy: number
+                            averageResponseTime: number
+                          }> = {}
+                          
                           logicSequenceResults.forEach(result => {
                             if (result.details?.clinicalData?.patternPerformance) {
                               Object.entries(result.details.clinicalData.patternPerformance).forEach(([pattern, perf]) => {
@@ -1738,9 +1714,10 @@ const IstatistiklerSayfasi: React.FC = () => {
                                     averageResponseTime: 0
                                   }
                                 }
-                                allPatternPerformances[pattern].attempts += perf.attempts
-                                allPatternPerformances[pattern].correctAnswers += perf.correctAnswers
-                                allPatternPerformances[pattern].totalResponseTime += perf.averageResponseTime * perf.attempts
+                                const perfData = perf as any
+                                allPatternPerformances[pattern].attempts += perfData.attempts || 0
+                                allPatternPerformances[pattern].correctAnswers += perfData.correctAnswers || 0
+                                allPatternPerformances[pattern].totalResponseTime += (perfData.averageResponseTime || 0) * (perfData.attempts || 0)
                               })
                             }
                           })
@@ -2808,7 +2785,7 @@ const IstatistiklerSayfasi: React.FC = () => {
                         </TableCell>
                           <TableCell>
                             <Badge variant="outline" className="text-xs">
-                              {result.details?.level_identifier || 'Bilinmiyor'}
+                              {(result.details?.level_identifier as string) || 'Bilinmiyor'}
                             </Badge>
                           </TableCell>
                           <TableCell>
@@ -2817,20 +2794,20 @@ const IstatistiklerSayfasi: React.FC = () => {
                           <TableCell className="font-medium text-xs sm:text-sm">{formatTime(result.duration)}</TableCell>
                           <TableCell className="text-xs sm:text-sm">
                             {result.exerciseName === 'Hafıza Oyunu' && (
-                              <span>Hamle: {result.details?.moves_count || '-'}, Hata: {result.details?.incorrect_moves_count || '-'}</span>
+                              <span>Hamle: {(result.details?.moves_count as number) || '-'}, Hata: {(result.details?.incorrect_moves_count as number) || '-'}</span>
                             )}
                             {result.exerciseName === 'Londra Kulesi Testi' && (
                               <span>
-                                Hamle: {result.details?.user_moves_taken || '-'}/{result.details?.min_moves_required || '-'}, 
-                                Verimlilik: {result.details?.efficiency_percentage || '-'}%
+                                Hamle: {(result.details?.user_moves_taken as number) || '-'}/{(result.details?.min_moves_required as number) || '-'}, 
+                                Verimlilik: {(result.details?.efficiency_percentage as number) || '-'}%
                                 {result.details?.completed_optimally && <Star className="w-3 h-3 inline ml-1 text-amber-500" />}
                               </span>
                             )}
                             {typeof result.exerciseName === 'string' && result.exerciseName.includes('Eşleştirme') && (
-                              <span>Doğru: {result.details?.correct_answers || '-'}/{result.details?.total_questions || '-'}</span>
+                              <span>Doğru: {(result.details?.correct_answers as number) || '-'}/{(result.details?.total_questions as number) || '-'}</span>
                             )}
                             {typeof result.exerciseName === 'string' && result.exerciseName.includes('Dizisi') && (
-                              <span>Max Seviye: {result.details?.max_sequence_length || result.details?.level || '-'}</span>
+                              <span>Max Seviye: {(result.details?.max_sequence_length as number) || (result.details?.level as number) || '-'}</span>
                             )}
                           </TableCell>
                         </TableRow>
@@ -2924,7 +2901,6 @@ const IstatistiklerSayfasi: React.FC = () => {
           </CardContent>
         </Card>
       )}
-        </div>
       </div>
     </div>
   )

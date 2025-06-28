@@ -230,7 +230,10 @@ export const useHanoiTowers = ({ maxLevel = 18 }: UseHanoiTowersProps = {}) => {
       }
     }
 
-    LocalStorageManager.saveExerciseResult(result)
+    LocalStorageManager.saveExerciseResult({
+      id: Date.now().toString(),
+      ...result
+    })
 
     return {
       levelScore,
@@ -300,7 +303,12 @@ export const useHanoiTowersGame = ({ maxLevel = 18 }: UseHanoiTowersProps = {}):
     startTime: 0,
     currentTime: 0,
     pausedTime: 0,
-    duration: 0
+    duration: 0,
+    isActive: false,
+    currentLevel: 1,
+    score: 0,
+    timeElapsed: 0,
+    data: {}
   })
 
   const [universalStats, setUniversalStats] = useState<GameStats>({
@@ -364,6 +372,7 @@ export const useHanoiTowersGame = ({ maxLevel = 18 }: UseHanoiTowersProps = {}):
         phase: 'playing',
         isPlaying: true,
         isPaused: false,
+        isActive: true,
         startTime: now,
         currentTime: now
       }))
@@ -404,7 +413,12 @@ export const useHanoiTowersGame = ({ maxLevel = 18 }: UseHanoiTowersProps = {}):
         startTime: 0,
         currentTime: 0,
         pausedTime: 0,
-        duration: 0
+        duration: 0,
+        isActive: false,
+        currentLevel: 1,
+        score: 0,
+        timeElapsed: 0,
+        data: {}
       })
       hanoiGame.restartLevel()
     }, [playSound, hanoiGame]),
@@ -422,7 +436,23 @@ export const useHanoiTowersGame = ({ maxLevel = 18 }: UseHanoiTowersProps = {}):
 
     onBack: useCallback(() => {
       playSound('button-click')
-    }, [playSound])
+    }, [playSound]),
+
+    // Additional required methods
+    start: useCallback(() => gameActions.onStart(), []),
+    pause: useCallback(() => gameActions.onPause(), []),
+    resume: useCallback(() => gameActions.onResume(), []),
+    stop: useCallback(() => gameActions.onRestart(), []),
+    reset: useCallback(() => gameActions.onRestart(), []),
+    updateScore: useCallback((score: number) => {
+      setUniversalState(prev => ({ ...prev, score }))
+    }, []),
+    updateLevel: useCallback((level: number) => {
+      setUniversalState(prev => ({ ...prev, currentLevel: level }))
+    }, []),
+    setData: useCallback((data: Record<string, unknown>) => {
+      setUniversalState(prev => ({ ...prev, data }))
+    }, [])
   }
 
   return {

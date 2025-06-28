@@ -318,7 +318,12 @@ export const useTowerOfLondonGame = ({ maxLevel = 10 }: UseTowerOfLondonProps = 
     startTime: 0,
     currentTime: 0,
     pausedTime: 0,
-    duration: 0
+    duration: 0,
+    isActive: false,
+    currentLevel: 1,
+    score: 0,
+    timeElapsed: 0,
+    data: {}
   })
 
   const [towerState, setTowerState] = useState<TowerOfLondonState>({
@@ -345,6 +350,7 @@ export const useTowerOfLondonGame = ({ maxLevel = 10 }: UseTowerOfLondonProps = 
         ...prev,
         phase: 'playing',
         isPlaying: true,
+        isActive: true,
         startTime: Date.now(),
         currentTime: Date.now()
       }))
@@ -392,7 +398,12 @@ export const useTowerOfLondonGame = ({ maxLevel = 10 }: UseTowerOfLondonProps = 
         startTime: 0,
         currentTime: 0,
         pausedTime: 0,
-        duration: 0
+        duration: 0,
+        isActive: false,
+        currentLevel: 1,
+        score: 0,
+        timeElapsed: 0,
+        data: {}
       })
       setTowerState({
         currentLevel: 1,
@@ -409,6 +420,7 @@ export const useTowerOfLondonGame = ({ maxLevel = 10 }: UseTowerOfLondonProps = 
 
     onComplete: (result: GameResult) => {
       LocalStorageManager.saveExerciseResult({
+        id: Date.now().toString(),
         exerciseName: result.exerciseName,
         score: result.score,
         duration: result.duration,
@@ -421,6 +433,24 @@ export const useTowerOfLondonGame = ({ maxLevel = 10 }: UseTowerOfLondonProps = 
 
     onBack: () => {
       // This will be handled by the parent component
+    },
+
+    // Additional required methods
+    start: () => gameActions.onStart(),
+    pause: () => gameActions.onPause(),
+    resume: () => gameActions.onResume(),
+    stop: () => gameActions.onRestart(),
+    reset: () => gameActions.onRestart(),
+    updateScore: (score: number) => {
+      setGameState(prev => ({ ...prev, score }))
+      setTowerState(prev => ({ ...prev, score }))
+    },
+    updateLevel: (level: number) => {
+      setGameState(prev => ({ ...prev, currentLevel: level }))
+      setTowerState(prev => ({ ...prev, currentLevel: level }))
+    },
+    setData: (data: Record<string, unknown>) => {
+      setGameState(prev => ({ ...prev, data }))
     }
   }
 
@@ -437,8 +467,9 @@ export const useTowerOfLondonGame = ({ maxLevel = 10 }: UseTowerOfLondonProps = 
     // Tower of London specific stat updates
   }, [])
 
-  const updateGameData = useCallback((newData: any) => {
-    setTowerState(prev => ({ ...prev, ...newData }))
+  const updateGameData = useCallback((newData: Record<string, unknown>) => {
+    // Tower of London specific data update logic here
+    console.log('Updating Tower of London game data:', newData)
   }, [])
 
   const updateGameState = useCallback((newState: Partial<GameState>) => {
@@ -455,7 +486,7 @@ export const useTowerOfLondonGame = ({ maxLevel = 10 }: UseTowerOfLondonProps = 
     gameState,
     gameStats,
     gameActions,
-    gameData: towerState,
+    gameData: towerState as unknown as Record<string, unknown>,
     updateGameStats,
     updateGameData,
     updateGameState,

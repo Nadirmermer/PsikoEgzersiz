@@ -51,7 +51,7 @@ export const useMemoryGame = ({ level }: UseMemoryGameProps) => {
   }, [])
 
   // Safe state update function - race condition önlenir
-  const safeSetState = useCallback((setState: React.SetStateAction<any>) => {
+  const safeSetState = useCallback(<T>(setState: React.SetStateAction<T>) => {
     if (mountedRef.current) {
       return setState
     }

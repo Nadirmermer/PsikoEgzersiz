@@ -42,6 +42,23 @@ interface LogicSequencesClinicalData {
   }
 }
 
+interface LogicSequence {
+  sequence: number[]
+  answer: number
+  level: number
+  pattern: string
+}
+
+interface FinalStats {
+  score: number
+  correctCount: number
+  incorrectCount: number
+  accuracy: number
+  gameQuestions: LogicSequence[]
+  userAnswers: number[]
+  responseTimes: number[]
+}
+
 const MantikDizileriSayfasi: React.FC<MantikDizileriSayfasiProps> = ({ onBack }) => {
   const TOTAL_QUESTIONS = 25
   const FEEDBACK_DURATION = 2000
@@ -66,14 +83,15 @@ const MantikDizileriSayfasi: React.FC<MantikDizileriSayfasiProps> = ({ onBack })
 
   // Clinical assessment calculation
   const calculateClinicalAssessment = React.useCallback((
-    finalStats: any
+    finalStats: FinalStats
   ): LogicSequencesClinicalData => {
-    const { gameQuestions, userAnswers, responseTimes, correctCount, questionNumber } = finalStats
+    const { gameQuestions, userAnswers, responseTimes, correctCount } = finalStats
+    const questionNumber = logicGame.questionNumber // Get from logicGame state
     
     // Calculate pattern-based performance
     const patternPerformance: LogicSequencesClinicalData['patternPerformance'] = {}
     
-    gameQuestions.forEach((question: any, index: number) => {
+    gameQuestions.forEach((question, index) => {
       const pattern = question.pattern
       const isCorrect = userAnswers[index] === question.answer
       const responseTime = responseTimes[index] || 0
@@ -184,7 +202,7 @@ const MantikDizileriSayfasi: React.FC<MantikDizileriSayfasiProps> = ({ onBack })
         improvementAreas: generateImprovementAreas(sequentialLogic, cognitiveFlexibility, analyticalThinking)
       }
     }
-  }, [])
+  }, [logicGame.questionNumber])
 
   // Helper functions for clinical assessment
   const generateRecommendations = (cognitive: number, analytical: number): string[] => {

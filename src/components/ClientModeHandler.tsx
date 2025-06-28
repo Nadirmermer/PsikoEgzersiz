@@ -1,9 +1,9 @@
-
 import React, { useState } from 'react'
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import { Shield } from 'lucide-react'
 import { toast } from 'sonner'
 import { useAuth } from '../contexts/AuthContext'
 
@@ -76,35 +76,65 @@ const ClientModeHandler: React.FC<ClientModeHandlerProps> = ({
 
   return (
     <>
-      {/* Client Mode Banner */}
-      <div className="bg-blue-500 text-white px-4 py-2 text-center fixed top-0 left-0 right-0 z-50">
-        <div className="flex items-center justify-between max-w-4xl mx-auto">
-          <span className="text-sm font-medium">
-            🩺 Danışan Modu Aktif
-          </span>
+      {/* Client Mode Banner - Tablet Optimized */}
+      <div className="bg-gradient-to-r from-blue-500 to-blue-600 text-white px-3 sm:px-4 py-2 sm:py-3 text-center fixed top-0 left-0 right-0 z-[60] shadow-lg">
+        <div className="flex items-center justify-between max-w-6xl mx-auto">
+          <div className="flex items-center gap-2 sm:gap-3 min-w-0 flex-1">
+            <div className="p-1 sm:p-1.5 bg-white/20 rounded-lg">
+              <Shield className="w-3 h-3 sm:w-4 sm:h-4" />
+            </div>
+            <div className="min-w-0 flex-1">
+              <div className="text-xs sm:text-sm font-medium truncate">
+                🩺 Danışan Modu Aktif
+              </div>
+              {professional?.display_name && (
+                <div className="text-xs opacity-90 truncate hidden sm:block">
+                  Uzman: {professional.display_name}
+                </div>
+              )}
+            </div>
+          </div>
           <Button 
-            variant="secondary" 
+            variant="ghost" 
             size="sm"
             onClick={() => setShowExitDialog(true)}
             disabled={isExiting}
+            className="text-white hover:bg-white/20 h-7 sm:h-8 px-2 sm:px-3 text-xs sm:text-sm flex-shrink-0"
           >
-            {isExiting ? 'Çıkılıyor...' : 'Modu Sonlandır'}
+            {isExiting ? (
+              <div className="flex items-center gap-1 sm:gap-2">
+                <div className="w-3 h-3 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                <span className="hidden sm:inline">Çıkılıyor...</span>
+                <span className="sm:hidden">...</span>
+              </div>
+            ) : (
+              <div className="flex items-center gap-1 sm:gap-2">
+                <span className="hidden sm:inline">Modu Sonlandır</span>
+                <span className="sm:hidden">Çıkış</span>
+              </div>
+            )}
           </Button>
         </div>
       </div>
 
-      {/* Exit Dialog */}
+      {/* Spacer for fixed banner */}
+      <div className="h-10 sm:h-12" />
+
+      {/* Exit Dialog - Tablet Optimized */}
       <Dialog open={showExitDialog} onOpenChange={setShowExitDialog}>
-        <DialogContent>
+        <DialogContent className="sm:max-w-md w-[95vw] sm:w-full">
           <DialogHeader>
-            <DialogTitle>Danışan Modundan Çıkış</DialogTitle>
-            <DialogDescription>
+            <DialogTitle className="flex items-center gap-2 text-base sm:text-lg">
+              <Shield className="w-4 h-4 sm:w-5 sm:h-5 text-blue-500" />
+              Danışan Modundan Çıkış
+            </DialogTitle>
+            <DialogDescription className="text-sm">
               Uzman arayüzüne dönmek için şifrenizi girin
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4">
             <div>
-              <Label htmlFor="password">Şifre</Label>
+              <Label htmlFor="password" className="text-sm font-medium">Uzman Şifresi</Label>
               <Input
                 id="password"
                 type="password"
@@ -113,15 +143,26 @@ const ClientModeHandler: React.FC<ClientModeHandlerProps> = ({
                 placeholder="Şifrenizi girin"
                 onKeyPress={(e) => e.key === 'Enter' && !isExiting && handlePasswordSubmit()}
                 disabled={isExiting}
+                className="mt-1.5 h-10 sm:h-11"
               />
+              <p className="text-xs text-muted-foreground mt-1.5">
+                Standart uzman şifresi: 1923
+              </p>
             </div>
-            <div className="flex gap-2">
+            <div className="flex gap-2 pt-2">
               <Button 
                 onClick={handlePasswordSubmit}
                 disabled={!password || isExiting}
-                className="flex-1"
+                className="flex-1 h-9 sm:h-10"
               >
-                {isExiting ? 'Çıkılıyor...' : 'Çıkış Yap'}
+                {isExiting ? (
+                  <div className="flex items-center gap-2">
+                    <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                    Çıkılıyor...
+                  </div>
+                ) : (
+                  'Çıkış Yap'
+                )}
               </Button>
               <Button 
                 variant="outline" 
@@ -131,7 +172,7 @@ const ClientModeHandler: React.FC<ClientModeHandlerProps> = ({
                     setPassword('')
                   }
                 }}
-                className="flex-1"
+                className="flex-1 h-9 sm:h-10"
                 disabled={isExiting}
               >
                 İptal

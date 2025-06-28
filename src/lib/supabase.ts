@@ -31,7 +31,7 @@ export interface ClientStatistic {
   id: string
   professional_id: string
   client_identifier: string
-  exercise_data: any
+  exercise_data: Record<string, unknown>
   session_date: string
   is_client_mode_session: boolean
   created_at: string

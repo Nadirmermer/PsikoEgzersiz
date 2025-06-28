@@ -9,6 +9,7 @@ import { useUniversalGame } from '@/hooks/useUniversalGame'
 import { useMemoryGame } from '@/hooks/useMemoryGame'
 import { useAudio } from '@/hooks/useAudio'
 import { LocalStorageManager, MEMORY_GAME_LEVELS, MemoryGameLevel } from '@/utils/localStorage'
+import { Card as MemoryCard } from '@/utils/memoryGameUtils'
 import { GameResult } from '@/components/GameEngine/types'
 import { toast } from '@/components/ui/sonner'
 import { touchTargetClasses, cn, gameTimings, uiStyles } from '@/lib/utils'
@@ -146,7 +147,7 @@ const HafizaOyunuSayfasi: React.FC<HafizaOyunuSayfasiProps> = ({ onBack }) => {
   const handleCardClick = (cardId: string) => {
     if (universalGame.gameState.isPaused) return
     
-    // �� FIX: Add card flip sound
+    // 🔧 FIX: Add card flip sound
     playSound('button-click')
     
     // Memory game başlamadıysa ve preview de gösterilmiyorsa başlat
@@ -163,15 +164,15 @@ const HafizaOyunuSayfasi: React.FC<HafizaOyunuSayfasiProps> = ({ onBack }) => {
     memoryGame.flipCard(cardId)
   }
 
-  // Kart görünümü
-  const getCardDisplayContent = (card: any) => {
+  // Memory card display helpers for UI
+  const getCardDisplayContent = (card: MemoryCard) => {
     if (memoryGame.showingPreview || card.isFlipped || card.isMatched) {
       return card.emoji
     }
     return '?'
   }
 
-  const getCardStyle = (card: any) => {
+  const getCardStyle = (card: MemoryCard) => {
     if (card.isMatched) {
       return 'bg-green-100 dark:bg-green-900/30 border-green-300 dark:border-green-700 text-green-800 dark:text-green-200'
     }

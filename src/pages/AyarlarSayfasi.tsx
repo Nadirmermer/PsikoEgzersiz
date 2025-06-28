@@ -481,7 +481,6 @@ const AyarlarSayfasi: React.FC = () => {
                          <Switch
                            checked={audioSettings.uiSounds}
                            onCheckedChange={() => handleToggleSoundCategory('uiSounds')}
-                           size="sm"
                          />
                        </div>
 
@@ -493,7 +492,6 @@ const AyarlarSayfasi: React.FC = () => {
                          <Switch
                            checked={audioSettings.exerciseSounds}
                            onCheckedChange={() => handleToggleSoundCategory('exerciseSounds')}
-                           size="sm"
                          />
                        </div>
 
@@ -505,7 +503,6 @@ const AyarlarSayfasi: React.FC = () => {
                          <Switch
                            checked={audioSettings.feedbackSounds}
                            onCheckedChange={() => handleToggleSoundCategory('feedbackSounds')}
-                           size="sm"
                          />
                        </div>
 
@@ -517,7 +514,6 @@ const AyarlarSayfasi: React.FC = () => {
                          <Switch
                            checked={audioSettings.ambientSounds}
                            onCheckedChange={() => handleToggleSoundCategory('ambientSounds')}
-                           size="sm"
                          />
                        </div>
                      </div>

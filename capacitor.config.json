@@ -3,42 +3,118 @@
   "appName": "PsikoEgzersiz",
   "webDir": "dist",
   "server": {
-    "androidScheme": "https"
+    "androidScheme": "https",
+    "cleartext": false,
+    "allowNavigation": [
+      "*.supabase.co",
+      "fonts.googleapis.com",
+      "fonts.gstatic.com"
+    ]
   },
   "plugins": {
     "StatusBar": {
       "style": "default",
-      "backgroundColor": "#6366f1"
+      "backgroundColor": "#6366f1",
+      "overlaysWebView": false
     },
     "SplashScreen": {
       "launchShowDuration": 2000,
       "backgroundColor": "#6366f1",
       "androidSplashResourceName": "splash",
-      "iosSplashResourceName": "Default"
+      "iosSplashResourceName": "Default",
+      "showSpinner": false,
+      "androidSpinnerStyle": "large",
+      "iosSpinnerStyle": "small",
+      "spinnerColor": "#ffffff",
+      "splashFullScreen": true,
+      "splashImmersive": true
     },
     "Keyboard": {
       "resize": "body",
-      "resizeOnFullScreen": true
+      "resizeOnFullScreen": true,
+      "style": "default"
     },
     "Device": {
       "orientation": "all"
+    },
+    "Network": {
+      "enabled": true
+    },
+    "ScreenOrientation": {
+      "enabled": true
+    },
+    "Haptics": {
+      "enabled": true
+    },
+    "LocalNotifications": {
+      "smallIcon": "ic_stat_icon_config_sample",
+      "iconColor": "#6366f1",
+      "sound": "beep.wav"
     }
   },
   "android": {
-    "allowMixedContent": true,
-    "minWebViewVersion": 60,
-    "webContentsDebuggingEnabled": true,
-    "hideLogs": false,
-    "orientations": ["portrait", "landscape", "portrait-reverse", "landscape-reverse"],
+    "allowMixedContent": false,
+    "minWebViewVersion": 70,
+    "webContentsDebuggingEnabled": false,
+    "hideLogs": true,
+    "orientations": [
+      "portrait", 
+      "landscape", 
+      "portrait-reverse", 
+      "landscape-reverse"
+    ],
     "useLegacyBridge": false,
-    "useFileApi": true
+    "useFileApi": true,
+    "includePlugins": [
+      "StatusBar",
+      "SplashScreen", 
+      "Keyboard",
+      "Device",
+      "Network",
+      "ScreenOrientation",
+      "Haptics",
+      "LocalNotifications"
+    ],
+    "buildOptions": {
+      "keystorePath": "",
+      "keystorePassword": "",
+      "keystoreAlias": "",
+      "keystoreAliasPassword": "",
+      "releaseType": "APK"
+    },
+    "permissions": [
+      "INTERNET",
+      "ACCESS_NETWORK_STATE",
+      "VIBRATE",
+      "WAKE_LOCK"
+    ]
   },
   "ios": {
     "scheme": "PsikoEgzersiz",
     "contentInset": "automatic",
     "preferredContentMode": "mobile",
-    "orientations": ["portrait", "landscape", "portrait-upside-down", "landscape-left", "landscape-right"],
+    "orientations": [
+      "portrait",
+      "landscape", 
+      "portrait-upside-down", 
+      "landscape-left", 
+      "landscape-right"
+    ],
     "handleApplicationURL": true,
-    "backgroundColor": "#6366f1"
+    "backgroundColor": "#6366f1",
+    "includePlugins": [
+      "StatusBar",
+      "SplashScreen",
+      "Keyboard", 
+      "Device",
+      "Network",
+      "ScreenOrientation",
+      "Haptics",
+      "LocalNotifications"
+    ],
+    "buildOptions": {
+      "developmentTeam": "",
+      "packageType": "app-store"
+    }
   }
 }
