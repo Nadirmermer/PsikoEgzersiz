@@ -9,7 +9,7 @@ import KelimeResimEslestirmeSayfasi from "./KelimeResimEslestirmeSayfasi";
 import LondraKulesiSayfasi from "./LondraKulesiSayfasi";
 import SayiDizisiTakibiSayfasi from "./SayiDizisiTakibiSayfasi";
 import RenkDizisiTakibiSayfasi from "./RenkDizisiTakibiSayfasi";
-import KelimeCemberiBulmacasiSayfasi from "./KelimeCemberiBulmacasiSayfasi";
+
 import MantikDizileriSayfasi from "./MantikDizileriSayfasi";
 import HanoiKuleleriSayfasi from "./HanoiKuleleriSayfasi";
 import BottomNavigation from "../components/BottomNavigation";
@@ -29,7 +29,7 @@ const Index = () => {
   const [isTowerOfLondonActive, setIsTowerOfLondonActive] = useState(false);
   const [isNumberSequenceActive, setIsNumberSequenceActive] = useState(false);
   const [isColorSequenceActive, setIsColorSequenceActive] = useState(false);
-  const [isWordCirclePuzzleActive, setIsWordCirclePuzzleActive] = useState(false);
+
   const [isLogicSequencesActive, setIsLogicSequencesActive] = useState(false);
   const [isHanoiTowersActive, setIsHanoiTowersActive] = useState(false);
   const { isClientMode, exitClientMode } = useClientMode();
@@ -120,15 +120,7 @@ const Index = () => {
     setIsColorSequenceActive(false);
   };
 
-  const handleWordCirclePuzzleStart = () => {
-    playSound('button-click')
-    setIsWordCirclePuzzleActive(true);
-  };
 
-  const handleWordCirclePuzzleEnd = () => {
-    playSound('button-click')
-    setIsWordCirclePuzzleActive(false);
-  };
 
   const handleLogicSequencesStart = () => {
     playSound('button-click')
@@ -244,19 +236,7 @@ const Index = () => {
     );
   }
 
-  // Render Word Circle Puzzle game
-  if (isWordCirclePuzzleActive) {
-    return (
-      <>
-        <SkipNavigation />
-        <KelimeCemberiBulmacasiSayfasi onBack={handleWordCirclePuzzleEnd} />
-        <ClientModeHandler 
-          isClientMode={isClientMode}
-          onExitClientMode={exitClientMode}
-        />
-      </>
-    );
-  }
+
 
   // Render Logic Sequences game
   if (isLogicSequencesActive) {
@@ -297,7 +277,6 @@ const Index = () => {
             onTowerOfLondonStart={handleTowerOfLondonStart}
             onNumberSequenceStart={handleNumberSequenceStart}
             onColorSequenceStart={handleColorSequenceStart}
-            onWordCirclePuzzleStart={handleWordCirclePuzzleStart}
             onLogicSequencesStart={handleLogicSequencesStart}
             onHanoiTowersStart={handleHanoiTowersStart}
           />
@@ -317,7 +296,6 @@ const Index = () => {
             onTowerOfLondonStart={handleTowerOfLondonStart}
             onNumberSequenceStart={handleNumberSequenceStart}
             onColorSequenceStart={handleColorSequenceStart}
-            onWordCirclePuzzleStart={handleWordCirclePuzzleStart}
             onLogicSequencesStart={handleLogicSequencesStart}
             onHanoiTowersStart={handleHanoiTowersStart}
           />

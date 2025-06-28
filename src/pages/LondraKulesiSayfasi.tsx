@@ -1,274 +1,249 @@
-import React from 'react'
+import React, { useEffect, useState } from 'react'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Progress } from '@/components/ui/progress'
+import { Button } from '@/components/ui/button'
+import { AlertTriangle, RefreshCw, Loader2 } from 'lucide-react'
 import UniversalGameEngine from '../components/GameEngine/UniversalGameEngine'
 import { TOWER_OF_LONDON_CONFIG } from '../components/GameEngine/gameConfigs'
-import { useTowerOfLondonGame } from '../hooks/useTowerOfLondon'
-import { Target, Move, Building, Timer, MapPin, AlertTriangle, RefreshCw, Loader2 } from 'lucide-react'
+import { useUniversalGame } from '../hooks/useUniversalGame'
+import { useAudio } from '../hooks/useAudio'
+import { Target, Move, Building, Timer, MapPin } from 'lucide-react'
 import { toast } from '@/components/ui/sonner'
-import { useAudio } from '@/hooks/useAudio'
-import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
-import { uiStyles } from '@/lib/utils'
+import { uiStyles, touchTargetClasses, cn } from '@/lib/utils'
+import { GameResult } from '../components/GameEngine/types'
 
 interface LondraKulesiSayfasiProps {
   onBack: () => void
 }
 
-// Gerçek Londra Kulesi Test Problemleri - Kule kapasitelerine uygun düzenlenmiş
+// Gerçek Londra Kulesi Test Problemleri - Bilimsel Temelli Progresif Tasarım
+// Kapasiteler: Sol Kule[3], Orta Kule[2], Sağ Kule[1] - LONDON TOWER TEST STANDARD
 const TOWER_PROBLEMS = [
-  // Seviye 1-5: Temel Seviyeler (1-3 hamle) - KAPASİTE KURALI: [3,2,1]
+  // 🟢 BAŞLANGIÇ SEVİYESİ (Seviye 1-5): Temel motor skills ve kuralları öğrenme
   { 
     id: 1,
-    initial: [['K'], ['Y'], []], 
-    target: [['K'], [], ['Y']], 
+    initial: [['K'], [], []], 
+    target: [[], ['K'], []], 
     minMoves: 1,
-    difficulty: 'Çok Kolay',
-    description: "Yeşil topu sağ kuleye taşıyın"
+    difficulty: 'Çok Kolay'
   },
   { 
     id: 2,
     initial: [['K'], ['Y'], []], 
-    target: [['K', 'Y'], [], []], 
-    minMoves: 1,
-    difficulty: 'Kolay',
-    description: "Yeşili kırmızının üzerine taşıyın"
+    target: [[], ['Y'], ['K']], 
+    minMoves: 2,
+    difficulty: 'Kolay'
   },
   { 
     id: 3,
-    initial: [['K'], [], ['M']], 
-    target: [[], ['K'], ['M']], 
-    minMoves: 1,
-    difficulty: 'Kolay',
-    description: "Kırmızıyı orta kuleye taşıyın"
+    initial: [['K'], [], ['Y']], 
+    target: [['Y'], [], ['K']], 
+    minMoves: 2,
+    difficulty: 'Kolay'
   },
   { 
     id: 4,
     initial: [['K', 'Y'], [], []], 
     target: [[], ['K'], ['Y']], 
     minMoves: 2,
-    difficulty: 'Kolay-Orta',
-    description: "İki topu ayrı kulelere yerleştirin"
+    difficulty: 'Kolay-Orta'
   },
   { 
     id: 5,
     initial: [['K'], ['Y'], []], 
-    target: [[], ['Y'], ['K']], 
+    target: [['K', 'Y'], [], []], 
     minMoves: 2,
-    difficulty: 'Orta',
-    description: "Topları yer değiştirin"
+    difficulty: 'Orta'
   },
 
-  // Seviye 6-10: Orta Seviyeler (3-4 hamle)
+  // 🟡 GELİŞİM SEVİYESİ (Seviye 6-10): İki top koordinasyonu ve ara adım planlama
   { 
     id: 6,
-    initial: [['K', 'Y'], [], ['M']], 
-    target: [['M'], ['K'], ['Y']], 
+    initial: [['K', 'Y'], [], []], 
+    target: [['Y'], [], ['K']], 
     minMoves: 3,
-    difficulty: 'Orta',
-    description: "Topları yeniden düzenleyin"
+    difficulty: 'Orta'
   },
   { 
     id: 7,
-    initial: [[], ['K', 'Y'], []], 
-    target: [['Y'], [], ['K']], 
-    minMoves: 2,
-    difficulty: 'Orta',
-    description: "Döngüsel değiştirme"
+    initial: [['K'], ['Y'], ['M']], 
+    target: [[], ['Y'], ['K']], 
+    minMoves: 3,
+    difficulty: 'Orta'
   },
   { 
     id: 8,
-    initial: [['K'], ['Y'], ['M']], 
-    target: [[], ['M'], ['K']], 
-    minMoves: 3,
-    difficulty: 'Orta-Zor',
-    description: "Karmaşık yeniden düzenleme"
+    initial: [['K', 'Y'], [], ['M']], 
+    target: [['M'], ['Y'], ['K']], 
+    minMoves: 4,
+    difficulty: 'Orta-Zor'
   },
   { 
     id: 9,
-    initial: [['K', 'Y'], [], []], 
+    initial: [['K'], ['Y', 'M'], []], 
     target: [['Y'], [], ['K']], 
-    minMoves: 2,
-    difficulty: 'Zor',
-    description: "Ters sıralama hamlesi"
+    minMoves: 4,
+    difficulty: 'Zor'
   },
   { 
     id: 10,
-    initial: [[], ['K'], ['Y']], 
-    target: [['K'], [], ['Y']], 
-    minMoves: 1,
-    difficulty: 'Zor',
-    description: "Strateji planlama"
+    initial: [['K', 'Y'], ['M'], []], 
+    target: [[], ['K'], ['Y']], 
+    minMoves: 4,
+    difficulty: 'Zor'
   },
 
-  // Seviye 11-15: İleri Seviyeler (4-5 hamle)
+  // 🔵 ORTA SEVİYE (Seviye 11-15): Üç top ve kompleks planlama
   { 
     id: 11,
-    initial: [['K'], ['Y'], ['M']], 
-    target: [['M'], ['K'], ['Y']], 
-    minMoves: 3,
-    difficulty: 'Zor',
-    description: "Tam döngüsel değişim"
+    initial: [['K', 'Y', 'M'], [], []], 
+    target: [[], [], ['K']], 
+    minMoves: 5,
+    difficulty: 'Zor'
   },
   { 
     id: 12,
-    initial: [['K', 'Y', 'M'], [], []], 
-    target: [[], ['K'], ['M']], 
-    minMoves: 3,
-    difficulty: 'Çok Zor',
-    description: "Üçlü yığını dağıtma"
+    initial: [['K'], ['Y'], ['M']], 
+    target: [['M', 'Y', 'K'], [], []], 
+    minMoves: 5,
+    difficulty: 'Çok Zor'
   },
   { 
     id: 13,
-    initial: [[], ['K', 'Y'], []], 
-    target: [['M'], [], ['K']], 
-    minMoves: 2,
-    difficulty: 'Çok Zor',
-    description: "Karmaşık kombinasyon"
+    initial: [[], ['K', 'Y'], ['M']], 
+    target: [['K'], [], ['Y']], 
+    minMoves: 5,
+    difficulty: 'Çok Zor'
   },
   { 
     id: 14,
-    initial: [['K'], ['Y'], []], 
-    target: [['Y'], ['K'], []], 
-    minMoves: 2,
-    difficulty: 'Uzman',
-    description: "Uzman seviye strateji"
+    initial: [['K', 'Y'], ['M'], []], 
+    target: [[], ['Y'], ['M']], 
+    minMoves: 6,
+    difficulty: 'Uzman'
   },
   { 
     id: 15,
-    initial: [['K', 'Y'], [], ['M']], 
-    target: [[], ['Y'], ['K']], 
-    minMoves: 2,
-    difficulty: 'Uzman',
-    description: "Çok boyutlu planlama"
+    initial: [['K'], ['Y', 'M'], []], 
+    target: [['M'], ['K'], ['Y']], 
+    minMoves: 6,
+    difficulty: 'Uzman'
   },
 
-  // Seviye 16-20: Uzman Seviyeler (5-6 hamle)
+  // 🟣 İLERİ SEVİYE (Seviye 16-20): Çok adımlı planlama ve inhibition
   { 
     id: 16,
-    initial: [[], ['K', 'Y'], ['M']], 
-    target: [['M'], ['Y'], ['K']], 
-    minMoves: 3,
-    difficulty: 'Profesyonel',
-    description: "Üçlü ayrıştırma"
+    initial: [['K', 'Y'], [], ['M']], 
+    target: [[], ['K', 'Y'], ['M']], 
+    minMoves: 6,
+    difficulty: 'Profesyonel'
   },
   { 
     id: 17,
-    initial: [['K'], ['Y'], ['M']], 
-    target: [['Y'], [], ['K']], 
-    minMoves: 3,
-    difficulty: 'Profesyonel',
-    description: "Çapraz geçiş uzman"
+    initial: [['K', 'Y', 'M'], [], []], 
+    target: [[], ['M'], ['Y']], 
+    minMoves: 7,
+    difficulty: 'Profesyonel'
   },
   { 
     id: 18,
-    initial: [['K', 'Y'], [], ['M']], 
-    target: [[], ['K'], ['M']], 
-    minMoves: 2,
-    difficulty: 'Master',
-    description: "Master seviye problem"
+    initial: [[], ['K', 'Y'], ['M']], 
+    target: [['Y', 'M'], [], ['K']], 
+    minMoves: 7,
+    difficulty: 'Master'
   },
   { 
     id: 19,
-    initial: [[], ['K'], ['Y']], 
-    target: [['M'], ['Y'], []], 
-    minMoves: 2,
-    difficulty: 'Master',
-    description: "Karmaşık master çözümü"
+    initial: [['K'], ['Y'], ['M']], 
+    target: [[], ['M', 'Y'], ['K']], 
+    minMoves: 8,
+    difficulty: 'Master'
   },
   { 
     id: 20,
-    initial: [['K', 'Y'], [], ['M']], 
-    target: [['M'], ['K'], []], 
-    minMoves: 3,
-    difficulty: 'Grandmaster',
-    description: "🏆 GRANDMASTER 🏆"
+    initial: [['K', 'Y'], ['M'], []], 
+    target: [['M'], [], ['K']], 
+    minMoves: 8,
+    difficulty: 'Grandmaster'
   },
 
-  // Seviye 21-30: Legendary Seviyeler (6+ hamle)
+  // 🔴 UZMAN SEVİYE (Seviye 21-25): Tower of London mastery
   { 
     id: 21,
-    initial: [[], ['K', 'Y'], []], 
-    target: [['K'], [], ['Y']], 
-    minMoves: 2,
-    difficulty: 'Legendary',
-    description: "Legendary seviye başlangıç"
+    initial: [['K', 'Y', 'M'], [], []], 
+    target: [[], ['K'], ['M']], 
+    minMoves: 9,
+    difficulty: 'Legendary'
   },
   { 
     id: 22,
-    initial: [['K'], ['Y'], ['M']], 
-    target: [[], ['K'], ['M']], 
-    minMoves: 2,
-    difficulty: 'Legendary',
-    description: "7-hamle legendary"
+    initial: [[], ['K', 'Y'], ['M']], 
+    target: [['M', 'K'], [], ['Y']], 
+    minMoves: 9,
+    difficulty: 'Legendary'
   },
   { 
     id: 23,
-    initial: [['K', 'Y'], [], ['M']], 
-    target: [['M'], ['K'], []], 
-    minMoves: 3,
-    difficulty: 'Legendary',
-    description: "Maksimum karmaşıklık"
+    initial: [['K'], ['Y', 'M'], []], 
+    target: [[], [], ['Y']], 
+    minMoves: 10,
+    difficulty: 'Legendary'
   },
   { 
     id: 24,
-    initial: [[], ['K'], ['Y']], 
-    target: [['Y'], ['K'], []], 
-    minMoves: 2,
-    difficulty: 'Ultimate',
-    description: "Ultimate challenge"
+    initial: [['K', 'Y'], [], ['M']], 
+    target: [[], ['M', 'K'], ['Y']], 
+    minMoves: 10,
+    difficulty: 'Ultimate'
   },
   { 
     id: 25,
-    initial: [['K', 'Y'], [], ['M']], 
-    target: [['M'], [], ['K']], 
-    minMoves: 2,
-    difficulty: 'Ultimate',
-    description: "🎯 ULTIMATE MASTER 🎯"
+    initial: [['K'], ['Y'], ['M']], 
+    target: [['Y', 'M'], ['K'], []], 
+    minMoves: 11,
+    difficulty: 'Ultimate'
   },
 
-  // Seviye 26-30: Mythical Levels - Kapasiteye uygun
+  // ⚫ MASTER SEVİYE (Seviye 26-30): Cognitive peak performance
   { 
     id: 26,
-    initial: [[], ['K', 'Y'], []], 
-    target: [['M'], [], ['Y']], 
-    minMoves: 2,
-    difficulty: 'Impossible',
-    description: "Impossible Level 1"
+    initial: [['K', 'Y'], ['M'], []], 
+    target: [[], [], ['K']], 
+    minMoves: 11,
+    difficulty: 'Impossible'
   },
   { 
     id: 27,
-    initial: [['K'], [], ['Y']], 
-    target: [['Y'], ['K'], []], 
-    minMoves: 2,
-    difficulty: 'Impossible',
-    description: "Impossible Level 2"
+    initial: [['K'], ['Y', 'M'], []], 
+    target: [['M'], [], ['Y']], 
+    minMoves: 12,
+    difficulty: 'Impossible'
   },
   { 
     id: 28,
-    initial: [['K', 'Y'], [], ['M']], 
+    initial: [['K', 'Y', 'M'], [], []], 
     target: [[], ['Y'], ['K']], 
-    minMoves: 2,
-    difficulty: 'Mythical',
-    description: "Mythical Level 1"
+    minMoves: 12,
+    difficulty: 'Mythical'
   },
   { 
     id: 29,
-    initial: [[], ['K', 'Y'], []], 
-    target: [['K'], [], ['Y']], 
-    minMoves: 2,
-    difficulty: 'Mythical',
-    description: "Mythical Level 2"
+    initial: [[], ['K', 'Y'], ['M']], 
+    target: [['K'], ['M'], ['Y']], 
+    minMoves: 13,
+    difficulty: 'Mythical'
   },
   { 
     id: 30,
-    initial: [['K'], ['Y'], ['M']], 
-    target: [['M'], [], ['K']], 
-    minMoves: 3,
-    difficulty: 'Divine',
-    description: "💎 DIVINE MASTER 💎"
+    initial: [['K'], ['Y', 'M'], []], 
+    target: [[], ['K', 'M'], ['Y']], 
+    minMoves: 15,
+    difficulty: 'Divine'
   }
 ]
 
-// Tower Komponenti - Kapasiteye Göre Boyutlanan Responsive Tasarım - Optimizasyonlu
+// Tower Komponenti - Tabanları Eşitlenmiş Responsive Tasarım
 const Tower: React.FC<{
   index: number
   balls: string[]
@@ -297,41 +272,36 @@ const Tower: React.FC<{
     }
   }
 
-  // Kapasiteye göre boyutlama - Kule yüksekliği = top kapasitesi × top yüksekliği
-  const ballBaseHeight = 10 // Her topun temel yüksekliği (w-10 h-10 için)
-  
+  // Kapasiteye göre boyutlama - Kule direkleri farklı, tabanlar aynı hizada
   const getTowerSizes = (capacity: number) => {
-    // Kule yüksekliği tam olarak kaç top alabileceği kadar olacak
-    const towerHeightInBalls = capacity
-    
     switch(capacity) {
-      case 3: // 3 top kapasiteli - 3 top yüksekliğinde çubuk
+      case 3: // 3 top kapasiteli - uzun direk
         return {
           ballSize: 'w-10 h-10 sm:w-12 sm:h-12 md:w-14 md:h-14',
           towerHeight: 'h-[120px] sm:h-[144px] md:h-[168px]', // 3 × top boyutu
           towerWidth: 'w-3 sm:w-4 md:w-5',
           baseWidth: 'w-20 sm:w-24 md:w-28'
         }
-      case 2: // 2 top kapasiteli - 2 top yüksekliğinde çubuk
+      case 2: // 2 top kapasiteli - orta direk
         return {
           ballSize: 'w-10 h-10 sm:w-12 sm:h-12 md:w-14 md:h-14',
           towerHeight: 'h-[80px] sm:h-[96px] md:h-[112px]', // 2 × top boyutu
           towerWidth: 'w-2.5 sm:w-3 md:w-4',
-          baseWidth: 'w-16 sm:w-20 md:w-24'
+          baseWidth: 'w-20 sm:w-24 md:w-28' // Aynı taban genişliği
         }
-      case 1: // 1 top kapasiteli - 1 top yüksekliğinde çubuk
+      case 1: // 1 top kapasiteli - kısa direk
         return {
           ballSize: 'w-10 h-10 sm:w-12 sm:h-12 md:w-14 md:h-14',
           towerHeight: 'h-[40px] sm:h-[48px] md:h-[56px]', // 1 × top boyutu
           towerWidth: 'w-2 sm:w-2.5 md:w-3',
-          baseWidth: 'w-12 sm:w-16 md:w-20'
+          baseWidth: 'w-20 sm:w-24 md:w-28' // Aynı taban genişliği
         }
       default:
         return {
           ballSize: 'w-10 h-10 sm:w-12 sm:h-12 md:w-14 md:h-14',
           towerHeight: 'h-[80px] sm:h-[96px] md:h-[112px]',
           towerWidth: 'w-2.5 sm:w-3 md:w-4',
-          baseWidth: 'w-16 sm:w-20 md:w-24'
+          baseWidth: 'w-20 sm:w-24 md:w-28'
         }
     }
   }
@@ -362,20 +332,21 @@ const Tower: React.FC<{
         Max: {maxHeight} top
       </div>
 
-      {/* Kule Yapısı - Kapasiteye göre boyutlanan */}
+      {/* Kule Yapısı - FIXED: Tüm kulelerin tabanları aynı hizada */}
       <div 
         className={`
-          relative transition-all duration-300 cursor-pointer flex flex-col items-center
+          relative transition-all duration-300 cursor-pointer flex flex-col items-center justify-end
           touch-manipulation select-none focus:outline-none focus:ring-4 focus:ring-primary/50
           active:scale-95 tablet:hover:scale-102 min-h-[44px] min-w-[44px]
           tablet:min-h-[64px] tablet:min-w-[64px]
+          h-[180px] sm:h-[220px] md:h-[260px]
           ${isSelected ? 'scale-105' : 'hover:scale-102'}
         `}
         onClick={onClick}
         onTouchStart={(e) => e.preventDefault()} // Prevent double-tap zoom
         style={{ touchAction: 'manipulation' }}
       >
-        {/* Ana Çubuk - Kapasiteye göre boyutlanan */}
+        {/* Ana Çubuk - Kapasiteye göre boyutlanan, alt hizalı */}
         <div className={`
           ${towerWidth} ${towerHeight} rounded-t-lg transition-all duration-300 shadow-lg z-10
           ${isSelected 
@@ -391,7 +362,7 @@ const Tower: React.FC<{
         `} />
 
         {/* Toplar - Kapasiteye göre boyutlanan */}
-        <div className="absolute bottom-1 sm:bottom-2 left-1/2 transform -translate-x-1/2 flex flex-col-reverse items-center z-20">
+        <div className="absolute bottom-4 sm:bottom-5 left-1/2 transform -translate-x-1/2 flex flex-col-reverse items-center z-20">
           {balls.map((ballColor, ballIndex) => (
             <div
               key={ballIndex}
@@ -410,9 +381,9 @@ const Tower: React.FC<{
           ))}
         </div>
 
-        {/* Base Platform - Kapasiteye göre boyutlanan */}
+        {/* Base Platform - FIXED: Tüm tabanlar aynı genişlik ve alt hizada */}
         <div className={`
-          ${baseWidth} h-2 sm:h-3 rounded-lg transition-all duration-300 -mt-1 z-5
+          ${baseWidth} h-3 sm:h-4 rounded-lg transition-all duration-300 z-5
           ${isSelected 
             ? 'bg-primary/20 shadow-lg shadow-primary/30' 
             : isTarget
@@ -432,50 +403,50 @@ const Tower: React.FC<{
 // Performans için displayName ekliyoruz
 Tower.displayName = 'Tower'
 
-// Ana Oyun Komponenti
-const TowerOfLondonGame: React.FC = () => {
+// Ana Oyun Komponenti - UniversalGameEngine ile entegre
+const TowerOfLondonGame: React.FC<{ 
+  onBack: () => void
+  universalGame: ReturnType<typeof useUniversalGame>
+  gameControlRef: React.MutableRefObject<{
+    handleNextLevel: () => void
+    handleRestart: () => void
+  } | null>
+}> = ({ onBack, universalGame, gameControlRef }) => {
   // Error handling states
   const [error, setError] = React.useState<string | null>(null)
   const [isLoading, setIsLoading] = React.useState(false)
+  const [autoProgressionHandled, setAutoProgressionHandled] = React.useState(false)
   
   const [currentLevel, setCurrentLevel] = React.useState(1)
   const [towers, setTowers] = React.useState<string[][]>([[], [], []])
   const [selectedTower, setSelectedTower] = React.useState<number | null>(null)
   const [moves, setMoves] = React.useState(0)
-  const [isCompleted, setIsCompleted] = React.useState(false)
   const [startTime, setStartTime] = React.useState<number | null>(null)
   const [planningTime, setPlanningTime] = React.useState(0)
   const { playSound } = useAudio()
   
-  // Error recovery function
-  const recoverFromError = React.useCallback(() => {
-    setError(null)
-    setIsLoading(false)
-    initializeLevel(1) // Restart from level 1
-  }, [])
-  
   const currentProblem = TOWER_PROBLEMS[currentLevel - 1] || TOWER_PROBLEMS[0]
-  const maxTowerHeights = [3, 2, 1] // Sol: 3 top, Orta: 2 top, Sağ: 1 top (Gerçek Londra Kulesi kuralı)
+  const maxTowerHeights = [3, 2, 1] // Sol: 3 top, Orta: 2 top, Sağ: 1 top
 
-  // Seviye başlatma
+  // Level'ı başlat
   const initializeLevel = React.useCallback((level: number) => {
     try {
       setError(null)
       setIsLoading(true)
       
-    const problem = TOWER_PROBLEMS[level - 1] || TOWER_PROBLEMS[0]
+      const problem = TOWER_PROBLEMS[level - 1] || TOWER_PROBLEMS[0]
       
       if (!problem) {
         throw new Error(`Seviye ${level} bulunamadı`)
       }
     
-    setCurrentLevel(level)
-    setTowers(problem.initial.map(tower => [...tower]))
-    setSelectedTower(null)
-    setMoves(0)
-    setIsCompleted(false)
-    setStartTime(null)
-    setPlanningTime(0)
+      setCurrentLevel(level)
+      setTowers(problem.initial.map(tower => [...tower]))
+      setSelectedTower(null)
+      setMoves(0)
+      setStartTime(null)
+      setPlanningTime(0)
+      setAutoProgressionHandled(false)
       
       setIsLoading(false)
     } catch (err) {
@@ -495,6 +466,7 @@ const TowerOfLondonGame: React.FC = () => {
     if (startTime === null) {
       const now = Date.now()
       setStartTime(now)
+      universalGame.gameActions.onStart()
     }
   }
 
@@ -508,102 +480,109 @@ const TowerOfLondonGame: React.FC = () => {
     return isComplete
   }, [towers, currentProblem.target])
 
-  // Seviye tamamlama - otomatik geçiş
+  // Next level handler
+  const handleNextLevel = React.useCallback(() => {
+    if (autoProgressionHandled) return
+    setAutoProgressionHandled(true)
+    
+    if (currentLevel >= 30) {
+      toast.success('🏆 Tebrikler! Tüm seviyeleri tamamladınız!')
+      return
+    }
+    
+    const nextLevel = currentLevel + 1
+    playSound('level-up')
+    toast.success(`🚀 Seviye ${nextLevel} başlıyor!`)
+    
+    setCurrentLevel(nextLevel)
+    universalGame.gameActions.onRestart()
+    initializeLevel(nextLevel)
+  }, [autoProgressionHandled, currentLevel, playSound, universalGame.gameActions, initializeLevel])
+
+  // Restart handler
+  const handleRestart = React.useCallback(() => {
+    initializeLevel(currentLevel)
+    setAutoProgressionHandled(false)
+  }, [initializeLevel, currentLevel])
+
+  // Expose control functions to parent
   React.useEffect(() => {
-    if (checkCompletion() && !isCompleted) {
-      setIsCompleted(true)
-      
-      // Planlama süresini hesapla (Londra Kulesi testinde önemli metrik)
+    gameControlRef.current = {
+      handleNextLevel,
+      handleRestart
+    }
+  }, [handleNextLevel, handleRestart, gameControlRef])
+
+  // Seviye tamamlama - UniversalGameEngine ile entegre
+  React.useEffect(() => {
+    if (checkCompletion() && !universalGame.gameState.isCompleted && !autoProgressionHandled) {
+      // Planlama süresini hesapla
       const finalPlanningTime = startTime ? Math.round((Date.now() - startTime) / 1000) : 0
       setPlanningTime(finalPlanningTime)
       
-      // Tamamlama sesi ve değerlendirme
-      playSound('level-up')
-      
-      // Performans değerlendirmesi (bilimsel temelli)
-      if (moves === currentProblem.minMoves) {
-        toast.success('🏆 Mükemmel! Optimal çözüm!')
-      } else if (moves <= currentProblem.minMoves + 2) {
-        toast.success('👍 Harika! Çok iyi bir çözüm!')
-      } else if (moves <= currentProblem.minMoves + 4) {
-        toast.success('💪 İyi! Gelişmeye devam!')
-      } else {
-        toast.success('🎉 Tebrikler! Seviye tamamlandı!')
+      // Clinical data hazırlama - Tower of London Assessment
+      const result: GameResult = {
+        exerciseName: 'Londra Kulesi',
+        score: Math.round(((currentProblem.minMoves / moves) * 100)),
+        duration: finalPlanningTime,
+        completed: true,
+        accuracy: Math.round((currentProblem.minMoves / moves) * 100),
+        level: currentLevel,
+        details: {
+          level_identifier: `Seviye ${currentLevel} - ${currentProblem.difficulty}`,
+          total_moves: moves,
+          min_moves_required: currentProblem.minMoves,
+          planning_time_seconds: finalPlanningTime,
+          efficiency_percentage: Math.round((currentProblem.minMoves / moves) * 100),
+          is_optimal_solution: moves === currentProblem.minMoves,
+          exercise_name: 'Londra Kulesi',
+          timestamp: new Date().toISOString()
+        },
+        timestamp: new Date().toISOString()
       }
       
-      // 3 saniye sonra otomatik seviye geçişi
-      setTimeout(() => {
-        if (currentLevel >= 30) {
-          toast.success('🏆 Tebrikler! Tüm seviyeleri tamamladınız!')
-        } else {
-          const nextLevelNum = currentLevel + 1
-          toast.success(`🚀 Seviye ${nextLevelNum} başlıyor!`)
-          initializeLevel(nextLevelNum)
-        }
-      }, 3000)
+      universalGame.gameActions.onComplete(result)
+      playSound('exercise-complete')
     }
-  }, [towers, isCompleted, moves, currentProblem.minMoves, currentLevel, playSound, initializeLevel, checkCompletion, startTime])
+  }, [checkCompletion, autoProgressionHandled, startTime, currentProblem, moves, currentLevel, universalGame, playSound])
 
-  // Seviyeyi sıfırla
-  const restartLevel = () => {
-    initializeLevel(currentLevel)
-  }
+  // Stats'ları güncelle
+  React.useEffect(() => {
+    universalGame.updateGameStats({
+      score: Math.round(((currentProblem.minMoves / Math.max(moves, 1)) * 100)),
+      level: currentLevel,
+      progress: `${moves}/${currentProblem.minMoves} hamle`,
+      accuracy: Math.round((currentProblem.minMoves / Math.max(moves, 1)) * 100)
+    })
+  }, [moves, currentProblem.minMoves, currentLevel, universalGame])
 
-  // Kule tıklama mantığı - Gerçek Londra Kulesi kuralları - Optimizasyonlu
-  const handleTowerClick = React.useCallback((towerIndex: number) => {
-    try {
-      if (isCompleted || error || isLoading) return
+  // Error recovery
+  const recoverFromError = React.useCallback(() => {
+    playSound('button-click')
+    setError(null)
+    setIsLoading(false)
+    const recoveryLevel = currentLevel || 1
+    initializeLevel(recoveryLevel)
+  }, [currentLevel, initializeLevel, playSound])
 
-    recordFirstMove()
-
-    if (selectedTower === null) {
-      // Kule seçimi - sadece top varsa seçilebilir
-      if (towers[towerIndex].length > 0) {
-        setSelectedTower(towerIndex)
-        playSound('button-click')
-      }
-    } else {
-      // Top hareketi
-      if (selectedTower === towerIndex) {
-        // Aynı kuleye tıklandı, seçimi iptal et
-        setSelectedTower(null)
-        playSound('button-click')
-      } else {
-        // Farklı kuleye tıklandı, top taşımaya çalış
-        const from = towers[selectedTower]
-        const to = towers[towerIndex]
-        const maxHeight = maxTowerHeights[towerIndex]
-        
-        // Gerçek Londra Kulesi kuralı: Her kule farklı maksimum yüksekliğe sahip
-        if (from.length > 0 && to.length < maxHeight) {
-          // Geçerli hamle
-          const newTowers = towers.map(tower => [...tower])
-          const ball = newTowers[selectedTower].pop()!
-          newTowers[towerIndex].push(ball)
-          
-          setTowers(newTowers)
-          setMoves(prev => prev + 1)
-          setSelectedTower(null)
-          playSound('correct-answer')
-        } else {
-          // Geçersiz hamle
-          setSelectedTower(null)
-          playSound('wrong-answer')
-          if (to.length >= maxHeight) {
-            toast.error(`Bu kuleye en fazla ${maxHeight} top konabilir!`)
-          }
-        }
-      }
+  // Top taşıma mantığı
+  const moveBall = React.useCallback((fromTower: number, toTower: number) => {
+    recordFirstMove() // İlk hamle zamanını kaydet
+    
+    const newTowers = [...towers]
+    const ball = newTowers[fromTower].pop()
+    
+    if (ball && newTowers[toTower].length < maxTowerHeights[toTower]) {
+      newTowers[toTower].push(ball)
+      setTowers(newTowers)
+      setMoves(moves + 1)
+      playSound('button-click')
     }
-    } catch (err) {
-      console.error('Tower click error:', err)
-      setError('Hamle sırasında hata oluştu. Lütfen tekrar deneyin.')
-    }
-  }, [isCompleted, selectedTower, towers, maxTowerHeights, playSound, error, isLoading])
+  }, [towers, moves, maxTowerHeights, playSound, recordFirstMove])
 
   const towerLabels = ['Büyük Kule', 'Orta Kule', 'Küçük Kule']
 
-    return (
+  return (
     <div className="w-full max-w-4xl mx-auto space-y-4 sm:space-y-6 p-2 sm:p-4">
       
       {/* Error Display */}
@@ -615,13 +594,15 @@ const TowerOfLondonGame: React.FC = () => {
               <p className="text-sm sm:text-base text-red-800 dark:text-red-200 font-medium">
                 {error}
               </p>
-              <button 
+              <Button 
+                variant="outline" 
+                size="sm"
                 onClick={recoverFromError}
-                className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg font-medium transition-colors text-sm flex items-center gap-2"
+                className="bg-white/60 dark:bg-gray-800/60 hover:bg-white/80 dark:hover:bg-gray-800/80"
               >
-                <RefreshCw className="w-4 h-4" />
+                <RefreshCw className="w-4 h-4 mr-2" />
                 Tekrar Dene
-              </button>
+              </Button>
             </div>
           </CardContent>
         </Card>
@@ -644,123 +625,102 @@ const TowerOfLondonGame: React.FC = () => {
       {/* Game Content - Only show when no error or loading */}
       {!error && !isLoading && (
         <>
-      {/* Sadece Seviye Badge'ı - Temiz tasarım */}
-      <div className="text-center mb-4">
-        <Badge variant="secondary" className="text-sm sm:text-base px-3 py-2 sm:px-4 bg-primary/10 text-primary border-primary/20">
-          <Building className="w-4 h-4 sm:w-5 sm:h-5 mr-2" />
-          Seviye {currentLevel} - {currentProblem.difficulty}
-        </Badge>
-              </div>
+          {/* Seviye Badge'ı - Diğer oyunlarla uyumlu minimal stil */}
+          <div className="text-center mb-6">
+            <Badge variant="secondary" className="text-sm sm:text-base px-3 py-2 sm:px-4 bg-primary/10 text-primary border-primary/20">
+              <Building className="w-4 h-4 sm:w-5 sm:h-5 mr-2" />
+              Seviye {currentLevel}
+            </Badge>
+          </div>
 
-      {/* Mevcut Durum - Mobile Optimized */}
-      <Card className={uiStyles.gameCard.primary}>
-        <CardContent className={uiStyles.cardContent.compact}>
-          <h4 className="text-center text-base sm:text-lg font-semibold mb-3 sm:mb-4 text-gray-700 dark:text-gray-300">
-            Mevcut Durum
-                </h4>
-          <div className="flex justify-center items-end space-x-4 sm:space-x-8 md:space-x-12">
-            {towers.map((tower, index) => (
-              <Tower
-                key={index}
-                index={index}
-                balls={tower}
-                isSelected={selectedTower === index}
-                onClick={() => handleTowerClick(index)}
-                label={towerLabels[index]}
-                maxHeight={maxTowerHeights[index]}
-              />
-            ))}
-            </div>
+          {/* Oyun Alanı - Minimal tasarım */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+            
+            {/* Sol: Mevcut Durum */}
+            <Card className="bg-gradient-to-br from-blue-50/80 to-indigo-50/80 dark:from-blue-950/40 dark:to-indigo-900/40 border-2 border-blue-200/60 dark:border-blue-800/60 backdrop-blur-sm">
+              <CardHeader className="pb-3">
+                <CardTitle className="text-center text-lg sm:text-xl font-bold text-blue-800 dark:text-blue-200 flex items-center justify-center gap-2">
+                  <Building className="w-5 h-5 sm:w-6 sm:h-6" />
+                  Mevcut Durum
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="pt-0">
+                {/* Tower Container */}
+                <div className="grid grid-cols-3 gap-4 sm:gap-6 md:gap-8 p-4 sm:p-6 bg-white/50 dark:bg-gray-900/30 rounded-xl border border-blue-200/50 dark:border-blue-700/50 backdrop-blur-sm">
+                  {towers.map((tower, index) => (
+                    <div key={index} className="flex justify-center">
+                      <Tower
+                        index={index}
+                        balls={tower}
+                        isSelected={selectedTower === index}
+                        onClick={() => {
+                          if (universalGame.gameState.isCompleted || error || isLoading || universalGame.gameState.isPaused) return
+                          recordFirstMove()
+                          
+                          if (selectedTower === null) {
+                            if (towers[index].length > 0) {
+                              setSelectedTower(index)
+                              playSound('button-click')
+                            }
+                          } else {
+                            if (selectedTower === index) {
+                              setSelectedTower(null)
+                              playSound('button-click')
+                            } else {
+                              moveBall(selectedTower, index)
+                              setSelectedTower(null)
+                            }
+                          }
+                        }}
+                        label={towerLabels[index]}
+                        maxHeight={maxTowerHeights[index]}
+                      />
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Sağ: Hedef Durum */}
+            <Card className="bg-gradient-to-br from-emerald-50/80 to-green-50/80 dark:from-emerald-950/40 dark:to-green-900/40 border-2 border-emerald-200/60 dark:border-emerald-800/60 backdrop-blur-sm">
+              <CardHeader className="pb-3">
+                <CardTitle className="text-center text-lg sm:text-xl font-bold text-emerald-800 dark:text-emerald-200 flex items-center justify-center gap-2">
+                  <Target className="w-5 h-5 sm:w-6 sm:h-6" />
+                  Hedef Durum
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="pt-0">
+                {/* Target Tower Container */}
+                <div className="grid grid-cols-3 gap-4 sm:gap-6 md:gap-8 p-4 sm:p-6 bg-white/50 dark:bg-gray-900/30 rounded-xl border border-emerald-200/50 dark:border-emerald-700/50 backdrop-blur-sm">
+                  {currentProblem.target.map((tower, index) => (
+                    <div key={index} className="flex justify-center">
+                      <Tower
+                        index={index}
+                        balls={tower}
+                        isSelected={false}
+                        onClick={() => {}}
+                        label={towerLabels[index]}
+                        isTarget={true}
+                        maxHeight={maxTowerHeights[index]}
+                      />
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Basit Progress Info */}
+          <Card className="bg-gradient-to-r from-gray-50/80 to-white/80 dark:from-gray-900/80 dark:to-gray-800/80 border border-gray-200/60 dark:border-gray-700/60 backdrop-blur-sm">
+            <CardContent className="p-4 text-center">
+              <div className="text-lg sm:text-xl font-bold text-gray-800 dark:text-gray-200 mb-2">
+                {moves} hamle yapıldı
+              </div>
+              <div className="text-sm text-gray-600 dark:text-gray-400">
+                Optimal: {currentProblem.minMoves} hamle
+              </div>
             </CardContent>
           </Card>
-
-      {/* Hedef Durum - Mobile Optimized */}
-      <Card className="bg-green-50/50 dark:bg-green-950/20 backdrop-blur-sm border-green-200/20 dark:border-green-800/20">
-        <CardContent className="p-4 sm:p-6">
-          <h4 className="text-center text-base sm:text-lg font-semibold mb-3 sm:mb-4 text-green-700 dark:text-green-300">
-            🎯 Hedef
-          </h4>
-          <div className="flex justify-center items-end space-x-4 sm:space-x-8 md:space-x-12">
-            {currentProblem.target.map((tower, index) => (
-              <Tower
-                key={index}
-                index={index}
-                balls={tower}
-                isSelected={false}
-                onClick={() => {}}
-                label={towerLabels[index]}
-                isTarget={true}
-                maxHeight={maxTowerHeights[index]}
-                          />
-                        ))}
-              </div>
-            </CardContent>
-          </Card>
-
-      {/* Yardım İpuçları */}
-      {selectedTower !== null && (
-        <Card className="bg-blue-50/50 dark:bg-blue-950/20 backdrop-blur-sm border-blue-200/20 dark:border-blue-800/20">
-          <CardContent className="p-3 sm:p-4">
-            <div className="flex items-center justify-center gap-2 text-sm sm:text-base text-blue-700 dark:text-blue-300">
-              <Move className="w-4 h-4 sm:w-5 sm:h-5" />
-              <span>
-                <strong>{towerLabels[selectedTower]}</strong> seçili. Topu başka kuleye taşıyın.
-              </span>
-            </div>
-          </CardContent>
-        </Card>
-      )}
-
-      {/* Tamamlanma mesajı */}
-      {isCompleted && (
-        <Card className="bg-gradient-to-r from-yellow-100/80 to-orange-100/80 dark:from-yellow-900/40 dark:to-orange-900/40 backdrop-blur-sm border-2 border-yellow-400 dark:border-yellow-600">
-          <CardContent className="p-4 sm:p-6 text-center">
-            <div className="space-y-3 sm:space-y-4">
-              <div className="text-3xl sm:text-4xl mb-2">🎉</div>
-              <h3 className="text-lg sm:text-xl font-bold text-yellow-800 dark:text-yellow-200 mb-2">
-                Seviye {currentLevel} Tamamlandı!
-              </h3>
-              <p className="text-sm sm:text-base text-yellow-700 dark:text-yellow-300 mb-4">
-                {moves} hamle ile tamamladınız (Optimal: {currentProblem.minMoves} hamle)
-                <br />
-                Planlama süresi: {planningTime} saniye
-              </p>
-              
-              {/* Verimlilik gösterici */}
-              <div className="mb-4">
-                <div className={`inline-flex items-center px-3 py-2 sm:px-4 rounded-full text-xs sm:text-sm font-semibold ${
-                  moves === currentProblem.minMoves 
-                    ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300'
-                    : moves <= currentProblem.minMoves + 2
-                    ? 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300'
-                    : 'bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-300'
-                }`}>
-                  {moves === currentProblem.minMoves ? '🏆 Mükemmel!' : moves <= currentProblem.minMoves + 2 ? '👍 İyi!' : '💪 Gelişiyor!'}
-                </div>
-                </div>
-
-              {/* Seviye geçiş bilgisi */}
-              <div className="text-xs sm:text-sm text-yellow-600 dark:text-yellow-400">
-                {currentLevel < 30 ? (
-                  <p>3 saniye sonra Seviye {currentLevel + 1} başlayacak...</p>
-                ) : (
-                  <p>🏆 Tüm seviyeler tamamlandı!</p>
-                )}
-        </div>
-
-              {/* Yeniden oynama butonu */}
-              <div className="flex gap-3 justify-center">
-                <button
-                  onClick={restartLevel}
-                  className="px-3 py-2 sm:px-4 bg-blue-500 hover:bg-blue-600 text-white rounded-lg font-medium transition-colors text-xs sm:text-sm"
-                >
-                  🔄 Bu Seviyeyi Tekrar Oyna
-                </button>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      )}
         </>
       )}
     </div>
@@ -768,15 +728,48 @@ const TowerOfLondonGame: React.FC = () => {
 }
 
 const LondraKulesiSayfasi: React.FC<LondraKulesiSayfasiProps> = ({ onBack }) => {
-  return (
-    <UniversalGameEngine
-      gameConfig={TOWER_OF_LONDON_CONFIG}
-      gameHook={useTowerOfLondonGame}
-      onBack={onBack}
-    >
-      <TowerOfLondonGame />
-    </UniversalGameEngine>
-  )
+  // Game control refs
+  const gameControlRef = React.useRef<{
+    handleNextLevel: () => void
+    handleRestart: () => void
+  } | null>(null)
+
+  // Universal game hook'u kullan
+  const universalGame = useUniversalGame({
+    exerciseName: 'Londra Kulesi',
+    onComplete: (result: GameResult) => {
+      console.log('Tower of London completed:', result)
+    }
+  })
+
+  // Custom game hook'u oluştur
+  const gameHook = () => ({
+    ...universalGame,
+    gameActions: {
+      ...universalGame.gameActions,
+      onRestart: () => {
+        if (gameControlRef.current) {
+          gameControlRef.current.handleRestart()
+        }
+        universalGame.gameActions.onRestart()
+      },
+      onNextLevel: () => {
+        if (gameControlRef.current) {
+          gameControlRef.current.handleNextLevel()
+        }
+      }
+    }
+  })
+
+      return (
+      <UniversalGameEngine
+        gameConfig={TOWER_OF_LONDON_CONFIG}
+        gameHook={gameHook}
+        onBack={onBack}
+      >
+        <TowerOfLondonGame onBack={onBack} universalGame={universalGame} gameControlRef={gameControlRef} />
+      </UniversalGameEngine>
+    )
 }
 
 export default LondraKulesiSayfasi

@@ -276,34 +276,34 @@ export const TOWER_LEVELS: TowerLevel[] = [
   {
     id: 14,
     name: 'Seviye 14',
-    description: 'Ustaca planlama (9 hamle)',
+    description: 'Ustaca planlama (7 hamle)',
     difficulty: 'Çok Zor',
-    minMoves: 9,
+    minMoves: 7,
     initialConfig: {
       peg1: ['blue'],
       peg2: [],
       peg3: ['green', 'red']
     },
     targetConfig: {
-      peg1: [],
-      peg2: ['red, green'],
+      peg1: ['red'],
+      peg2: ['green'],
       peg3: ['blue']
     }
   },
   {
     id: 15,
     name: 'Seviye 15',
-    description: 'Uzmanlık seviyesi (10 hamle)',
+    description: 'Uzmanlık seviyesi (8 hamle)',
     difficulty: 'Çok Zor',
-    minMoves: 10,
+    minMoves: 8,
     initialConfig: {
       peg1: ['green'],
       peg2: ['red'],
       peg3: ['blue']
     },
     targetConfig: {
-      peg1: [],
-      peg2: ['blue, red, green'],
+      peg1: ['red', 'green'],
+      peg2: ['blue'],
       peg3: []
     }
   }
@@ -376,5 +376,76 @@ export const getDifficultyColor = (difficulty: string): string => {
     case 'Zor': return 'text-orange-600 dark:text-orange-400'
     case 'Çok Zor': return 'text-red-600 dark:text-red-400'
     default: return 'text-muted-foreground'
+  }
+}
+
+// Seviye doğrulama fonksiyonu
+export const validateTowerLevel = (level: TowerLevel): { isValid: boolean; errors: string[] } => {
+  const errors: string[] = []
+  
+  // Kapasite kontrolü
+  const pegs = [level.initialConfig.peg1, level.initialConfig.peg2, level.initialConfig.peg3]
+  const targetPegs = [level.targetConfig.peg1, level.targetConfig.peg2, level.targetConfig.peg3]
+  
+  pegs.forEach((peg, index) => {
+    if (peg.length > PEG_CAPACITIES[index]) {
+      errors.push(`Seviye ${level.id}: Peg ${index + 1} kapasitesi aşılmış (${peg.length}/${PEG_CAPACITIES[index]})`)
+    }
+  })
+  
+  targetPegs.forEach((peg, index) => {
+    if (peg.length > PEG_CAPACITIES[index]) {
+      errors.push(`Seviye ${level.id}: Hedef Peg ${index + 1} kapasitesi aşılmış (${peg.length}/${PEG_CAPACITIES[index]})`)
+    }
+  })
+  
+  // Top sayısı kontrolü
+  const initialBeads = [...level.initialConfig.peg1, ...level.initialConfig.peg2, ...level.initialConfig.peg3]
+  const targetBeads = [...level.targetConfig.peg1, ...level.targetConfig.peg2, ...level.targetConfig.peg3]
+  
+  if (initialBeads.length !== targetBeads.length) {
+    errors.push(`Seviye ${level.id}: Başlangıç ve hedef top sayıları farklı`)
+  }
+  
+  // Aynı topların olup olmadığı kontrolü
+  const initialSorted = initialBeads.sort()
+  const targetSorted = targetBeads.sort()
+  if (JSON.stringify(initialSorted) !== JSON.stringify(targetSorted)) {
+    errors.push(`Seviye ${level.id}: Başlangıç ve hedef topları farklı`)
+  }
+  
+  // Aynı konfigürasyon kontrolü
+  if (isConfigEqual(level.initialConfig, level.targetConfig)) {
+    errors.push(`Seviye ${level.id}: Başlangıç ve hedef aynı - hiç hamle gerekmez`)
+  }
+  
+  return {
+    isValid: errors.length === 0,
+    errors
+  }
+}
+
+// Tüm seviyeleri doğrula
+export const validateAllTowerLevels = (): void => {
+  console.log('🔍 LONDRA KULESİ SEVİYE DOĞRULAMA\n')
+  
+  let totalErrors = 0
+  
+  TOWER_LEVELS.forEach(level => {
+    const validation = validateTowerLevel(level)
+    if (!validation.isValid) {
+      console.log(`❌ Seviye ${level.id} (${level.name}):`)
+      validation.errors.forEach(error => console.log(`   - ${error}`))
+      totalErrors += validation.errors.length
+    } else {
+      console.log(`✅ Seviye ${level.id} (${level.name}): OK`)
+    }
+  })
+  
+  console.log(`\n📊 Toplam ${TOWER_LEVELS.length} seviye kontrol edildi`)
+  console.log(`❌ ${totalErrors} hata bulundu`)
+  
+  if (totalErrors === 0) {
+    console.log('🎉 Tüm seviyeler geçerli!')
   }
 }

@@ -281,7 +281,7 @@ export const HANOI_LEVELS: HanoiLevel[] = [
     difficulty: "Legendary",
     initialConfig: { towers: [[7, 5, 3, 1], [6, 4, 2], []] },
     targetConfig: { towers: [[], [], [7, 6, 5, 4, 3, 2, 1]] },
-    minMoves: 31,
+    minMoves: 63,
     description: "7 disklik bu karmaşık dağılım, standart çözümden çok daha farklı bir strateji gerektirir."
   },
   {
@@ -413,45 +413,124 @@ export const solveHanoi = (
   return moves
 }
 
-// Test fonksiyonu - standart olmayan seviyelerin doğru minimum hamle sayılarını kontrol eder
-export const testMinMovesCalculations = () => {
-  console.log("🔍 Standart olmayan seviyeler için minimum hamle sayısı testi:\n");
+// Seviye doğrulama fonksiyonu
+export const validateHanoiLevel = (level: HanoiLevel): { isValid: boolean; errors: string[] } => {
+  const errors: string[] = []
   
-  // Sadece standart olmayan seviyeleri test et
-  const nonStandardLevels = HANOI_LEVELS.filter(level => {
-    // Standart seviyeler: tüm diskler A'da, hedef C'de
+  // Disk sayısı kontrolü
+  const initialTotalDisks = level.initialConfig.towers.flat().length
+  const targetTotalDisks = level.targetConfig.towers.flat().length
+  
+  if (initialTotalDisks !== level.diskCount) {
+    errors.push(`Seviye ${level.id}: Başlangıç disk sayısı uyumsuz (${initialTotalDisks}/${level.diskCount})`)
+  }
+  
+  if (targetTotalDisks !== level.diskCount) {
+    errors.push(`Seviye ${level.id}: Hedef disk sayısı uyumsuz (${targetTotalDisks}/${level.diskCount})`)
+  }
+  
+  // Disk sıralaması kontrolü (büyük diskler alta)
+  level.initialConfig.towers.forEach((tower, towerIndex) => {
+    for (let i = 0; i < tower.length - 1; i++) {
+      if (tower[i] < tower[i + 1]) {
+        errors.push(`Seviye ${level.id}: Başlangıç Kule ${towerIndex + 1} disk sıralaması hatalı`)
+        break
+      }
+    }
+  })
+  
+  level.targetConfig.towers.forEach((tower, towerIndex) => {
+    for (let i = 0; i < tower.length - 1; i++) {
+      if (tower[i] < tower[i + 1]) {
+        errors.push(`Seviye ${level.id}: Hedef Kule ${towerIndex + 1} disk sıralaması hatalı`)
+        break
+      }
+    }
+  })
+  
+  // Disk tipleri kontrolü (aynı diskler olmalı)
+  const initialDisks = level.initialConfig.towers.flat().sort((a, b) => a - b)
+  const targetDisks = level.targetConfig.towers.flat().sort((a, b) => a - b)
+  const expectedDisks = Array.from({length: level.diskCount}, (_, i) => i + 1)
+  
+  if (JSON.stringify(initialDisks) !== JSON.stringify(expectedDisks)) {
+    errors.push(`Seviye ${level.id}: Başlangıç diskler beklenen sırayla uyumsuz`)
+  }
+  
+  if (JSON.stringify(targetDisks) !== JSON.stringify(expectedDisks)) {
+    errors.push(`Seviye ${level.id}: Hedef diskler beklenen sırayla uyumsuz`)
+  }
+  
+  // Minimum hamle sayısı kontrolü
+  const calculatedMinMoves = calculateRealMinMoves(level.initialConfig, level.targetConfig)
+  if (calculatedMinMoves !== level.minMoves && calculatedMinMoves !== -1) {
+    errors.push(`Seviye ${level.id}: Minimum hamle sayısı hatalı (tanımlanan: ${level.minMoves}, hesaplanan: ${calculatedMinMoves})`)
+  }
+  
+  // Çözülebilirlik kontrolü
+  if (calculatedMinMoves === -1) {
+    errors.push(`Seviye ${level.id}: Çözülemeyen seviye!`)
+  }
+  
+  // Aynı konfigürasyon kontrolü
+  if (isConfigEqual(level.initialConfig, level.targetConfig)) {
+    errors.push(`Seviye ${level.id}: Başlangıç ve hedef aynı - hiç hamle gerekmez`)
+  }
+  
+  return {
+    isValid: errors.length === 0,
+    errors
+  }
+}
+
+// Tüm seviyeleri doğrula
+export const validateAllHanoiLevels = (): void => {
+  console.log('🔍 HANOI KULELERİ SEVİYE DOĞRULAMA\n')
+  
+  let totalErrors = 0
+  let standardLevels = 0
+  let nonStandardLevels = 0
+  
+  HANOI_LEVELS.forEach(level => {
+    const validation = validateHanoiLevel(level)
+    
+    // Standart seviye kontrolü
     const isStandard = 
       level.initialConfig.towers[0].length === level.diskCount &&
       level.initialConfig.towers[1].length === 0 &&
       level.initialConfig.towers[2].length === 0 &&
       level.targetConfig.towers[0].length === 0 &&
       level.targetConfig.towers[1].length === 0 &&
-      level.targetConfig.towers[2].length === level.diskCount;
+      level.targetConfig.towers[2].length === level.diskCount
     
-    return !isStandard;
-  });
-
-  nonStandardLevels.forEach(level => {
-    const calculatedMinMoves = calculateRealMinMoves(level.initialConfig, level.targetConfig);
-    const definedMinMoves = level.minMoves;
+    if (isStandard) {
+      standardLevels++
+    } else {
+      nonStandardLevels++
+    }
     
-    const isCorrect = calculatedMinMoves === definedMinMoves;
-    const status = isCorrect ? "✅" : "❌";
-    
-    console.log(`${status} Seviye ${level.id} (${level.name}):`);
-    console.log(`   Tanımlanan: ${definedMinMoves} hamle`);
-    console.log(`   Hesaplanan: ${calculatedMinMoves} hamle`);
-    console.log(`   Disk sayısı: ${level.diskCount}`);
-    console.log(`   Başlangıç: ${JSON.stringify(level.initialConfig.towers)}`);
-    console.log(`   Hedef: ${JSON.stringify(level.targetConfig.towers)}`);
-    console.log("");
-  });
-};
+    if (!validation.isValid) {
+      console.log(`❌ Seviye ${level.id} (${level.name}) ${isStandard ? '[STANDART]' : '[ÖZEL]'}:`)
+      validation.errors.forEach(error => console.log(`   - ${error}`))
+      totalErrors += validation.errors.length
+    } else {
+      console.log(`✅ Seviye ${level.id} (${level.name}) ${isStandard ? '[STANDART]' : '[ÖZEL]'}: OK`)
+    }
+  })
+  
+  console.log(`\n📊 Toplam ${HANOI_LEVELS.length} seviye kontrol edildi`)
+  console.log(`📈 ${standardLevels} standart seviye, ${nonStandardLevels} özel seviye`)
+  console.log(`❌ ${totalErrors} hata bulundu`)
+  
+  if (totalErrors === 0) {
+    console.log('🎉 Tüm seviyeler geçerli!')
+  }
+}
 
 // Test sonuçlarını konsola yazdır (geliştirme amaçlı)
 if (typeof window !== 'undefined' && window.location?.hostname === 'localhost') {
   // Sadece localhost'ta test et
   setTimeout(() => {
-    testMinMovesCalculations();
+    validateAllHanoiLevels();
   }, 1000);
 } 

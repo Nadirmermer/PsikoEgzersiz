@@ -14,6 +14,34 @@ interface MantikDizileriSayfasiProps {
   onBack: () => void
 }
 
+// Clinical Assessment Interface for Analytical Thinking
+interface LogicSequencesClinicalData {
+  analyticalThinking: number
+  patternRecognition: number
+  mathematicalReasoning: number
+  sequentialLogic: number
+  abstractReasoning: number
+  cognitiveFlexibility: number
+  overallCognitive: number
+  // Pattern-level performance
+  patternPerformance: {
+    [key: string]: {
+      attempts: number
+      correctAnswers: number
+      averageResponseTime: number
+      accuracy: number
+      difficultyLevel: number
+    }
+  }
+  // Clinical insights
+  clinicalInsights: string[]
+  cognitiveProfile: {
+    recommendations: string[]
+    strengths: string[]
+    improvementAreas: string[]
+  }
+}
+
 const MantikDizileriSayfasi: React.FC<MantikDizileriSayfasiProps> = ({ onBack }) => {
   const TOTAL_QUESTIONS = 25
   const FEEDBACK_DURATION = 2000
@@ -36,10 +64,160 @@ const MantikDizileriSayfasi: React.FC<MantikDizileriSayfasiProps> = ({ onBack })
     logicGame.initializeGame()
   }, [])
 
-  // Handle game completion
+  // Clinical assessment calculation
+  const calculateClinicalAssessment = React.useCallback((
+    finalStats: any
+  ): LogicSequencesClinicalData => {
+    const { gameQuestions, userAnswers, responseTimes, correctCount, questionNumber } = finalStats
+    
+    // Calculate pattern-based performance
+    const patternPerformance: LogicSequencesClinicalData['patternPerformance'] = {}
+    
+    gameQuestions.forEach((question: any, index: number) => {
+      const pattern = question.pattern
+      const isCorrect = userAnswers[index] === question.answer
+      const responseTime = responseTimes[index] || 0
+      
+      if (!patternPerformance[pattern]) {
+        patternPerformance[pattern] = {
+          attempts: 0,
+          correctAnswers: 0,
+          averageResponseTime: 0,
+          accuracy: 0,
+          difficultyLevel: question.level
+        }
+      }
+      
+      patternPerformance[pattern].attempts++
+      if (isCorrect) patternPerformance[pattern].correctAnswers++
+      patternPerformance[pattern].averageResponseTime += responseTime
+    })
+    
+    // Finalize pattern performance calculations
+    Object.keys(patternPerformance).forEach(pattern => {
+      const perf = patternPerformance[pattern]
+      perf.accuracy = perf.attempts > 0 ? (perf.correctAnswers / perf.attempts) * 100 : 0
+      perf.averageResponseTime = perf.attempts > 0 ? perf.averageResponseTime / perf.attempts : 0
+    })
+    
+    // Calculate cognitive metrics
+    const overallAccuracy = questionNumber > 0 ? (correctCount / questionNumber) * 100 : 0
+    const averageResponseTime = responseTimes.length > 0 ? responseTimes.reduce((a: number, b: number) => a + b, 0) / responseTimes.length : 0
+    
+    // Analytical Thinking - based on accuracy across different pattern types
+    const analyticalThinking = Math.min(100, 
+      overallAccuracy + 
+      (Object.keys(patternPerformance).length * 5) + // Bonus for handling different patterns
+      (averageResponseTime < 5000 ? 10 : 0) // Bonus for quick thinking
+    )
+    
+    // Pattern Recognition - how well they handle recurring patterns
+    const patternAccuracies = Object.values(patternPerformance).map(p => p.accuracy)
+    const patternRecognition = patternAccuracies.length > 0 ? 
+      Math.round(patternAccuracies.reduce((a, b) => a + b, 0) / patternAccuracies.length) : 0
+    
+    // Mathematical Reasoning - performance on arithmetic and geometric patterns
+    const mathPatterns = ['Aritmetik', 'Geometrik', 'Kare Sayılar']
+    const mathPerformances = Object.entries(patternPerformance)
+      .filter(([pattern]) => mathPatterns.some(mp => pattern.includes(mp)))
+      .map(([, perf]) => perf.accuracy)
+    const mathematicalReasoning = mathPerformances.length > 0 ?
+      Math.round(mathPerformances.reduce((a, b) => a + b, 0) / mathPerformances.length) : 0
+    
+    // Sequential Logic - ability to understand step-by-step patterns
+    const sequentialLogic = Math.min(100,
+      overallAccuracy + 
+      (averageResponseTime < 8000 ? 15 : averageResponseTime < 15000 ? 5 : -5)
+    )
+    
+    // Abstract Reasoning - performance on complex patterns like Fibonacci
+    const abstractPatterns = ['Fibonacci', 'Kare Sayılar']
+    const abstractPerformances = Object.entries(patternPerformance)
+      .filter(([pattern]) => abstractPatterns.some(ap => pattern.includes(ap)))
+      .map(([, perf]) => perf.accuracy)
+    const abstractReasoning = abstractPerformances.length > 0 ?
+      Math.round(abstractPerformances.reduce((a, b) => a + b, 0) / abstractPerformances.length) : 
+      Math.max(50, overallAccuracy)
+    
+    // Cognitive Flexibility - how well they adapt to different pattern types
+    const patternTypeCount = Object.keys(patternPerformance).length
+    const cognitiveFlexibility = Math.min(100,
+      (patternTypeCount * 20) + // More patterns = better flexibility
+      (overallAccuracy * 0.5) +
+      (averageResponseTime < 10000 ? 20 : 0)
+    )
+    
+    // Overall Cognitive Score (weighted)
+    const overallCognitive = Math.round(
+      (analyticalThinking * 0.25) +
+      (patternRecognition * 0.25) +
+      (mathematicalReasoning * 0.2) +
+      (sequentialLogic * 0.15) +
+      (abstractReasoning * 0.1) +
+      (cognitiveFlexibility * 0.05)
+    )
+    
+    // Generate clinical insights
+    const insights: string[] = []
+    if (analyticalThinking >= 85) insights.push("Excellent analytical and logical thinking abilities")
+    if (patternRecognition >= 80) insights.push("Strong pattern recognition and identification skills")
+    if (mathematicalReasoning >= 85) insights.push("Superior mathematical reasoning capabilities")
+    if (sequentialLogic >= 80) insights.push("Effective sequential and step-by-step thinking")
+    if (abstractReasoning >= 75) insights.push("Good abstract reasoning and conceptual thinking")
+    if (cognitiveFlexibility >= 80) insights.push("Excellent cognitive flexibility and adaptability")
+    if (overallAccuracy >= 90) insights.push("Demonstrates exceptional logical problem-solving")
+    if (averageResponseTime < 5000) insights.push("Quick analytical processing and decision making")
+    
+    return {
+      analyticalThinking,
+      patternRecognition,
+      mathematicalReasoning,
+      sequentialLogic,
+      abstractReasoning,
+      cognitiveFlexibility,
+      overallCognitive,
+      patternPerformance,
+      clinicalInsights: insights,
+      cognitiveProfile: {
+        recommendations: generateRecommendations(overallCognitive, analyticalThinking),
+        strengths: generateStrengths(patternRecognition, mathematicalReasoning, abstractReasoning),
+        improvementAreas: generateImprovementAreas(sequentialLogic, cognitiveFlexibility, analyticalThinking)
+      }
+    }
+  }, [])
+
+  // Helper functions for clinical assessment
+  const generateRecommendations = (cognitive: number, analytical: number): string[] => {
+    const recommendations: string[] = []
+    if (cognitive < 70) recommendations.push("Practice with simpler logical reasoning exercises")
+    if (analytical < 80) recommendations.push("Focus on step-by-step problem analysis")
+    if (cognitive >= 90) recommendations.push("Challenge with advanced mathematical sequences")
+    return recommendations
+  }
+
+  const generateStrengths = (pattern: number, math: number, abstract: number): string[] => {
+    const strengths: string[] = []
+    if (pattern >= 80) strengths.push("Pattern recognition")
+    if (math >= 80) strengths.push("Mathematical reasoning")
+    if (abstract >= 80) strengths.push("Abstract thinking")
+    return strengths
+  }
+
+  const generateImprovementAreas = (sequential: number, flexibility: number, analytical: number): string[] => {
+    const areas: string[] = []
+    if (sequential < 70) areas.push("Sequential logic")
+    if (flexibility < 70) areas.push("Cognitive flexibility")
+    if (analytical < 70) areas.push("Analytical thinking")
+    return areas
+  }
+
+  // Handle game completion with clinical assessment
   useEffect(() => {
     if (logicGame.isGameCompleted && !universalGame.gameState.isCompleted) {
       const finalStats = logicGame.getFinalStats()
+      
+      // Calculate clinical assessment
+      const clinicalAssessment = calculateClinicalAssessment(finalStats)
       
       const result: GameResult = {
         exerciseName: 'Mantık Dizileri',
@@ -60,14 +238,24 @@ const MantikDizileriSayfasi: React.FC<MantikDizileriSayfasiProps> = ({ onBack })
             questions: finalStats.gameQuestions,
             user_answers: finalStats.userAnswers,
             response_times: finalStats.responseTimes
-          }
+          },
+          // Clinical data
+          clinicalData: clinicalAssessment
         },
         timestamp: new Date().toISOString()
       }
       
+      console.log('🧠 Logic Sequences Clinical Assessment:', {
+        analyticalThinking: clinicalAssessment.analyticalThinking,
+        patternRecognition: clinicalAssessment.patternRecognition,
+        mathematicalReasoning: clinicalAssessment.mathematicalReasoning,
+        overallCognitive: clinicalAssessment.overallCognitive,
+        clinicalInsights: clinicalAssessment.clinicalInsights
+      })
+      
       universalGame.gameActions.onComplete(result)
     }
-  }, [logicGame.isGameCompleted, universalGame.gameState.isCompleted])
+  }, [logicGame.isGameCompleted, universalGame.gameState.isCompleted, calculateClinicalAssessment])
 
   // Update game stats
   useEffect(() => {
@@ -165,7 +353,7 @@ const MantikDizileriSayfasi: React.FC<MantikDizileriSayfasiProps> = ({ onBack })
     return null
   }
 
-  const answerOptions = logicGame.generateAnswerOptions()
+  const answerOptions = logicGame.getAnswerOptions()
     
     return (
     <UniversalGameEngine
@@ -216,44 +404,46 @@ const MantikDizileriSayfasi: React.FC<MantikDizileriSayfasiProps> = ({ onBack })
           <Card className={uiStyles.gameCard.primary}>
             <CardContent className={`${uiStyles.cardContent.standard} text-center`}>
               
-              {/* Level Badge */}
-              <div className="mb-4">
-                <Badge variant="secondary" className="text-sm px-3 py-1 bg-primary/10 text-primary border-primary/20">
-                  <Brain className="w-4 h-4 mr-1" />
-                  Seviye {logicGame.currentQuestion.level} - {logicGame.currentQuestion.pattern}
+              {/* Level Badge - Enhanced for tablet */}
+              <div className="mb-6">
+                <Badge variant="secondary" className="text-sm sm:text-base lg:text-lg px-3 py-2 sm:px-4 sm:py-2 lg:px-6 lg:py-3 bg-amber-50/80 dark:bg-amber-950/30 text-amber-700 dark:text-amber-300 border-amber-200/60 dark:border-amber-700/60 rounded-xl shadow-sm">
+                  <Brain className="w-4 h-4 sm:w-5 sm:h-5 lg:w-6 lg:h-6 mr-2" />
+                  <span className="font-semibold">
+                    Level {logicGame.currentQuestion.level} • {logicGame.currentQuestion.pattern}
+                  </span>
                 </Badge>
           </div>
 
-              {/* Sequence Display */}
+              {/* Sequence Display - Tablet Optimized */}
               <div className="mb-6">
-                <h3 className="text-lg sm:text-xl font-semibold mb-4 text-gray-700 dark:text-gray-300">
+                <h3 className="text-lg sm:text-xl lg:text-2xl font-semibold mb-4 text-gray-700 dark:text-gray-300">
                   Bu dizideki eksik sayıyı bulun:
                 </h3>
                 
-                <div className="flex justify-center items-center gap-3 sm:gap-4 mb-4 flex-wrap">
+                <div className="flex justify-center items-center gap-2 sm:gap-3 lg:gap-4 mb-4 flex-wrap max-w-4xl mx-auto">
                   {logicGame.currentQuestion.sequence.map((num, index) => (
-                    <div key={index} className="w-16 h-16 sm:w-20 sm:h-20 bg-white/60 dark:bg-gray-800/60 backdrop-blur-sm border-2 border-white/30 dark:border-gray-700/30 rounded-xl flex items-center justify-center">
-                      <span className="text-xl sm:text-2xl font-bold text-gray-800 dark:text-gray-200">
+                    <div key={index} className="w-14 h-14 sm:w-16 sm:h-16 lg:w-20 lg:h-20 xl:w-24 xl:h-24 bg-white/70 dark:bg-gray-800/70 backdrop-blur-sm border-2 border-white/40 dark:border-gray-700/40 rounded-xl flex items-center justify-center shadow-sm hover:shadow-md transition-all duration-200">
+                      <span className="text-lg sm:text-xl lg:text-2xl xl:text-3xl font-bold text-gray-800 dark:text-gray-200">
                         {num}
                       </span>
                     </div>
                   ))}
                   
-                  {/* Question mark */}
-                  <div className="w-16 h-16 sm:w-20 sm:h-20 bg-gradient-to-br from-primary/80 to-primary backdrop-blur-sm border-2 border-primary/50 rounded-xl flex items-center justify-center animate-pulse">
-                    <span className="text-xl sm:text-2xl font-bold text-white">
+                  {/* Question mark - Enhanced tablet design */}
+                  <div className="w-14 h-14 sm:w-16 sm:h-16 lg:w-20 lg:h-20 xl:w-24 xl:h-24 bg-gradient-to-br from-amber-500/90 to-orange-500 backdrop-blur-sm border-2 border-amber-400/60 rounded-xl flex items-center justify-center animate-pulse shadow-lg">
+                    <span className="text-lg sm:text-xl lg:text-2xl xl:text-3xl font-bold text-white drop-shadow-sm">
                     ?
                     </span>
                   </div>
                 </div>
 
-                <p className="text-sm sm:text-base text-gray-600 dark:text-gray-400">
-                  Dizideki mantığı bulun ve eksik sayıyı seçin
+                <p className="text-sm sm:text-base lg:text-lg text-gray-600 dark:text-gray-400 max-w-2xl mx-auto text-center">
+                  Pattern'i analiz edin ve doğru sayıyı bulun
                 </p>
               </div>
 
-              {/* Answer Options */}
-              <div className="grid grid-cols-2 gap-3 sm:gap-4 max-w-md mx-auto">
+              {/* Answer Options - Tablet Optimized Grid */}
+              <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 lg:gap-6 max-w-2xl lg:max-w-4xl mx-auto">
                 {answerOptions.map((option, index) => (
                     <Button
                     key={index}
@@ -263,18 +453,19 @@ const MantikDizileriSayfasi: React.FC<MantikDizileriSayfasiProps> = ({ onBack })
                     onTouchStart={(e) => e.preventDefault()} // Prevent double-tap zoom
                     disabled={logicGame.showFeedback || !logicGame.isAnswering}
                     className={`
-                      h-14 sm:h-16 text-lg sm:text-xl font-bold border-2 transition-all duration-300 relative
-                      touch-manipulation select-none focus:outline-none focus:ring-4 focus:ring-primary/50
+                      h-14 sm:h-16 lg:h-20 xl:h-24 text-lg sm:text-xl lg:text-2xl xl:text-3xl font-bold border-2 transition-all duration-300 relative
+                      touch-manipulation select-none focus:outline-none focus:ring-4 focus:ring-amber-500/50
                       active:scale-95 tablet:hover:scale-105 min-h-[44px] min-w-[44px]
-                      tablet:min-h-[64px] tablet:min-w-[64px]
+                      tablet:min-h-[64px] tablet:min-w-[64px] lg:min-h-[80px] lg:min-w-[80px]
+                      rounded-xl shadow-sm hover:shadow-lg
                       ${getButtonStyle(option)}
                       ${logicGame.showFeedback || !logicGame.isAnswering ? 'cursor-default' : 'cursor-pointer hover:scale-105'}
                     `}
                     style={{ touchAction: 'manipulation' }}
                   >
-                    <span>{option}</span>
+                    <span className="font-extrabold">{option}</span>
                     {getButtonIcon(option) && (
-                      <div className="absolute -top-2 -right-2">
+                      <div className="absolute -top-2 -right-2 sm:-top-3 sm:-right-3">
                         {getButtonIcon(option)}
                       </div>
                     )}

@@ -14,7 +14,6 @@ interface EgzersizlerSayfasiProps {
   onTowerOfLondonStart: () => void
   onNumberSequenceStart: () => void
   onColorSequenceStart: () => void
-  onWordCirclePuzzleStart: () => void
   onLogicSequencesStart: () => void
   onHanoiTowersStart: () => void
 }
@@ -26,7 +25,6 @@ const EgzersizlerSayfasi: React.FC<EgzersizlerSayfasiProps> = ({
   onTowerOfLondonStart,
   onNumberSequenceStart,
   onColorSequenceStart,
-  onWordCirclePuzzleStart,
   onLogicSequencesStart,
   onHanoiTowersStart
 }) => {
@@ -101,7 +99,7 @@ const EgzersizlerSayfasi: React.FC<EgzersizlerSayfasiProps> = ({
     {
       id: 'tower-of-london',
       title: 'Londra Kulesi',
-      description: 'Planlama ve strateji geliştirin',
+      description: 'Planlama ve executive function geliştirin',
       motto: 'Planla ve çöz',
       icon: Layers,
       iconColor: 'text-purple-600 dark:text-purple-400',
@@ -114,8 +112,8 @@ const EgzersizlerSayfasi: React.FC<EgzersizlerSayfasiProps> = ({
         playSound('button-click')
         onTowerOfLondonStart()
       },
-      currentProgress: '15 Artan Seviye',
-      highlights: ['Strateji', 'Problem Çözme']
+      currentProgress: '30 Artan Seviye',
+      highlights: ['Executive Function', 'Clinical Assessment']
     },
     {
       id: 'number-sequence',
@@ -155,30 +153,12 @@ const EgzersizlerSayfasi: React.FC<EgzersizlerSayfasiProps> = ({
       currentProgress: 'Sonsuz Seviye',
       highlights: ['Görsel Hafıza', 'Simon Oyunu']
     },
-    {
-      id: 'word-circle-puzzle',
-      title: 'Kelime Çemberi',
-      description: 'Harfleri birleştirerek kelime bulun',
-      motto: 'Çember kuralları',
-      icon: BookOpen,
-      iconColor: 'text-indigo-600 dark:text-indigo-400',
-      bgGradient: 'bg-gradient-to-br from-indigo-50 via-blue-50 to-slate-50 dark:from-indigo-950/40 dark:via-blue-900/30 dark:to-slate-900/40',
-      bgPattern: 'radial-gradient(circle at 50% 30%, rgba(99, 102, 241, 0.15) 0%, transparent 50%), linear-gradient(165deg, rgba(79, 70, 229, 0.1) 0%, transparent 70%)',
-      borderColor: 'border-indigo-200/60 dark:border-indigo-800/60',
-      accentColor: 'bg-indigo-500',
-      available: true,
-      onStart: () => {
-        playSound('button-click')
-        onWordCirclePuzzleStart()
-      },
-      currentProgress: '7 Seviye',
-      highlights: ['Kelime Oyunu', 'Bonus Sistem']
-    },
+
     {
       id: 'logic-sequences',
       title: 'Mantık Dizileri',
-      description: 'Sayısal örüntüleri keşfedin',
-      motto: 'Mantık kuralları',
+      description: 'Analytical thinking assessment',
+      motto: 'Pattern recognition master',
       icon: Calculator,
       iconColor: 'text-amber-600 dark:text-amber-400',
       bgGradient: 'bg-gradient-to-br from-amber-50 via-yellow-50 to-lime-50 dark:from-amber-950/40 dark:via-yellow-900/30 dark:to-lime-900/40',
@@ -190,8 +170,8 @@ const EgzersizlerSayfasi: React.FC<EgzersizlerSayfasiProps> = ({
         playSound('button-click')
         onLogicSequencesStart()
       },
-      currentProgress: 'Sonsuz Soru',
-      highlights: ['Matematik', 'Örüntü Tanıma']
+      currentProgress: '25 Soru • 8 Level',
+      highlights: ['12 Pattern Türü', 'Clinical Assessment']
     },
     {
       id: 'hanoi-towers',

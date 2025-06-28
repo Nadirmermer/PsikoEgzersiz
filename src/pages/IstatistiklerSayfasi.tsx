@@ -9,7 +9,7 @@ import { useAuth } from '../contexts/AuthContext'
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar, Legend, AreaChart, Area, PieChart, Pie, Cell, ReferenceLine } from 'recharts'
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import { BarChart3, TrendingUp, Clock, Trophy, Target, Brain, User, Trash2, Download, Zap, Award, Star, Layers, Filter, Calendar, Gauge, CheckCircle, XCircle, ArrowRightLeft, Lightbulb, Palette } from 'lucide-react'
+import { BarChart3, TrendingUp, Clock, Trophy, Target, Brain, User, Trash2, Download, Zap, Award, Star, Layers, Filter, Calendar, Gauge, CheckCircle, XCircle, ArrowRightLeft, Lightbulb, Palette, Building, Calculator, Book } from 'lucide-react'
 import { useAudio } from '../hooks/useAudio'
 
 const IstatistiklerSayfasi: React.FC = () => {
@@ -57,11 +57,12 @@ const IstatistiklerSayfasi: React.FC = () => {
   // Exercise type specific results
   const memoryGameResults = filteredResults.filter(result => result.exerciseName === 'Hafıza Oyunu')
   const towerOfLondonResults = filteredResults.filter(result => result.exerciseName === 'Londra Kulesi Testi')
+  const hanoiTowersResults = filteredResults.filter(result => result.exerciseName === 'Hanoi Kuleleri')
   const imageWordResults = filteredResults.filter(result => result.exerciseName === 'Resim-Kelime Eşleştirme')
   const wordImageResults = filteredResults.filter(result => result.exerciseName === 'Kelime-Resim Eşleştirme')
   const numberSequenceResults = filteredResults.filter(result => result.exerciseName === 'Sayı Dizisi Takibi')
   const colorSequenceResults = filteredResults.filter(result => result.exerciseName === 'Renk Dizisi Takibi')
-  const wordCircleResults = filteredResults.filter(result => result.exerciseName === 'Kelime Çemberi Bulmacası')
+
   const logicSequenceResults = filteredResults.filter(result => result.exerciseName === 'Mantık Dizileri')
 
   const totalExercises = filteredResults.length
@@ -116,12 +117,13 @@ const IstatistiklerSayfasi: React.FC = () => {
   const exerciseDistribution = [
     { name: 'Hafıza Oyunu', count: memoryGameResults.length, color: '#3B82F6' },
     { name: 'Londra Kulesi', count: towerOfLondonResults.length, color: '#8B5CF6' },
+    { name: 'Hanoi Kuleleri', count: hanoiTowersResults.length, color: '#F59E0B' },
     { name: 'Resim-Kelime', count: imageWordResults.length, color: '#10B981' },
-    { name: 'Kelime-Resim', count: wordImageResults.length, color: '#F59E0B' },
-    { name: 'Sayı Dizisi', count: numberSequenceResults.length, color: '#EF4444' },
-    { name: 'Renk Dizisi', count: colorSequenceResults.length, color: '#06B6D4' },
-    { name: 'Kelime Çemberi', count: wordCircleResults.length, color: '#84CC16' },
-    { name: 'Mantık Dizileri', count: logicSequenceResults.length, color: '#F97316' }
+    { name: 'Kelime-Resim', count: wordImageResults.length, color: '#EF4444' },
+    { name: 'Sayı Dizisi', count: numberSequenceResults.length, color: '#06B6D4' },
+    { name: 'Renk Dizisi', count: colorSequenceResults.length, color: '#84CC16' },
+
+    { name: 'Mantık Dizileri', count: logicSequenceResults.length, color: '#EC4899' }
   ].filter(item => item.count > 0)
 
   // Memory Game specific analytics - 🧠 CLINICAL ENHANCEMENT
@@ -194,31 +196,276 @@ const IstatistiklerSayfasi: React.FC = () => {
     }))
   }
 
-  // Tower of London specific analytics
-  const prepareTowerAnalytics = () => {
+  // Tower of London specific analytics - 🧠 EXECUTIVE FUNCTION CLINICAL ENHANCEMENT
+  const prepareTowerOfLondonAnalytics = () => {
     if (towerOfLondonResults.length === 0) return null
 
-    const levelPerformance = towerOfLondonResults.reduce((acc, result) => {
-      const level = result.details?.level_identifier || 'Bilinmiyor'
-      if (!acc[level]) {
-        acc[level] = { scores: [], times: [], efficiency: [], optimalCount: 0, totalCount: 0 }
+    const analytics = towerOfLondonResults.reduce((acc, result) => {
+      acc.games.push(result)
+      acc.scores.push(result.score)
+      acc.efficiencies.push(result.details?.efficiency_percentage || 0)
+      acc.durations.push(result.duration || 0)
+      acc.levels.push(result.details?.level_number || 1)
+      
+      // 🧠 Executive Function clinical data processing
+      if (result.details?.clinicalData) {
+        const clinical = result.details.clinicalData
+        acc.clinicalScores.push(clinical.executiveFunctionScore || 0)
+        acc.planningScores.push(clinical.planningAbility || 0)
+        acc.workingMemoryScores.push(clinical.workingMemoryLoad || 0)
+        acc.inhibitoryScores.push(clinical.inhibitoryControl || 0)
+        acc.flexibilityScores.push(clinical.cognitiveFlexibility || 0)
+        acc.planningTimes.push(clinical.planningTimeSeconds || 0)
+        acc.optimalSolutions.push(clinical.isOptimalSolution ? 1 : 0)
+        
+        // Level-based performance tracking
+        const levelKey = `level_${clinical.levelCompleted}`
+        if (!acc.levelPerformance[levelKey]) {
+          acc.levelPerformance[levelKey] = {
+            attempts: 0,
+            optimalSolutions: 0,
+            averageMoves: [],
+            averagePlanningTime: [],
+            efficiencies: []
+          }
+        }
+        acc.levelPerformance[levelKey].attempts++
+        if (clinical.isOptimalSolution) acc.levelPerformance[levelKey].optimalSolutions++
+        acc.levelPerformance[levelKey].averageMoves.push(clinical.totalMoves)
+        acc.levelPerformance[levelKey].averagePlanningTime.push(clinical.planningTimeSeconds)
+        acc.levelPerformance[levelKey].efficiencies.push(clinical.efficiencyPercentage)
+        
+        // Executive function insights based on performance
+        if (clinical.planningAbility >= 80) {
+          acc.clinicalInsights.push("Excellent planning and foresight abilities")
+        }
+        if (clinical.workingMemoryLoad >= 85) {
+          acc.clinicalInsights.push("Strong working memory capacity")
+        }
+        if (clinical.inhibitoryControl >= 80) {
+          acc.clinicalInsights.push("Good impulse control and response inhibition")
+        }
+        if (clinical.cognitiveFlexibility >= 75) {
+          acc.clinicalInsights.push("Adaptive problem-solving approach")
+        }
+        if (clinical.isOptimalSolution) {
+          acc.clinicalInsights.push("Demonstrates efficient executive planning")
+        }
       }
-      acc[level].scores.push(result.score)
-      acc[level].times.push(result.duration)
-      acc[level].efficiency.push(result.details?.efficiency_percentage || 0)
-      if (result.details?.completed_optimally) acc[level].optimalCount++
-      acc[level].totalCount++
+      
       return acc
-    }, {} as Record<string, { scores: number[], times: number[], efficiency: number[], optimalCount: number, totalCount: number }>)
+    }, {
+      games: [] as ExerciseResult[],
+      scores: [] as number[],
+      efficiencies: [] as number[],
+      durations: [] as number[],
+      levels: [] as number[],
+      // 🧠 Executive Function clinical metrics
+      clinicalScores: [] as number[],
+      planningScores: [] as number[],
+      workingMemoryScores: [] as number[],
+      inhibitoryScores: [] as number[],
+      flexibilityScores: [] as number[],
+      planningTimes: [] as number[],
+      optimalSolutions: [] as number[],
+      levelPerformance: {} as Record<string, {
+        attempts: number,
+        optimalSolutions: number,
+        averageMoves: number[],
+        averagePlanningTime: number[],
+        efficiencies: number[]
+      }>,
+      clinicalInsights: [] as string[]
+    })
 
-    return Object.entries(levelPerformance).map(([level, data]) => ({
-      level,
-      avgScore: Math.round(data.scores.reduce((a, b) => a + b, 0) / data.scores.length),
-      avgTime: Math.round(data.times.reduce((a, b) => a + b, 0) / data.times.length),
-      avgEfficiency: Math.round(data.efficiency.reduce((a, b) => a + b, 0) / data.efficiency.length),
-      optimalRate: Math.round((data.optimalCount / data.totalCount) * 100),
-      playCount: data.scores.length
-    }))
+    // Calculate comprehensive statistics
+    const avgScore = analytics.scores.length > 0 ? Math.round(analytics.scores.reduce((a, b) => a + b, 0) / analytics.scores.length) : 0
+    const avgEfficiency = analytics.efficiencies.length > 0 ? Math.round(analytics.efficiencies.reduce((a, b) => a + b, 0) / analytics.efficiencies.length) : 0
+    const avgDuration = analytics.durations.length > 0 ? Math.round(analytics.durations.reduce((a, b) => a + b, 0) / analytics.durations.length) : 0
+    const maxLevel = analytics.levels.length > 0 ? Math.max(...analytics.levels) : 0
+    
+    // 🧠 Executive Function clinical analytics
+    const avgExecutiveFunctionScore = analytics.clinicalScores.length > 0 ? Math.round(analytics.clinicalScores.reduce((a, b) => a + b, 0) / analytics.clinicalScores.length) : null
+    const avgPlanningScore = analytics.planningScores.length > 0 ? Math.round(analytics.planningScores.reduce((a, b) => a + b, 0) / analytics.planningScores.length) : null
+    const avgWorkingMemoryScore = analytics.workingMemoryScores.length > 0 ? Math.round(analytics.workingMemoryScores.reduce((a, b) => a + b, 0) / analytics.workingMemoryScores.length) : null
+    const avgInhibitoryScore = analytics.inhibitoryScores.length > 0 ? Math.round(analytics.inhibitoryScores.reduce((a, b) => a + b, 0) / analytics.inhibitoryScores.length) : null
+    const avgFlexibilityScore = analytics.flexibilityScores.length > 0 ? Math.round(analytics.flexibilityScores.reduce((a, b) => a + b, 0) / analytics.flexibilityScores.length) : null
+    const avgPlanningTime = analytics.planningTimes.length > 0 ? Math.round(analytics.planningTimes.reduce((a, b) => a + b, 0) / analytics.planningTimes.length) : null
+    const optimalSolutionRate = analytics.optimalSolutions.length > 0 ? Math.round((analytics.optimalSolutions.reduce((a, b) => a + b, 0) / analytics.optimalSolutions.length) * 100) : 0
+    
+    // Level progression analysis
+    const levelStats = Object.entries(analytics.levelPerformance).map(([level, perf]) => ({
+      level: parseInt(level.replace('level_', '')),
+      attempts: perf.attempts,
+      optimalRate: Math.round((perf.optimalSolutions / perf.attempts) * 100),
+      avgMoves: perf.averageMoves.length > 0 ? Math.round(perf.averageMoves.reduce((a, b) => a + b, 0) / perf.averageMoves.length) : 0,
+      avgPlanningTime: perf.averagePlanningTime.length > 0 ? Math.round(perf.averagePlanningTime.reduce((a, b) => a + b, 0) / perf.averagePlanningTime.length) : 0,
+      avgEfficiency: perf.efficiencies.length > 0 ? Math.round(perf.efficiencies.reduce((a, b) => a + b, 0) / perf.efficiencies.length) : 0
+    })).sort((a, b) => a.level - b.level)
+    
+    return {
+      totalGames: analytics.games.length,
+      avgScore,
+      avgEfficiency,
+      avgDuration,
+      maxLevel,
+      // 🧠 Executive Function clinical metrics
+      avgExecutiveFunctionScore,
+      avgPlanningScore,
+      avgWorkingMemoryScore,
+      avgInhibitoryScore,
+      avgFlexibilityScore,
+      avgPlanningTime,
+      optimalSolutionRate,
+      levelStats,
+      topClinicalInsights: [...new Set(analytics.clinicalInsights)].slice(0, 5), // Unique insights, top 5
+      // Chart data for executive function performance
+      executiveFunctionChartData: levelStats.slice(0, 10).map((stat, index) => ({
+        name: `L${stat.level}`,
+        planning: Math.min(100, stat.avgPlanningTime * 2), // Scale for chart
+        efficiency: stat.avgEfficiency,
+        optimalRate: stat.optimalRate,
+        fill: `hsl(${240 + (index * 15)}, 70%, 50%)` // Purple gradient
+      }))
+    }
+  }
+
+  // Hanoi Towers specific analytics - 🧠 MATHEMATICAL THINKING CLINICAL ENHANCEMENT
+  const prepareHanoiTowersAnalytics = () => {
+    if (hanoiTowersResults.length === 0) return null
+
+    const analytics = hanoiTowersResults.reduce((acc, result) => {
+      acc.games.push(result)
+      acc.scores.push(result.score)
+      acc.efficiencies.push(result.details?.efficiency_percentage || 0)
+      acc.durations.push(result.duration || 0)
+      acc.levels.push(result.details?.level_number || 1)
+      
+      // 🧠 Mathematical Thinking clinical data processing
+      if (result.details?.clinicalData) {
+        const clinical = result.details.clinicalData
+        acc.clinicalScores.push(clinical.overallCognitive || 0)
+        acc.mathematicalThinking.push(clinical.mathematicalThinking || 0)
+        acc.recursiveProblemSolving.push(clinical.recursiveProblemSolving || 0)
+        acc.spatialReasoning.push(clinical.spatialReasoning || 0)
+        acc.sequentialPlanning.push(clinical.sequentialPlanning || 0)
+        acc.algorithmicThinking.push(clinical.algorithmicThinking || 0)
+        acc.logicalDeduction.push(clinical.logicalDeduction || 0)
+        
+        // Level-based performance tracking
+        if (clinical.levelPerformance) {
+          Object.entries(clinical.levelPerformance).forEach(([levelKey, perf]: [string, {
+            attempts: number;
+            optimalSolutions: number;
+            efficiency: number;
+            planningTime: number;
+          }]) => {
+            if (!acc.levelPerformance[levelKey]) {
+              acc.levelPerformance[levelKey] = {
+                attempts: 0,
+                optimalSolutions: 0,
+                efficiencies: [],
+                planningTimes: []
+              }
+            }
+            acc.levelPerformance[levelKey].attempts += perf.attempts
+            acc.levelPerformance[levelKey].optimalSolutions += perf.optimalSolutions
+            acc.levelPerformance[levelKey].efficiencies.push(perf.efficiency)
+            acc.levelPerformance[levelKey].planningTimes.push(perf.planningTime)
+          })
+        }
+        
+        // Mathematical thinking insights based on performance
+        if (clinical.mathematicalThinking >= 85) {
+          acc.clinicalInsights.push("Excellent mathematical and recursive reasoning")
+        }
+        if (clinical.recursiveProblemSolving >= 80) {
+          acc.clinicalInsights.push("Strong recursive problem-solving abilities")
+        }
+        if (clinical.spatialReasoning >= 85) {
+          acc.clinicalInsights.push("Superior spatial reasoning and visualization")
+        }
+        if (clinical.algorithmicThinking >= 80) {
+          acc.clinicalInsights.push("Advanced algorithmic thinking patterns")
+        }
+        if (clinical.logicalDeduction >= 85) {
+          acc.clinicalInsights.push("Exceptional logical deduction skills")
+        }
+      }
+      
+      return acc
+    }, {
+      games: [] as ExerciseResult[],
+      scores: [] as number[],
+      efficiencies: [] as number[],
+      durations: [] as number[],
+      levels: [] as number[],
+      // 🧠 Mathematical Thinking clinical metrics
+      clinicalScores: [] as number[],
+      mathematicalThinking: [] as number[],
+      recursiveProblemSolving: [] as number[],
+      spatialReasoning: [] as number[],
+      sequentialPlanning: [] as number[],
+      algorithmicThinking: [] as number[],
+      logicalDeduction: [] as number[],
+      levelPerformance: {} as Record<string, {
+        attempts: number,
+        optimalSolutions: number,
+        efficiencies: number[],
+        planningTimes: number[]
+      }>,
+      clinicalInsights: [] as string[]
+    })
+
+    // Calculate comprehensive statistics
+    const avgScore = analytics.scores.length > 0 ? Math.round(analytics.scores.reduce((a, b) => a + b, 0) / analytics.scores.length) : 0
+    const avgEfficiency = analytics.efficiencies.length > 0 ? Math.round(analytics.efficiencies.reduce((a, b) => a + b, 0) / analytics.efficiencies.length) : 0
+    const avgDuration = analytics.durations.length > 0 ? Math.round(analytics.durations.reduce((a, b) => a + b, 0) / analytics.durations.length) : 0
+    const maxLevel = analytics.levels.length > 0 ? Math.max(...analytics.levels) : 0
+    
+    // 🧠 Mathematical Thinking clinical analytics
+    const avgClinicalScore = analytics.clinicalScores.length > 0 ? Math.round(analytics.clinicalScores.reduce((a, b) => a + b, 0) / analytics.clinicalScores.length) : null
+    const avgMathematicalThinking = analytics.mathematicalThinking.length > 0 ? Math.round(analytics.mathematicalThinking.reduce((a, b) => a + b, 0) / analytics.mathematicalThinking.length) : null
+    const avgRecursiveProblemSolving = analytics.recursiveProblemSolving.length > 0 ? Math.round(analytics.recursiveProblemSolving.reduce((a, b) => a + b, 0) / analytics.recursiveProblemSolving.length) : null
+    const avgSpatialReasoning = analytics.spatialReasoning.length > 0 ? Math.round(analytics.spatialReasoning.reduce((a, b) => a + b, 0) / analytics.spatialReasoning.length) : null
+    const avgSequentialPlanning = analytics.sequentialPlanning.length > 0 ? Math.round(analytics.sequentialPlanning.reduce((a, b) => a + b, 0) / analytics.sequentialPlanning.length) : null
+    const avgAlgorithmicThinking = analytics.algorithmicThinking.length > 0 ? Math.round(analytics.algorithmicThinking.reduce((a, b) => a + b, 0) / analytics.algorithmicThinking.length) : null
+    const avgLogicalDeduction = analytics.logicalDeduction.length > 0 ? Math.round(analytics.logicalDeduction.reduce((a, b) => a + b, 0) / analytics.logicalDeduction.length) : null
+    
+    // Level progression analysis
+    const levelStats = Object.entries(analytics.levelPerformance).map(([level, perf]) => ({
+      level: parseInt(level),
+      attempts: perf.attempts,
+      optimalRate: perf.attempts > 0 ? Math.round((perf.optimalSolutions / perf.attempts) * 100) : 0,
+      avgEfficiency: perf.efficiencies.length > 0 ? Math.round(perf.efficiencies.reduce((a, b) => a + b, 0) / perf.efficiencies.length) : 0,
+      avgPlanningTime: perf.planningTimes.length > 0 ? Math.round(perf.planningTimes.reduce((a, b) => a + b, 0) / perf.planningTimes.length) : 0
+    })).sort((a, b) => a.level - b.level)
+    
+    return {
+      totalGames: analytics.games.length,
+      avgScore,
+      avgEfficiency,
+      avgDuration,
+      maxLevel,
+      // 🧠 Mathematical Thinking clinical metrics
+      avgClinicalScore,
+      avgMathematicalThinking,
+      avgRecursiveProblemSolving,
+      avgSpatialReasoning,
+      avgSequentialPlanning,
+      avgAlgorithmicThinking,
+      avgLogicalDeduction,
+      levelStats,
+      topClinicalInsights: [...new Set(analytics.clinicalInsights)].slice(0, 5), // Unique insights, top 5
+      // Chart data for mathematical thinking performance
+      mathematicalThinkingChartData: levelStats.slice(0, 10).map((stat, index) => ({
+        name: `L${stat.level}`,
+        efficiency: stat.avgEfficiency,
+        optimalRate: stat.optimalRate,
+        planningTime: Math.max(10, Math.min(100, 100 - stat.avgPlanningTime)), // Inverted for chart
+        fill: `hsl(${30 + (index * 15)}, 70%, 50%)` // Orange gradient
+      }))
+    }
   }
 
   // Sequence exercises analytics
@@ -266,7 +513,11 @@ const IstatistiklerSayfasi: React.FC = () => {
         
         // Category performance aggregation
         if (clinical.categoryPerformance) {
-          Object.entries(clinical.categoryPerformance).forEach(([category, perf]: [string, any]) => {
+          Object.entries(clinical.categoryPerformance).forEach(([category, perf]: [string, {
+            accuracy?: number;
+            averageResponseTime?: number;
+            questionsAsked?: number;
+          }]) => {
             if (!acc.categoryPerformance[category]) {
               acc.categoryPerformance[category] = {
                 accuracies: [],
@@ -374,7 +625,11 @@ const IstatistiklerSayfasi: React.FC = () => {
         
         // Category visual performance aggregation
         if (clinical.categoryVisualPerformance) {
-          Object.entries(clinical.categoryVisualPerformance).forEach(([category, perf]: [string, any]) => {
+          Object.entries(clinical.categoryVisualPerformance).forEach(([category, perf]: [string, {
+            semanticToVisualAccuracy?: number;
+            visualRecognitionSpeed?: number;
+            questionsAsked?: number;
+          }]) => {
             if (!acc.categoryVisualPerformance[category]) {
               acc.categoryVisualPerformance[category] = {
                 semanticToVisualAccuracies: [],
@@ -462,7 +717,8 @@ const IstatistiklerSayfasi: React.FC = () => {
   }
 
   const memoryAnalytics = prepareMemoryGameAnalytics()
-  const towerAnalytics = prepareTowerAnalytics()
+  const towerOfLondonAnalytics = prepareTowerOfLondonAnalytics()
+  const hanoiTowersAnalytics = prepareHanoiTowersAnalytics()
   // Number Sequence specific analytics - 🧠 WORKING MEMORY CLINICAL ENHANCEMENT  
   const prepareNumberSequenceAnalytics = () => {
     if (numberSequenceResults.length === 0) return null
@@ -832,7 +1088,7 @@ const IstatistiklerSayfasi: React.FC = () => {
                 <SelectItem value="Kelime-Resim Eşleştirme">Kelime-Resim Eşleştirme</SelectItem>
                 <SelectItem value="Sayı Dizisi Takibi">Sayı Dizisi Takibi</SelectItem>
                 <SelectItem value="Renk Dizisi Takibi">Renk Dizisi Takibi</SelectItem>
-                <SelectItem value="Kelime Çemberi Bulmacası">Kelime Çemberi Bulmacası</SelectItem>
+
                 <SelectItem value="Mantık Dizileri">Mantık Dizileri</SelectItem>
                 <SelectItem value="Hanoi Kuleleri">Hanoi Kuleleri</SelectItem>
               </SelectContent>
@@ -1071,6 +1327,7 @@ const IstatistiklerSayfasi: React.FC = () => {
                         <div className="p-2 bg-primary/10 rounded-lg flex-shrink-0">
                           {result.exerciseName === 'Hafıza Oyunu' && <Brain className="w-4 h-4 sm:w-5 sm:h-5 text-blue-600" />}
                           {result.exerciseName === 'Londra Kulesi Testi' && <Layers className="w-4 h-4 sm:w-5 sm:h-5 text-purple-600" />}
+                        {result.exerciseName === 'Hanoi Kuleleri' && <Building className="w-4 h-4 sm:w-5 sm:h-5 text-orange-600" />}
                           {typeof result.exerciseName === 'string' && result.exerciseName.includes('Eşleştirme') && <Target className="w-4 h-4 sm:w-5 sm:h-5 text-emerald-600" />}
                           {typeof result.exerciseName === 'string' && result.exerciseName.includes('Dizisi') && <TrendingUp className="w-4 h-4 sm:w-5 sm:h-5 text-orange-600" />}
                           {typeof result.exerciseName === 'string' && result.exerciseName.includes('Çemberi') && <Award className="w-4 h-4 sm:w-5 sm:h-5 text-lime-600" />}
@@ -1080,7 +1337,7 @@ const IstatistiklerSayfasi: React.FC = () => {
                           <div className="font-semibold text-sm sm:text-base truncate">
                             {typeof result.exerciseName === 'string' 
                               ? result.exerciseName 
-                              : (result.exerciseName as any)?.exerciseName || 'Bilinmeyen Egzersiz'
+                              : (result.exerciseName as { exerciseName?: string })?.exerciseName || 'Bilinmeyen Egzersiz'
                             }
                           </div>
                           <div className="text-xs sm:text-sm text-muted-foreground flex items-center gap-2 sm:gap-3">
@@ -1176,7 +1433,7 @@ const IstatistiklerSayfasi: React.FC = () => {
             )}
 
             {/* Tower of London Specific Analytics */}
-            {towerAnalytics && (selectedExerciseFilter === 'all' || selectedExerciseFilter === 'Londra Kulesi Testi') && (
+            {towerOfLondonAnalytics && (selectedExerciseFilter === 'all' || selectedExerciseFilter === 'Londra Kulesi Testi') && (
               <Card className="card-enhanced">
                 <CardHeader>
                   <CardTitle className="flex items-center gap-3 text-2xl">
@@ -1192,7 +1449,7 @@ const IstatistiklerSayfasi: React.FC = () => {
                 <CardContent>
                   <ChartContainer config={chartConfig} className="h-[400px] mb-6">
                     <ResponsiveContainer width="100%" height="100%">
-                      <BarChart data={towerAnalytics}>
+                      <BarChart data={towerOfLondonAnalytics.levelStats}>
                         <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
                         <XAxis dataKey="level" stroke="hsl(var(--muted-foreground))" fontSize={12} />
                         <YAxis stroke="hsl(var(--muted-foreground))" fontSize={12} />
@@ -1200,23 +1457,445 @@ const IstatistiklerSayfasi: React.FC = () => {
                         <Legend />
                         <Bar dataKey="avgEfficiency" fill="#8B5CF6" name="Ortalama Verimlilik %" />
                         <Bar dataKey="optimalRate" fill="#10B981" name="Optimal Çözüm %" />
+                        <Bar dataKey="avgPlanningTime" fill="#F59E0B" name="Planlama Süresi (sn)" />
                       </BarChart>
                     </ResponsiveContainer>
                   </ChartContainer>
                   <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-                    {towerAnalytics.map((level, index) => (
+                    {towerOfLondonAnalytics.levelStats.map((level, index) => (
                       <div key={index} className="p-4 bg-purple-50/30 dark:bg-purple-950/20 rounded-xl border border-border/50">
-                        <div className="font-semibold text-purple-700 dark:text-purple-300 mb-2">{level.level}</div>
+                        <div className="font-semibold text-purple-700 dark:text-purple-300 mb-2">Seviye {level.level}</div>
                         <div className="space-y-2 text-sm">
-                          <div>Ortalama Skor: <span className="font-bold">{level.avgScore}</span></div>
-                          <div>Ortalama Süre: <span className="font-bold">{level.avgTime}s</span></div>
+                          <div>Denemeler: <span className="font-bold">{level.attempts}</span></div>
+                          <div>Ortalama Hamle: <span className="font-bold">{level.avgMoves}</span></div>
+                          <div>Planlama Süresi: <span className="font-bold">{level.avgPlanningTime}s</span></div>
                           <div>Verimlilik: <span className="font-bold text-purple-600">{level.avgEfficiency}%</span></div>
                           <div>Optimal Çözüm: <span className="font-bold text-green-600">{level.optimalRate}%</span></div>
-                          <Badge variant="outline" className="text-xs">{level.playCount} oyun</Badge>
                         </div>
                       </div>
                     ))}
                   </div>
+                  
+                  {/* 🧠 Clinical Insights */}
+                  {towerOfLondonAnalytics.topClinicalInsights && towerOfLondonAnalytics.topClinicalInsights.length > 0 && (
+                    <div className="p-4 bg-gradient-to-r from-purple-50/50 to-blue-50/50 dark:from-purple-950/20 dark:to-blue-950/20 rounded-xl border border-purple-200/50 dark:border-purple-700/50 mt-6">
+                      <h4 className="text-lg font-semibold mb-3 flex items-center gap-2 text-purple-700 dark:text-purple-300">
+                        <Brain className="w-5 h-5" />
+                        Executive Function Clinical Insights
+                      </h4>
+                      <div className="grid gap-3 sm:gap-4">
+                        {towerOfLondonAnalytics.topClinicalInsights.map((insight, idx) => (
+                          <div key={idx} className="flex items-start gap-3 p-3 bg-background/40 rounded-lg border border-border/30">
+                            <div className="w-6 h-6 bg-purple-100 dark:bg-purple-900/30 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
+                              <span className="text-purple-600 dark:text-purple-400 text-xs font-bold">{idx + 1}</span>
+                            </div>
+                            <div className="text-sm text-muted-foreground leading-relaxed">{insight}</div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            )}
+
+            {/* Hanoi Towers Specific Analytics - 🧠 MATHEMATICAL THINKING ENHANCEMENT */}
+            {hanoiTowersAnalytics && (selectedExerciseFilter === 'all' || selectedExerciseFilter === 'Hanoi Kuleleri') && (
+              <Card className="bg-gradient-to-br from-orange-50/80 to-amber-50/80 dark:from-orange-950/20 dark:to-amber-950/20 border border-orange-200/60 dark:border-orange-800/60 backdrop-blur-sm">
+                <CardHeader className="pb-3">
+                  <CardTitle className="text-xl sm:text-2xl font-bold text-orange-700 dark:text-orange-300 flex items-center gap-2">
+                    <Building className="w-6 h-6 sm:w-7 sm:h-7" />
+                    Hanoi Kuleleri - Detaylı Analiz
+                  </CardTitle>
+                  <CardDescription className="text-orange-600 dark:text-orange-400">
+                    Mathematical thinking, recursive problem solving ve algorithmic reasoning analizi
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-6">
+                  {/* Overview Stats */}
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+                    <div className="bg-white/60 dark:bg-gray-800/60 p-3 rounded-lg border border-orange-200/50 dark:border-orange-700/50">
+                      <div className="text-xs text-gray-600 dark:text-gray-400 mb-1">Toplam Oyun</div>
+                      <div className="text-lg font-bold text-orange-700 dark:text-orange-300">{hanoiTowersAnalytics.totalGames}</div>
+                    </div>
+                    <div className="bg-white/60 dark:bg-gray-800/60 p-3 rounded-lg border border-orange-200/50 dark:border-orange-700/50">
+                      <div className="text-xs text-gray-600 dark:text-gray-400 mb-1">Ortalama Skor</div>
+                      <div className="text-lg font-bold text-orange-700 dark:text-orange-300">{hanoiTowersAnalytics.avgScore}</div>
+                    </div>
+                    <div className="bg-white/60 dark:bg-gray-800/60 p-3 rounded-lg border border-orange-200/50 dark:border-orange-700/50">
+                      <div className="text-xs text-gray-600 dark:text-gray-400 mb-1">Ortalama Verimlilik</div>
+                      <div className="text-lg font-bold text-orange-700 dark:text-orange-300">{hanoiTowersAnalytics.avgEfficiency}%</div>
+                    </div>
+                    <div className="bg-white/60 dark:bg-gray-800/60 p-3 rounded-lg border border-orange-200/50 dark:border-orange-700/50">
+                      <div className="text-xs text-gray-600 dark:text-gray-400 mb-1">Maksimum Seviye</div>
+                      <div className="text-lg font-bold text-orange-700 dark:text-orange-300">{hanoiTowersAnalytics.maxLevel}</div>
+                    </div>
+                  </div>
+
+                  {/* 🧠 Clinical Mathematical Thinking Metrics */}
+                  {(hanoiTowersAnalytics.avgClinicalScore || hanoiTowersAnalytics.avgMathematicalThinking) && (
+                    <div className="p-4 bg-gradient-to-r from-orange-50/50 to-amber-50/50 dark:from-orange-950/20 dark:to-amber-950/20 rounded-xl border border-orange-200/50 dark:border-orange-700/50">
+                      <h4 className="text-lg font-semibold mb-3 flex items-center gap-2 text-orange-700 dark:text-orange-300">
+                        <Brain className="w-5 h-5" />
+                        Mathematical Thinking Clinical Metrics
+                      </h4>
+                      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+                        {hanoiTowersAnalytics.avgClinicalScore && (
+                          <div className="text-center p-3 bg-background/40 rounded-lg border border-border/30">
+                            <div className="text-2xl font-bold text-orange-600 dark:text-orange-400">{hanoiTowersAnalytics.avgClinicalScore}</div>
+                            <div className="text-xs text-muted-foreground mt-1">Overall Cognitive</div>
+                          </div>
+                        )}
+                        {hanoiTowersAnalytics.avgMathematicalThinking && (
+                          <div className="text-center p-3 bg-background/40 rounded-lg border border-border/30">
+                            <div className="text-2xl font-bold text-orange-600 dark:text-orange-400">{hanoiTowersAnalytics.avgMathematicalThinking}</div>
+                            <div className="text-xs text-muted-foreground mt-1">Mathematical Thinking</div>
+                          </div>
+                        )}
+                        {hanoiTowersAnalytics.avgRecursiveProblemSolving && (
+                          <div className="text-center p-3 bg-background/40 rounded-lg border border-border/30">
+                            <div className="text-2xl font-bold text-orange-600 dark:text-orange-400">{hanoiTowersAnalytics.avgRecursiveProblemSolving}</div>
+                            <div className="text-xs text-muted-foreground mt-1">Recursive Problem Solving</div>
+                          </div>
+                        )}
+                        {hanoiTowersAnalytics.avgSpatialReasoning && (
+                          <div className="text-center p-3 bg-background/40 rounded-lg border border-border/30">
+                            <div className="text-2xl font-bold text-orange-600 dark:text-orange-400">{hanoiTowersAnalytics.avgSpatialReasoning}</div>
+                            <div className="text-xs text-muted-foreground mt-1">Spatial Reasoning</div>
+                          </div>
+                        )}
+                        {hanoiTowersAnalytics.avgAlgorithmicThinking && (
+                          <div className="text-center p-3 bg-background/40 rounded-lg border border-border/30">
+                            <div className="text-2xl font-bold text-orange-600 dark:text-orange-400">{hanoiTowersAnalytics.avgAlgorithmicThinking}</div>
+                            <div className="text-xs text-muted-foreground mt-1">Algorithmic Thinking</div>
+                          </div>
+                        )}
+                        {hanoiTowersAnalytics.avgLogicalDeduction && (
+                          <div className="text-center p-3 bg-background/40 rounded-lg border border-border/30">
+                            <div className="text-2xl font-bold text-orange-600 dark:text-orange-400">{hanoiTowersAnalytics.avgLogicalDeduction}</div>
+                            <div className="text-xs text-muted-foreground mt-1">Logical Deduction</div>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Level Performance Details */}
+                  <div className="p-4 bg-white/40 dark:bg-gray-800/40 rounded-xl border border-orange-200/50 dark:border-orange-700/50">
+                    <h4 className="text-lg font-semibold mb-3 text-orange-700 dark:text-orange-300">Seviye Performansları</h4>
+                    <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+                      {hanoiTowersAnalytics.levelStats.map((level, index) => (
+                        <div key={index} className="p-4 bg-orange-50/30 dark:bg-orange-950/20 rounded-xl border border-border/50">
+                          <div className="font-semibold text-orange-700 dark:text-orange-300 mb-2">Seviye {level.level}</div>
+                          <div className="space-y-2 text-sm">
+                            <div>Denemeler: <span className="font-bold">{level.attempts}</span></div>
+                            <div>Ortalama Verimlilik: <span className="font-bold">{level.avgEfficiency}%</span></div>
+                            <div>Optimal Çözüm: <span className="font-bold text-green-600">{level.optimalRate}%</span></div>
+                            <div>Planlama Süresi: <span className="font-bold text-orange-600">{level.avgPlanningTime}s</span></div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                  
+                  {/* 🧠 Clinical Insights */}
+                  {hanoiTowersAnalytics.topClinicalInsights && hanoiTowersAnalytics.topClinicalInsights.length > 0 && (
+                    <div className="p-4 bg-gradient-to-r from-orange-50/50 to-amber-50/50 dark:from-orange-950/20 dark:to-amber-950/20 rounded-xl border border-orange-200/50 dark:border-orange-700/50 mt-6">
+                      <h4 className="text-lg font-semibold mb-3 flex items-center gap-2 text-orange-700 dark:text-orange-300">
+                        <Brain className="w-5 h-5" />
+                        Mathematical Thinking Clinical Insights
+                      </h4>
+                      <div className="grid gap-3 sm:gap-4">
+                        {hanoiTowersAnalytics.topClinicalInsights.map((insight, idx) => (
+                          <div key={idx} className="flex items-start gap-3 p-3 bg-background/40 rounded-lg border border-border/30">
+                            <div className="w-6 h-6 bg-orange-100 dark:bg-orange-900/30 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
+                              <span className="text-orange-600 dark:text-orange-400 text-xs font-bold">{idx + 1}</span>
+                            </div>
+                            <div className="text-sm text-muted-foreground leading-relaxed">{insight}</div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            )}
+
+            {/* Logic Sequences Specific Analytics - 🧠 ANALYTICAL THINKING CLINICAL ENHANCEMENT */}
+            {logicSequenceResults.length > 0 && (selectedExerciseFilter === 'all' || selectedExerciseFilter === 'Mantık Dizileri') && (
+              <Card className="bg-gradient-to-br from-amber-50/80 to-orange-50/80 dark:from-amber-950/20 dark:to-orange-950/20 border border-amber-200/60 dark:border-amber-800/60 backdrop-blur-sm">
+                <CardHeader className="pb-3">
+                  <CardTitle className="text-xl sm:text-2xl font-bold text-amber-700 dark:text-amber-300 flex items-center gap-2">
+                    <Calculator className="w-6 h-6 sm:w-7 sm:h-7" />
+                    Mantık Dizileri - Analytical Thinking Analizi
+                  </CardTitle>
+                  <CardDescription className="text-amber-600 dark:text-amber-400">
+                    Pattern recognition, mathematical reasoning ve cognitive flexibility analizi
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-6">
+                  {/* Overview Stats */}
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+                    <div className="bg-white/60 dark:bg-gray-800/60 p-3 rounded-lg border border-amber-200/50 dark:border-amber-700/50">
+                      <div className="text-xs text-gray-600 dark:text-gray-400 mb-1">Toplam Oyun</div>
+                      <div className="text-lg font-bold text-amber-700 dark:text-amber-300">{logicSequenceResults.length}</div>
+                    </div>
+                    <div className="bg-white/60 dark:bg-gray-800/60 p-3 rounded-lg border border-amber-200/50 dark:border-amber-700/50">
+                      <div className="text-xs text-gray-600 dark:text-gray-400 mb-1">Ortalama Skor</div>
+                      <div className="text-lg font-bold text-amber-700 dark:text-amber-300">
+                        {logicSequenceResults.length > 0 ? Math.round(logicSequenceResults.reduce((acc, result) => acc + result.score, 0) / logicSequenceResults.length) : 0}
+                      </div>
+                    </div>
+                    <div className="bg-white/60 dark:bg-gray-800/60 p-3 rounded-lg border border-amber-200/50 dark:border-amber-700/50">
+                      <div className="text-xs text-gray-600 dark:text-gray-400 mb-1">Ortalama Doğruluk</div>
+                      <div className="text-lg font-bold text-amber-700 dark:text-amber-300">
+                        {logicSequenceResults.length > 0 ? Math.round(logicSequenceResults.reduce((acc, result) => acc + (result.accuracy || 0), 0) / logicSequenceResults.length) : 0}%
+                      </div>
+                    </div>
+                    <div className="bg-white/60 dark:bg-gray-800/60 p-3 rounded-lg border border-amber-200/50 dark:border-amber-700/50">
+                      <div className="text-xs text-gray-600 dark:text-gray-400 mb-1">Ortalama Süre</div>
+                      <div className="text-lg font-bold text-amber-700 dark:text-amber-300">
+                        {logicSequenceResults.length > 0 ? Math.round(logicSequenceResults.reduce((acc, result) => acc + (result.duration || 0), 0) / logicSequenceResults.length / 60) : 0}dk
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* 🧠 Clinical Analytical Thinking Metrics */}
+                  {logicSequenceResults.some(result => result.details?.clinicalData) && (
+                    <div className="p-4 bg-gradient-to-r from-amber-50/50 to-orange-50/50 dark:from-amber-950/20 dark:to-orange-950/20 rounded-xl border border-amber-200/50 dark:border-amber-700/50">
+                      <h4 className="text-lg font-semibold mb-3 flex items-center gap-2 text-amber-700 dark:text-amber-300">
+                        <Brain className="w-5 h-5" />
+                        Analytical Thinking Clinical Metrics
+                      </h4>
+                      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+                        {/* Calculate average clinical scores */}
+                        {(() => {
+                          const clinicalResults = logicSequenceResults.filter(result => result.details?.clinicalData)
+                          if (clinicalResults.length === 0) return null
+                          
+                          const avgAnalyticalThinking = Math.round(clinicalResults.reduce((acc, result) => acc + (result.details?.clinicalData?.analyticalThinking || 0), 0) / clinicalResults.length)
+                          const avgPatternRecognition = Math.round(clinicalResults.reduce((acc, result) => acc + (result.details?.clinicalData?.patternRecognition || 0), 0) / clinicalResults.length)
+                          const avgMathematicalReasoning = Math.round(clinicalResults.reduce((acc, result) => acc + (result.details?.clinicalData?.mathematicalReasoning || 0), 0) / clinicalResults.length)
+                          const avgSequentialLogic = Math.round(clinicalResults.reduce((acc, result) => acc + (result.details?.clinicalData?.sequentialLogic || 0), 0) / clinicalResults.length)
+                          const avgAbstractReasoning = Math.round(clinicalResults.reduce((acc, result) => acc + (result.details?.clinicalData?.abstractReasoning || 0), 0) / clinicalResults.length)
+                          const avgCognitiveFlexibility = Math.round(clinicalResults.reduce((acc, result) => acc + (result.details?.clinicalData?.cognitiveFlexibility || 0), 0) / clinicalResults.length)
+                          const avgOverallCognitive = Math.round(clinicalResults.reduce((acc, result) => acc + (result.details?.clinicalData?.overallCognitive || 0), 0) / clinicalResults.length)
+                          
+                          return (
+                            <>
+                              <div className="text-center p-3 bg-background/40 rounded-lg border border-border/30">
+                                <div className="text-2xl font-bold text-amber-600 dark:text-amber-400">{avgOverallCognitive}</div>
+                                <div className="text-xs text-muted-foreground mt-1">Overall Cognitive</div>
+                              </div>
+                              <div className="text-center p-3 bg-background/40 rounded-lg border border-border/30">
+                                <div className="text-2xl font-bold text-amber-600 dark:text-amber-400">{avgAnalyticalThinking}</div>
+                                <div className="text-xs text-muted-foreground mt-1">Analytical Thinking</div>
+                              </div>
+                              <div className="text-center p-3 bg-background/40 rounded-lg border border-border/30">
+                                <div className="text-2xl font-bold text-amber-600 dark:text-amber-400">{avgPatternRecognition}</div>
+                                <div className="text-xs text-muted-foreground mt-1">Pattern Recognition</div>
+                              </div>
+                              <div className="text-center p-3 bg-background/40 rounded-lg border border-border/30">
+                                <div className="text-2xl font-bold text-amber-600 dark:text-amber-400">{avgMathematicalReasoning}</div>
+                                <div className="text-xs text-muted-foreground mt-1">Mathematical Reasoning</div>
+                              </div>
+                              <div className="text-center p-3 bg-background/40 rounded-lg border border-border/30">
+                                <div className="text-2xl font-bold text-amber-600 dark:text-amber-400">{avgSequentialLogic}</div>
+                                <div className="text-xs text-muted-foreground mt-1">Sequential Logic</div>
+                              </div>
+                              <div className="text-center p-3 bg-background/40 rounded-lg border border-border/30">
+                                <div className="text-2xl font-bold text-amber-600 dark:text-amber-400">{avgAbstractReasoning}</div>
+                                <div className="text-xs text-muted-foreground mt-1">Abstract Reasoning</div>
+                              </div>
+                              <div className="text-center p-3 bg-background/40 rounded-lg border border-border/30">
+                                <div className="text-2xl font-bold text-amber-600 dark:text-amber-400">{avgCognitiveFlexibility}</div>
+                                <div className="text-xs text-muted-foreground mt-1">Cognitive Flexibility</div>
+                              </div>
+                            </>
+                          )
+                        })()}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Pattern Performance Analysis */}
+                  {logicSequenceResults.some(result => result.details?.clinicalData?.patternPerformance) && (
+                    <div className="p-4 bg-white/40 dark:bg-gray-800/40 rounded-xl border border-amber-200/50 dark:border-amber-700/50">
+                      <h4 className="text-lg font-semibold mb-3 text-amber-700 dark:text-amber-300">Pattern Türü Performansları</h4>
+                      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+                        {(() => {
+                          // Aggregate pattern performance from all games
+                          const allPatternPerformances = {}
+                          logicSequenceResults.forEach(result => {
+                            if (result.details?.clinicalData?.patternPerformance) {
+                              Object.entries(result.details.clinicalData.patternPerformance).forEach(([pattern, perf]) => {
+                                if (!allPatternPerformances[pattern]) {
+                                  allPatternPerformances[pattern] = {
+                                    attempts: 0,
+                                    correctAnswers: 0,
+                                    totalResponseTime: 0,
+                                    accuracy: 0,
+                                    averageResponseTime: 0
+                                  }
+                                }
+                                allPatternPerformances[pattern].attempts += perf.attempts
+                                allPatternPerformances[pattern].correctAnswers += perf.correctAnswers
+                                allPatternPerformances[pattern].totalResponseTime += perf.averageResponseTime * perf.attempts
+                              })
+                            }
+                          })
+                          
+                          // Calculate final averages
+                          Object.keys(allPatternPerformances).forEach(pattern => {
+                            const perf = allPatternPerformances[pattern]
+                            perf.accuracy = perf.attempts > 0 ? Math.round((perf.correctAnswers / perf.attempts) * 100) : 0
+                            perf.averageResponseTime = perf.attempts > 0 ? Math.round(perf.totalResponseTime / perf.attempts) : 0
+                          })
+                          
+                          return Object.entries(allPatternPerformances).map(([pattern, perf], index) => (
+                            <div key={index} className="p-4 bg-amber-50/30 dark:bg-amber-950/20 rounded-xl border border-border/50">
+                              <div className="font-semibold text-amber-700 dark:text-amber-300 mb-2">{pattern}</div>
+                              <div className="space-y-2 text-sm">
+                                <div>Toplam Deneme: <span className="font-bold">{perf.attempts}</span></div>
+                                <div>Doğru Cevap: <span className="font-bold text-green-600">{perf.correctAnswers}</span></div>
+                                <div>Doğruluk: <span className="font-bold text-amber-600">{perf.accuracy}%</span></div>
+                                <div>Ortalama Tepki: <span className="font-bold text-orange-600">{perf.averageResponseTime}ms</span></div>
+                              </div>
+                              
+                              {/* Performance indicator */}
+                              <div className="mt-3 pt-2 border-t border-border/30">
+                                {perf.accuracy >= 80 ? (
+                                  <Badge className="bg-green-100 text-green-800 border-green-200 text-xs">
+                                    ⭐ Güçlü Pattern
+                                  </Badge>
+                                ) : perf.accuracy >= 60 ? (
+                                  <Badge className="bg-yellow-100 text-yellow-800 border-yellow-200 text-xs">
+                                    ⚠️ Orta Seviye
+                                  </Badge>
+                                ) : (
+                                  <Badge className="bg-red-100 text-red-800 border-red-200 text-xs">
+                                    🎯 Gelişim Alanı
+                                  </Badge>
+                                )}
+                              </div>
+                            </div>
+                          ))
+                        })()}
+                      </div>
+                    </div>
+                  )}
+                  
+                  {/* 🧠 Clinical Insights */}
+                  {logicSequenceResults.some(result => result.details?.clinicalData?.clinicalInsights?.length > 0) && (
+                    <div className="p-4 bg-gradient-to-r from-amber-50/50 to-orange-50/50 dark:from-amber-950/20 dark:to-orange-950/20 rounded-xl border border-amber-200/50 dark:border-amber-700/50 mt-6">
+                      <h4 className="text-lg font-semibold mb-3 flex items-center gap-2 text-amber-700 dark:text-amber-300">
+                        <Brain className="w-5 h-5" />
+                        Analytical Thinking Clinical Insights
+                      </h4>
+                      <div className="grid gap-3 sm:gap-4">
+                        {(() => {
+                          // Collect all clinical insights
+                          const allInsights = []
+                          logicSequenceResults.forEach(result => {
+                            if (result.details?.clinicalData?.clinicalInsights) {
+                              allInsights.push(...result.details.clinicalData.clinicalInsights)
+                            }
+                          })
+                          
+                          // Get unique insights
+                          const uniqueInsights = [...new Set(allInsights)]
+                          
+                          return uniqueInsights.slice(0, 5).map((insight, idx) => (
+                            <div key={idx} className="flex items-start gap-3 p-3 bg-background/40 rounded-lg border border-border/30">
+                              <div className="w-6 h-6 bg-amber-100 dark:bg-amber-900/30 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
+                                <span className="text-amber-600 dark:text-amber-400 text-xs font-bold">{idx + 1}</span>
+                              </div>
+                              <div className="text-sm text-muted-foreground leading-relaxed">{insight}</div>
+                            </div>
+                          ))
+                        })()}
+                      </div>
+                    </div>
+                  )}
+                  
+                  {/* Cognitive Profile Summary */}
+                  {logicSequenceResults.some(result => result.details?.clinicalData?.cognitiveProfile) && (
+                    <div className="p-4 bg-gradient-to-r from-blue-50/50 to-indigo-50/50 dark:from-blue-950/20 dark:to-indigo-950/20 rounded-xl border border-blue-200/50 dark:border-blue-700/50">
+                      <h4 className="text-lg font-semibold mb-3 flex items-center gap-2 text-blue-700 dark:text-blue-300">
+                        <Trophy className="w-5 h-5" />
+                        Cognitive Profile & Recommendations
+                      </h4>
+                      
+                      {(() => {
+                        // Collect cognitive profile data
+                        const allStrengths = []
+                        const allImprovementAreas = []
+                        const allRecommendations = []
+                        
+                        logicSequenceResults.forEach(result => {
+                          if (result.details?.clinicalData?.cognitiveProfile) {
+                            const profile = result.details.clinicalData.cognitiveProfile
+                            if (profile.strengths) allStrengths.push(...profile.strengths)
+                            if (profile.improvementAreas) allImprovementAreas.push(...profile.improvementAreas)
+                            if (profile.recommendations) allRecommendations.push(...profile.recommendations)
+                          }
+                        })
+                        
+                        const uniqueStrengths = [...new Set(allStrengths)]
+                        const uniqueImprovementAreas = [...new Set(allImprovementAreas)]
+                        const uniqueRecommendations = [...new Set(allRecommendations)]
+                        
+                        return (
+                          <div className="grid gap-4 md:grid-cols-3">
+                            {/* Strengths */}
+                            {uniqueStrengths.length > 0 && (
+                              <div className="p-3 bg-green-50/50 dark:bg-green-950/20 rounded-lg border border-green-200/50 dark:border-green-700/50">
+                                <h5 className="font-semibold text-green-700 dark:text-green-300 mb-2 flex items-center gap-1">
+                                  <CheckCircle className="w-4 h-4" />
+                                  Güçlü Yönler
+                                </h5>
+                                <ul className="text-sm space-y-1">
+                                  {uniqueStrengths.slice(0, 3).map((strength, idx) => (
+                                    <li key={idx} className="text-green-600 dark:text-green-400">• {strength}</li>
+                                  ))}
+                                </ul>
+                              </div>
+                            )}
+                            
+                            {/* Improvement Areas */}
+                            {uniqueImprovementAreas.length > 0 && (
+                              <div className="p-3 bg-orange-50/50 dark:bg-orange-950/20 rounded-lg border border-orange-200/50 dark:border-orange-700/50">
+                                <h5 className="font-semibold text-orange-700 dark:text-orange-300 mb-2 flex items-center gap-1">
+                                  <Target className="w-4 h-4" />
+                                  Gelişim Alanları
+                                </h5>
+                                <ul className="text-sm space-y-1">
+                                  {uniqueImprovementAreas.slice(0, 3).map((area, idx) => (
+                                    <li key={idx} className="text-orange-600 dark:text-orange-400">• {area}</li>
+                                  ))}
+                                </ul>
+                              </div>
+                            )}
+                            
+                            {/* Recommendations */}
+                            {uniqueRecommendations.length > 0 && (
+                              <div className="p-3 bg-blue-50/50 dark:bg-blue-950/20 rounded-lg border border-blue-200/50 dark:border-blue-700/50">
+                                <h5 className="font-semibold text-blue-700 dark:text-blue-300 mb-2 flex items-center gap-1">
+                                  <Lightbulb className="w-4 h-4" />
+                                  Öneriler
+                                </h5>
+                                <ul className="text-sm space-y-1">
+                                  {uniqueRecommendations.slice(0, 3).map((recommendation, idx) => (
+                                    <li key={idx} className="text-blue-600 dark:text-blue-400">• {recommendation}</li>
+                                  ))}
+                                </ul>
+                              </div>
+                            )}
+                          </div>
+                        )
+                      })()}
+                    </div>
+                  )}
                 </CardContent>
               </Card>
             )}
@@ -1857,11 +2536,11 @@ const IstatistiklerSayfasi: React.FC = () => {
                             <XAxis dataKey="session" tick={{ fontSize: 12 }} />
                             <YAxis domain={[0, 12]} label={{ value: 'Color Span', angle: -90, position: 'insideLeft' }} />
                             <Tooltip 
-                              formatter={(value: any, name: string) => [
+                              formatter={(value: number | string, name: string) => [
                                 name === 'capacity' ? `${value} Color Pattern` : value,
                                 name === 'capacity' ? 'Visual Span' : name
                               ]}
-                              labelFormatter={(label: any) => `Session ${label}`}
+                              labelFormatter={(label: string | number) => `Session ${label}`}
                             />
                             <Line 
                               type="monotone" 
@@ -2050,6 +2729,8 @@ const IstatistiklerSayfasi: React.FC = () => {
                 </CardContent>
               </Card>
             )}
+
+
           </TabsContent>
 
           <TabsContent value="charts" className="space-y-8">
@@ -2061,6 +2742,7 @@ const IstatistiklerSayfasi: React.FC = () => {
                 </CardDescription>
               </CardHeader>
               <CardContent>
+                {filteredResults.length > 1 ? (
                 <ChartContainer config={chartConfig} className="h-[400px]">
                   <ResponsiveContainer width="100%" height="100%">
                     <LineChart data={filteredResults.map((result, index) => ({
@@ -2076,6 +2758,14 @@ const IstatistiklerSayfasi: React.FC = () => {
                     </LineChart>
                   </ResponsiveContainer>
                 </ChartContainer>
+                ) : (
+                  <div className="flex items-center justify-center h-[400px] text-gray-500 dark:text-gray-400">
+                    <div className="text-center">
+                      <BarChart3 className="w-12 h-12 mx-auto mb-2 opacity-50" />
+                      <p>Trend görüntülemek için en az 2 egzersiz gerekli</p>
+                    </div>
+                  </div>
+                )}
               </CardContent>
             </Card>
           </TabsContent>
@@ -2113,7 +2803,7 @@ const IstatistiklerSayfasi: React.FC = () => {
                           <TableCell className="font-semibold text-xs sm:text-sm">
                           {typeof result.exerciseName === 'string' 
                             ? result.exerciseName 
-                            : (result.exerciseName as any)?.exerciseName || 'Bilinmeyen Egzersiz'
+                            : (result.exerciseName as { exerciseName?: string })?.exerciseName || 'Bilinmeyen Egzersiz'
                           }
                         </TableCell>
                           <TableCell>

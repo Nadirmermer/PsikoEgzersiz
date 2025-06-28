@@ -66,41 +66,46 @@ export const IMAGE_WORD_MATCHING_CONFIG: GameConfig = {
   ]
 }
 
-// Mantık Dizileri Konfigürasyonu
+// Mantık Dizileri Konfigürasyonu - 🧠 ANALYTICAL THINKING ASSESSMENT
 export const LOGIC_SEQUENCES_CONFIG: GameConfig = {
   id: 'logic-sequences',
   title: 'Mantık Dizileri',
-  description: 'Sayı dizilerindeki mantığı bulun ve eksik sayıyı tamamlayın.',
+  description: 'Analytical thinking, pattern recognition ve mathematical reasoning assessment. Sayı dizilerindeki mantığı bulun.',
   difficulty: 'Artan',
-  estimatedTime: '5-8 dk',
-  totalQuestions: 10,
-  hasLevels: false,
+  estimatedTime: '8-12 dk',
+  totalQuestions: 25,
+  hasLevels: true,
   instructions: [
     {
       step: 1,
-      title: 'Mantığı Bulun',
-      description: 'Verilen sayı dizisindeki mantığı bulun'
+      title: '🧮 Pattern Recognition',
+      description: 'Aritmetik, geometrik, Fibonacci ve özel pattern türlerini tanıyın'
     },
     {
       step: 2,
-      title: 'Eksik Sayıyı Hesaplayın',
-      description: 'Dizide eksik olan sayıyı hesaplayın'
+      title: '🔢 Mathematical Reasoning',
+      description: 'Kare sayılar, asal sayılar, üçgensel sayılar gibi advanced patterns'
     },
     {
       step: 3,
-      title: 'Doğru Seçeneği İşaretleyin',
-      description: 'Seçenekler arasından doğru cevabı seçin'
+      title: '🧠 Analytical Thinking',
+      description: 'Sequential logic ve abstract reasoning ile complex problems'
     },
     {
       step: 4,
-      title: 'Egzersizi Tamamlayın',
-      description: '10 soruyu tamamlayarak egzersizi bitirin'
+      title: '⚡ Cognitive Assessment',
+      description: '25 soru ile comprehensive clinical analytical thinking evaluation'
+    },
+    {
+      step: 5,
+      title: '📊 Clinical Insights',
+      description: 'Pattern performance ve cognitive flexibility analizi alın'
     }
   ],
   stats: [
-    { key: 'totalQuestions', label: 'Toplam Soru', icon: 'target', color: 'primary' },
-    { key: 'difficulty', label: 'Dizi Türleri', icon: 'lightbulb', color: 'primary' },
-    { key: 'difficulty', label: 'Zorluk', icon: 'trophy', color: 'primary' }
+    { key: 'totalQuestions', label: '25 Soru • 8 Level', icon: 'target', color: 'primary' },
+    { key: 'difficulty', label: '12 Pattern Türü', icon: 'lightbulb', color: 'primary' },
+    { key: 'difficulty', label: 'Clinical Assessment', icon: 'trophy', color: 'primary' }
   ]
 }
 
@@ -150,37 +155,37 @@ export const NUMBER_SEQUENCE_CONFIG: GameConfig = {
 export const TOWER_OF_LONDON_CONFIG: GameConfig = {
   id: 'tower-of-london',
   title: 'Londra Kulesi',
-  description: 'Diskleri minimum hamle ile hedef pozisyona taşıyın. Planlama becerilerinizi test edin.',
+  description: 'Topları minimum hamle ile hedef pozisyona taşıyın. Planlama ve executive function becerilerinizi test edin.',
   difficulty: 'Artan',
-  estimatedTime: '8-15 dk',
+  estimatedTime: '10-25 dk',
   hasLevels: true,
-  maxLevel: 10,
+  maxLevel: 30,
   instructions: [
     {
       step: 1,
       title: 'Hedefi İnceleyin',
-      description: 'Disklerin hangi pozisyonda olması gerektiğini görün'
+      description: 'Topların hangi pozisyonda olması gerektiğini analiz edin'
     },
     {
       step: 2,
       title: 'Planınızı Yapın',
-      description: 'Minimum hamle ile hedefe ulaşmak için plan yapın'
+      description: 'Minimum hamle ile hedefe ulaşmak için önceden planlama yapın (Planning Time ölçümü)'
     },
     {
       step: 3,
-      title: 'Diskleri Taşıyın',
-      description: 'Diskleri tıklayarak doğru çubukları taşıyın'
+      title: 'Topları Taşıyın',
+      description: 'Kule kapasitelerine dikkat ederek [3,2,1] topları optimum şekilde taşıyın'
     },
     {
       step: 4,
-      title: 'Optimum Çözüm',
-      description: 'En az hamle ile çözmeye çalışın'
+      title: 'Executive Function Test',
+      description: 'Bu test planning, working memory ve problem solving becerilerinizi ölçer'
     }
   ],
   stats: [
-    { key: 'maxLevel', label: 'Toplam Seviye', icon: 'target', color: 'primary' },
-    { key: 'estimatedTime', label: 'Tahmini Süre', icon: 'clock', color: 'primary' },
-    { key: 'difficulty', label: 'Zorluk', icon: 'trophy', color: 'primary' }
+    { key: 'maxLevel', label: '30 Seviye', icon: 'target', color: 'primary' },
+    { key: 'estimatedTime', label: 'Clinical Assessment', icon: 'clock', color: 'primary' },
+    { key: 'difficulty', label: 'Executive Function', icon: 'trophy', color: 'primary' }
   ]
 }
 
@@ -226,43 +231,7 @@ export const COLOR_SEQUENCE_CONFIG: GameConfig = {
   ]
 }
 
-// Kelime Çemberi Bulmacası Konfigürasyonu
-export const WORD_CIRCLE_CONFIG: GameConfig = {
-  id: 'word-circle',
-  title: 'Kelime Çemberi Bulmacası',
-  description: 'Çemberdeki harflerden kelimeler oluşturun. Kelime bilginizi test edin.',
-  difficulty: 'Artan',
-  estimatedTime: '8-15 dk',
-  hasLevels: true,
-  maxLevel: 7,
-  instructions: [
-    {
-      step: 1,
-      title: 'Harfleri İnceleyin',
-      description: 'Çemberdeki harfleri inceleyin'
-    },
-    {
-      step: 2,
-      title: 'Kelimeleri Bulun',
-      description: 'Bu harflerden anlamlı kelimeler oluşturun'
-    },
-    {
-      step: 3,
-      title: 'Izgaraya Yerleştirin',
-      description: 'Bulunan kelimeleri ızgaraya yerleştirin'
-    },
-    {
-      step: 4,
-      title: 'Seviyeyi Tamamlayın',
-      description: 'Tüm hedef kelimeleri bulun'
-    }
-  ],
-  stats: [
-    { key: 'maxLevel', label: 'Toplam Seviye', icon: 'target', color: 'primary' },
-    { key: 'estimatedTime', label: 'Tahmini Süre', icon: 'clock', color: 'primary' },
-    { key: 'difficulty', label: 'Zorluk', icon: 'trophy', color: 'primary' }
-  ]
-}
+
 
 // Kelime-Resim Eşleştirme Konfigürasyonu
 export const WORD_IMAGE_MATCHING_CONFIG: GameConfig = {

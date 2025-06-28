@@ -89,15 +89,14 @@ Bilimsel araştırmalara dayalı egzersizler sunarak **hafıza**, **dikkat**, **
 
 | Egzersiz | Hedef Beceri | Seviye Sayısı | Özellik |
 |:--------:|:------------:|:-------------:|:-------:|
-| 🃏 **Hafıza Oyunu** | Görsel hafıza | 20 | Kart eşleştirme |
-| 👁️ **Resim-Kelime** | Görsel tanıma | 15 | Eşleştirme |
-| 🔄 **Kelime-Resim** | Kavramsal anlayış | 15 | Ters eşleştirme |
-| 🏰 **Londra Kulesi** | Planlama | 15 | Strateji |
-| 🗼 **Hanoi Kuleleri** | Algoritma | 18 | Problem çözme |
-| 🔢 **Sayı Dizisi** | Çalışan hafıza | ∞ | Sıralı hafıza |
-| 🎨 **Renk Dizisi** | Görsel hafıza | ∞ | Simon oyunu |
-| 📝 **Kelime Çemberi** | Dil becerileri | 7 | Kelime bulma |
-| 🧮 **Mantık Dizileri** | Analitik düşünme | ∞ | Örüntü tanıma |
+| 🧠 **Hafıza Oyunu** | Görsel hafıza | 4 | Kart eşleştirme |
+| 👁️ **Resim-Kelime** | Görsel tanıma | - | Resim tanıma |
+| ↔️ **Kelime-Resim** | Kelime bilgisi | - | Kelime işleme |
+| 🏗️ **Londra Kulesi** | Executive function | 30 | Planlama |
+| 🔢 **Sayı Dizisi** | Working memory | ∞ | Sıralı hafıza |
+| 🎨 **Renk Dizisi** | Görsel hafıza | ∞ | Renk sırası |
+| 🧮 **Mantık Dizileri** | Analytical thinking | 25 | Pattern tanıma |
+| 🏛️ **Hanoi Kuleleri** | Problem çözme | 18 | Strateji |
 
 </div>
 
