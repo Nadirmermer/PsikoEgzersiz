@@ -69,6 +69,29 @@ const SOUND_CATEGORIES: Record<SoundType, keyof Omit<AudioSettings, 'enabled' | 
 export const useAudio = () => {
   const audioCache = useRef<Map<SoundType, HTMLAudioElement>>(new Map())
   const currentAmbient = useRef<HTMLAudioElement | null>(null)
+  const userHasInteracted = useRef<boolean>(false)
+
+  // 🔧 FIX: Track user interaction for audio autoplay policy compliance
+  useEffect(() => {
+    const handleUserInteraction = () => {
+      userHasInteracted.current = true
+      // Remove listeners after first interaction
+      document.removeEventListener('click', handleUserInteraction)
+      document.removeEventListener('keydown', handleUserInteraction)
+      document.removeEventListener('touchstart', handleUserInteraction)
+    }
+
+    // Listen for user interactions
+    document.addEventListener('click', handleUserInteraction, { passive: true })
+    document.addEventListener('keydown', handleUserInteraction, { passive: true })
+    document.addEventListener('touchstart', handleUserInteraction, { passive: true })
+
+    return () => {
+      document.removeEventListener('click', handleUserInteraction)
+      document.removeEventListener('keydown', handleUserInteraction)
+      document.removeEventListener('touchstart', handleUserInteraction)
+    }
+  }, [])
 
   // Ses ayarlarını localStorage'dan al
   const getAudioSettings = useCallback((): AudioSettings => {
@@ -113,6 +136,11 @@ export const useAudio = () => {
     const category = SOUND_CATEGORIES[soundType]
     if (!settings[category]) return
 
+    // 🔧 FIX: Skip hover sounds if user hasn't interacted yet
+    if (soundType === 'button-hover' && !userHasInteracted.current) {
+      return
+    }
+
     try {
       // Ses dosyasını cache'den al veya oluştur
       let audio = audioCache.current.get(soundType)
@@ -140,9 +168,10 @@ export const useAudio = () => {
       if (playPromise !== undefined) {
         playPromise.catch(error => {
           // Only log if it's not an AbortError (which is expected when interrupting)
-          if (error.name !== 'AbortError') {
+          if (error.name !== 'AbortError' && error.name !== 'NotAllowedError') {
             console.warn('Audio play failed:', soundType, error.name, error.message)
           }
+          // NotAllowedError için sessizce geç (hover sounds için normal)
         })
       }
 

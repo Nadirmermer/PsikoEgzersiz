@@ -1160,8 +1160,8 @@ const IstatistiklerSayfasi: React.FC = () => {
                         ))}
                       </div>
                       <div className="flex justify-center">
-                        <ChartContainer config={chartConfig} className="h-[200px] w-[200px]">
-                          <ResponsiveContainer width="100%" height="100%">
+                        <ChartContainer config={chartConfig} className="h-[200px] w-[200px] min-h-[200px] min-w-[200px]">
+                          <ResponsiveContainer width={200} height={200}>
                             <PieChart>
                               <Pie
                                 data={exerciseDistribution}
@@ -1186,8 +1186,8 @@ const IstatistiklerSayfasi: React.FC = () => {
                     {/* Desktop: Yan yana */}
                     <div className="hidden lg:grid lg:grid-cols-2 gap-6">
                       <div>
-                        <ChartContainer config={chartConfig} className="h-[300px]">
-                          <ResponsiveContainer width="100%" height="100%">
+                        <ChartContainer config={chartConfig} className="h-[300px] w-full min-h-[300px]">
+                          <ResponsiveContainer width="100%" height={300}>
                             <PieChart>
                               <Pie
                                 data={exerciseDistribution}
@@ -1297,8 +1297,8 @@ const IstatistiklerSayfasi: React.FC = () => {
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <ChartContainer config={chartConfig} className="h-[300px] sm:h-[400px] mb-6">
-                    <ResponsiveContainer width="100%" height="100%">
+                  <ChartContainer config={chartConfig} className="h-[300px] sm:h-[400px] mb-6 w-full min-h-[300px]">
+                    <ResponsiveContainer width="100%" height="100%" minHeight={300}>
                       <BarChart data={memoryAnalytics}>
                         <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
                         <XAxis dataKey="level" stroke="hsl(var(--muted-foreground))" fontSize={10} tick={{ fontSize: 10 }} />
@@ -1368,8 +1368,8 @@ const IstatistiklerSayfasi: React.FC = () => {
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <ChartContainer config={chartConfig} className="h-[400px] mb-6">
-                    <ResponsiveContainer width="100%" height="100%">
+                  <ChartContainer config={chartConfig} className="h-[400px] mb-6 w-full min-h-[400px]">
+                    <ResponsiveContainer width="100%" height="100%" minHeight={400}>
                       <BarChart data={towerOfLondonAnalytics.levelStats}>
                         <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
                         <XAxis dataKey="level" stroke="hsl(var(--muted-foreground))" fontSize={12} />

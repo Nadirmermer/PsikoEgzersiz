@@ -208,11 +208,11 @@ const HanoiTowersGame: React.FC<{ onBack: () => void }> = ({ onBack }) => {
       setShowingPreview(true)
       setAutoProgressionHandled(false)
       
-      // 3 saniye önizleme göster
+      // 🔧 FIX: Reduce preview time from 3s to 1s for better UX
       setTimeout(() => {
         setShowingPreview(false)
         setIsLoading(false)
-      }, 3000)
+      }, 1000)
       
     } catch (err) {
       console.error('Level initialization error:', err)
@@ -226,21 +226,21 @@ const HanoiTowersGame: React.FC<{ onBack: () => void }> = ({ onBack }) => {
     initializeLevel(1)
   }, [initializeLevel])
 
-  // İlk hamle zamanını kaydet
-  const recordFirstMove = () => {
+  // İlk hamle zamanını kaydet - MEMOIZED
+  const recordFirstMove = React.useCallback(() => {
     if (startTime === null) {
       const now = Date.now()
       setStartTime(now)
       universalGame.gameActions.onStart()
     }
-  }
+  }, [startTime, universalGame.gameActions])
 
-  // Seviye tamamlama kontrolü
+  // Seviye tamamlama kontrolü - MEMOIZED
   const checkCompletion = React.useCallback(() => {
     return isConfigEqual(currentConfig, targetConfig)
   }, [currentConfig, targetConfig])
 
-  // Clinical assessment calculation
+  // Clinical assessment calculation - MEMOIZED
   const calculateClinicalAssessment = React.useCallback((
     userMoves: number, 
     minMoves: number, 
@@ -332,7 +332,7 @@ const HanoiTowersGame: React.FC<{ onBack: () => void }> = ({ onBack }) => {
         improvementAreas: generateImprovementAreas(sequentialPlanning, algorithmicThinking, logicalDeduction)
       }
     }
-  }, [clinicalData.levelPerformance, currentProblem])
+  }, [clinicalData.levelPerformance, currentProblem.diskCount])
 
   // Helper functions for clinical assessment
   const generateRecommendations = (cognitive: number, efficiency: number): string[] => {
@@ -359,7 +359,7 @@ const HanoiTowersGame: React.FC<{ onBack: () => void }> = ({ onBack }) => {
     return areas
   }
 
-  // Next level handler
+  // Next level handler - MEMOIZED  
   const handleNextLevel = React.useCallback(() => {
     if (autoProgressionHandled) return
     setAutoProgressionHandled(true)
@@ -373,13 +373,15 @@ const HanoiTowersGame: React.FC<{ onBack: () => void }> = ({ onBack }) => {
     playSound('level-up')
     toast.success(`🚀 Seviye ${nextLevel} başlıyor!`)
     
+    // 🔧 FIX: Initialize level directly, don't call onRestart which causes race condition
     initializeLevel(nextLevel)
-    universalGame.gameActions.onRestart()
-  }, [autoProgressionHandled, currentLevel, playSound, initializeLevel, universalGame.gameActions])
+  }, [autoProgressionHandled, currentLevel, playSound, initializeLevel])
 
-  // Seviye tamamlama - UniversalGameEngine ile entegre
+  // Seviye tamamlama - UniversalGameEngine ile entegre - FIXED
   React.useEffect(() => {
-    if (checkCompletion() && !universalGame.gameState.isCompleted && !autoProgressionHandled && !showingPreview) {
+    const isCompleted = checkCompletion()
+    
+    if (isCompleted && !universalGame.gameState.isCompleted && !autoProgressionHandled && !showingPreview && moves > 0) {
       // Planlama süresini hesapla
       const finalPlanningTime = startTime ? Math.round((Date.now() - startTime) / 1000) : 0
       
@@ -387,13 +389,17 @@ const HanoiTowersGame: React.FC<{ onBack: () => void }> = ({ onBack }) => {
       const assessment = calculateClinicalAssessment(moves, currentProblem.minMoves, finalPlanningTime, currentLevel)
       setClinicalData(assessment)
       
+      // 🔧 FIX: Prevent invalid score calculation
+      const safeScore = moves > 0 ? Math.round((currentProblem.minMoves / moves) * 100) : 0
+      const clampedScore = Math.min(Math.max(safeScore, 0), 100)
+      
       // GameResult hazırlama
       const result: GameResult = {
         exerciseName: 'Hanoi Kuleleri',
-        score: Math.round(((currentProblem.minMoves / moves) * 100)),
+        score: clampedScore,
         duration: finalPlanningTime,
         completed: true,
-        accuracy: Math.round((currentProblem.minMoves / moves) * 100),
+        accuracy: clampedScore,
         level: currentLevel,
         details: {
           level_identifier: `${currentProblem.name} (Seviye ${currentLevel})`,
@@ -403,9 +409,9 @@ const HanoiTowersGame: React.FC<{ onBack: () => void }> = ({ onBack }) => {
           min_moves_required: currentProblem.minMoves,
           user_moves_taken: moves,
           time_seconds: finalPlanningTime,
-          score: Math.round(((currentProblem.minMoves / moves) * 100)),
+          score: clampedScore,
           completed_optimally: moves === currentProblem.minMoves,
-          efficiency_percentage: Math.round((currentProblem.minMoves / moves) * 100),
+          efficiency_percentage: clampedScore,
           disk_count: currentProblem.diskCount,
           exercise_name: 'Hanoi Kuleleri',
           timestamp: new Date().toISOString(),
@@ -418,17 +424,20 @@ const HanoiTowersGame: React.FC<{ onBack: () => void }> = ({ onBack }) => {
       universalGame.gameActions.onComplete(result)
       playSound('exercise-complete')
     }
-  }, [checkCompletion, autoProgressionHandled, showingPreview, startTime, currentProblem, moves, currentLevel, universalGame, playSound, calculateClinicalAssessment])
+  }, [checkCompletion, autoProgressionHandled, showingPreview, startTime, currentProblem.minMoves, currentProblem.name, currentProblem.initialConfig, currentProblem.targetConfig, currentProblem.diskCount, moves, currentLevel, universalGame.gameState.isCompleted, universalGame.gameActions, playSound, calculateClinicalAssessment])
 
-  // Stats'ları güncelle
+  // Stats'ları güncelle - FIXED
   React.useEffect(() => {
+    const safeScore = moves > 0 ? Math.round((currentProblem.minMoves / moves) * 100) : 100
+    const clampedScore = Math.min(Math.max(safeScore, 0), 100)
+    
     universalGame.updateGameStats({
-      score: Math.round(((currentProblem.minMoves / Math.max(moves, 1)) * 100)),
+      score: clampedScore,
       level: `${currentProblem.name}`,
       progress: `${moves}/${currentProblem.minMoves} hamle`,
-      accuracy: Math.round((currentProblem.minMoves / Math.max(moves, 1)) * 100)
+      accuracy: clampedScore
     })
-  }, [moves, currentProblem, universalGame])
+  }, [moves, currentProblem.minMoves, currentProblem.name, universalGame.updateGameStats])
 
   // Custom game hook'u oluştur
   const gameHook = () => ({

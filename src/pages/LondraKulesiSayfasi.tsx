@@ -462,15 +462,15 @@ const TowerOfLondonGame: React.FC<{
   }, [initializeLevel])
 
   // İlk hamle zamanını kaydet (planlama süresi ölçümü - önemli!)
-  const recordFirstMove = () => {
+  const recordFirstMove = React.useCallback(() => {
     if (startTime === null) {
       const now = Date.now()
       setStartTime(now)
       universalGame.gameActions.onStart()
     }
-  }
+  }, [startTime, universalGame.gameActions])
 
-  // Seviye tamamlama kontrolü
+  // Seviye tamamlama kontrolü - MEMOIZED
   const checkCompletion = React.useCallback(() => {
     const target = currentProblem.target
     const isComplete = towers.every((tower, index) => 
@@ -480,7 +480,7 @@ const TowerOfLondonGame: React.FC<{
     return isComplete
   }, [towers, currentProblem.target])
 
-  // Next level handler
+  // Next level handler - MEMOIZED
   const handleNextLevel = React.useCallback(() => {
     if (autoProgressionHandled) return
     setAutoProgressionHandled(true)
@@ -494,46 +494,51 @@ const TowerOfLondonGame: React.FC<{
     playSound('level-up')
     toast.success(`🚀 Seviye ${nextLevel} başlıyor!`)
     
-    setCurrentLevel(nextLevel)
-    universalGame.gameActions.onRestart()
+    // 🔧 FIX: Initialize level directly, don't call onRestart which causes race condition
     initializeLevel(nextLevel)
-  }, [autoProgressionHandled, currentLevel, playSound, universalGame.gameActions, initializeLevel])
+  }, [autoProgressionHandled, currentLevel, playSound, initializeLevel])
 
-  // Restart handler
+  // Restart handler - MEMOIZED
   const handleRestart = React.useCallback(() => {
     initializeLevel(currentLevel)
     setAutoProgressionHandled(false)
   }, [initializeLevel, currentLevel])
 
-  // Expose control functions to parent
+  // Expose control functions to parent - MEMOIZED
   React.useEffect(() => {
     gameControlRef.current = {
       handleNextLevel,
       handleRestart
     }
-  }, [handleNextLevel, handleRestart, gameControlRef])
+  }, [handleNextLevel, handleRestart])
 
-  // Seviye tamamlama - UniversalGameEngine ile entegre
+  // Seviye tamamlama - UniversalGameEngine ile entegre - FIXED
   React.useEffect(() => {
-    if (checkCompletion() && !universalGame.gameState.isCompleted && !autoProgressionHandled) {
+    const isCompleted = checkCompletion()
+    
+    if (isCompleted && !universalGame.gameState.isCompleted && !autoProgressionHandled && moves > 0) {
       // Planlama süresini hesapla
       const finalPlanningTime = startTime ? Math.round((Date.now() - startTime) / 1000) : 0
       setPlanningTime(finalPlanningTime)
       
+      // 🔧 FIX: Prevent Infinity score calculation
+      const safeScore = moves > 0 ? Math.round(((currentProblem.minMoves / moves) * 100)) : 0
+      const clampedScore = Math.min(Math.max(safeScore, 0), 100)
+      
       // Clinical data hazırlama - Tower of London Assessment
       const result: GameResult = {
         exerciseName: 'Londra Kulesi',
-        score: Math.round(((currentProblem.minMoves / moves) * 100)),
+        score: clampedScore,
         duration: finalPlanningTime,
         completed: true,
-        accuracy: Math.round((currentProblem.minMoves / moves) * 100),
+        accuracy: clampedScore,
         level: currentLevel,
         details: {
           level_identifier: `Seviye ${currentLevel} - ${currentProblem.difficulty}`,
           total_moves: moves,
           min_moves_required: currentProblem.minMoves,
           planning_time_seconds: finalPlanningTime,
-          efficiency_percentage: Math.round((currentProblem.minMoves / moves) * 100),
+          efficiency_percentage: clampedScore,
           is_optimal_solution: moves === currentProblem.minMoves,
           exercise_name: 'Londra Kulesi',
           timestamp: new Date().toISOString()
@@ -544,17 +549,20 @@ const TowerOfLondonGame: React.FC<{
       universalGame.gameActions.onComplete(result)
       playSound('exercise-complete')
     }
-  }, [checkCompletion, autoProgressionHandled, startTime, currentProblem, moves, currentLevel, universalGame, playSound])
+  }, [checkCompletion, autoProgressionHandled, startTime, currentProblem.minMoves, currentProblem.difficulty, moves, currentLevel, universalGame.gameState.isCompleted, universalGame.gameActions, playSound])
 
-  // Stats'ları güncelle
+  // Stats'ları güncelle - FIXED
   React.useEffect(() => {
+    const safeScore = moves > 0 ? Math.round(((currentProblem.minMoves / moves) * 100)) : 100
+    const clampedScore = Math.min(Math.max(safeScore, 0), 100)
+    
     universalGame.updateGameStats({
-      score: Math.round(((currentProblem.minMoves / Math.max(moves, 1)) * 100)),
+      score: clampedScore,
       level: currentLevel,
       progress: `${moves}/${currentProblem.minMoves} hamle`,
-      accuracy: Math.round((currentProblem.minMoves / Math.max(moves, 1)) * 100)
+      accuracy: clampedScore
     })
-  }, [moves, currentProblem.minMoves, currentLevel, universalGame])
+  }, [moves, currentProblem.minMoves, currentLevel, universalGame.updateGameStats])
 
   // Error recovery
   const recoverFromError = React.useCallback(() => {
@@ -565,7 +573,7 @@ const TowerOfLondonGame: React.FC<{
     initializeLevel(recoveryLevel)
   }, [currentLevel, initializeLevel, playSound])
 
-  // Top taşıma mantığı
+  // Top taşıma mantığı - MEMOIZED
   const moveBall = React.useCallback((fromTower: number, toTower: number) => {
     recordFirstMove() // İlk hamle zamanını kaydet
     
@@ -575,10 +583,10 @@ const TowerOfLondonGame: React.FC<{
     if (ball && newTowers[toTower].length < maxTowerHeights[toTower]) {
       newTowers[toTower].push(ball)
       setTowers(newTowers)
-      setMoves(moves + 1)
+      setMoves(prevMoves => prevMoves + 1)
       playSound('button-click')
     }
-  }, [towers, moves, maxTowerHeights, playSound, recordFirstMove])
+  }, [towers, maxTowerHeights, playSound, recordFirstMove])
 
   const towerLabels = ['Büyük Kule', 'Orta Kule', 'Küçük Kule']
 

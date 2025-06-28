@@ -1,5 +1,6 @@
 import { useState, useCallback, useEffect, useRef } from 'react'
 import { useAudio } from './useAudio'
+import React from 'react'
 
 interface UseColorSequenceProps {
   initialLevel?: number
@@ -793,7 +794,12 @@ export const useColorSequence = ({ initialLevel = 1 }: UseColorSequenceProps = {
     }
   }, [])
 
-  console.log('🧠 Color Sequence Initialized with Visual-Spatial Memory Clinical Assessment')
+  // 🔧 FIX: Only log once when hook is actually initialized, not on every render
+  React.useEffect(() => {
+    if (state.currentLevel === 1 && state.phase === 'ready' && !state.isGameCompleted) {
+      console.log('🧠 Color Sequence Initialized with Visual-Spatial Memory Clinical Assessment')
+    }
+  }, []) // Empty dependency array - only run once on mount
 
   return {
     // Error states
