@@ -285,7 +285,11 @@ export const useHanoiTowers = ({ maxLevel = 18 }: UseHanoiTowersProps = {}) => {
     nextLevel,
     restartLevel,
     getFinalStats,
-    getDiskStyle
+    getDiskStyle,
+    // Error handling
+    error,
+    isLoading,
+    recoverFromError
   }
 }
 

@@ -11,6 +11,7 @@ interface AuthContextType {
   signUp: (email: string, password: string, displayName: string) => Promise<void>
   signIn: (email: string, password: string) => Promise<void>
   signOut: () => Promise<void>
+  verifyPassword: (password: string) => Promise<boolean>
   isSupabaseConfigured: boolean
   refreshProfessional: () => Promise<void>
 }
@@ -216,6 +217,34 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     toast.success('Başarıyla çıkış yapıldı!')
   }
 
+  const verifyPassword = async (password: string): Promise<boolean> => {
+    if (!supabase || !user?.email) {
+      console.error('AuthContext - verifyPassword: Supabase not configured or user email not available')
+      return false
+    }
+
+    console.log('AuthContext - verifyPassword: Verifying password for user:', user.email)
+
+    try {
+      // Create a temporary session to verify password
+      const { error } = await supabase.auth.signInWithPassword({
+        email: user.email,
+        password: password,
+      })
+
+      if (error) {
+        console.log('AuthContext - verifyPassword: Password verification failed:', error.message)
+        return false
+      }
+
+      console.log('AuthContext - verifyPassword: Password verified successfully')
+      return true
+    } catch (error) {
+      console.error('AuthContext - verifyPassword: Unexpected error:', error)
+      return false
+    }
+  }
+
   return (
     <AuthContext.Provider value={{
       user,
@@ -224,6 +253,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       signUp,
       signIn,
       signOut,
+      verifyPassword,
       isSupabaseConfigured,
       refreshProfessional,
     }}>

@@ -209,7 +209,7 @@ const IstatistiklerSayfasi: React.FC = () => {
       
       // 🧠 Executive Function clinical data processing
       if (result.details?.clinicalData && 'executiveFunctionScore' in result.details.clinicalData) {
-        const clinical = result.details.clinicalData as any
+        const clinical = result.details.clinicalData as Record<string, unknown>
         acc.clinicalScores.push(clinical.executiveFunctionScore || 0)
         acc.planningScores.push(clinical.planningAbility || 0)
         acc.workingMemoryScores.push(clinical.workingMemoryLoad || 0)

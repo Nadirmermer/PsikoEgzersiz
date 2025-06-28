@@ -411,6 +411,45 @@ export const useMemoryGame = ({ level }: UseMemoryGameProps) => {
     }
   }, [cards, gameCompleted, moves, incorrectMoves, duration, startTime, firstMatchTime, cardFlips, level, playSound])
 
+  // 🧠 Missing getFinalStats function for data integrity
+  const getFinalStats = useCallback(() => {
+    const totalPairs = cards.length / 2
+    const matchedPairs = cards.filter(card => card.isMatched).length / 2
+    const accuracy = moves > 0 ? Math.round((matchedPairs / moves) * 100) : 0
+    const finalDuration = startTime ? Math.floor((Date.now() - startTime) / 1000) : duration
+
+    const stats: GameStats = {
+      level_identifier: `${level.name} (${level.gridSize.rows}x${level.gridSize.cols})`,
+      grid_size: `${level.gridSize.rows}x${level.gridSize.cols}`,
+      duration_seconds: finalDuration,
+      moves_count: moves,
+      incorrect_moves_count: incorrectMoves,
+      pairs_found: matchedPairs,
+      total_pairs: totalPairs,
+      first_match_time_seconds: firstMatchTime || undefined,
+      card_flips_total: cardFlips,
+      exercise_name: 'Hafıza Oyunu',
+      score: calculateScore(moves, incorrectMoves, finalDuration, totalPairs),
+      timestamp: new Date().toISOString(),
+      working_memory_span: totalPairs,
+      attention_span_seconds: firstMatchTime || finalDuration,
+      strategy_type: incorrectMoves < totalPairs ? 'systematic' : 'random',
+      learning_efficiency: accuracy
+    }
+
+    return {
+      score: stats.score,
+      duration: finalDuration,
+      moves,
+      incorrectMoves,
+      accuracy,
+      totalPairs,
+      matchedPairs,
+      levelCompleted,
+      details: stats
+    }
+  }, [cards, moves, incorrectMoves, duration, startTime, firstMatchTime, cardFlips, level, levelCompleted])
+
   return {
     // Error states
     error,
@@ -438,6 +477,7 @@ export const useMemoryGame = ({ level }: UseMemoryGameProps) => {
     startGame,
     pauseGame,
     resumeGame,
-    flipCard
+    flipCard,
+    getFinalStats
   }
 }

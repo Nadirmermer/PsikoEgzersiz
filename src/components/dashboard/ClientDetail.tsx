@@ -152,14 +152,19 @@ const ClientDetail: React.FC<ClientDetailProps> = ({
   const totalSessions = sessions.length
   const clientModeSessions = sessions.filter(s => s.is_client_mode_session).length
   const anonymousConnections = sessions.filter(s => !s.is_client_mode_session).length
+  const getExerciseValue = (exerciseData: Record<string, unknown>, key: string): number => {
+    const value = exerciseData[key]
+    return typeof value === 'number' ? value : 0
+  }
+
   const averageScore = totalSessions > 0 
-    ? Math.round(sessions.reduce((sum, s) => sum + ((s.exercise_data as any)?.score || 0), 0) / totalSessions)
+    ? Math.round(sessions.reduce((sum, s) => sum + getExerciseValue(s.exercise_data, 'score'), 0) / totalSessions)
     : 0
   const averageDuration = totalSessions > 0
-    ? Math.round(sessions.reduce((sum, s) => sum + ((s.exercise_data as any)?.duration || 0), 0) / totalSessions)
+    ? Math.round(sessions.reduce((sum, s) => sum + getExerciseValue(s.exercise_data, 'duration'), 0) / totalSessions)
     : 0
   const bestScore = totalSessions > 0 
-    ? Math.max(...sessions.map(s => (s.exercise_data as any)?.score || 0))
+    ? Math.max(...sessions.map(s => getExerciseValue(s.exercise_data, 'score')))
     : 0
 
   const chartConfig = {
@@ -456,16 +461,16 @@ const ClientDetail: React.FC<ClientDetailProps> = ({
                       </TableCell>
                       <TableCell>
                         <Badge variant="outline">
-                          {((session.exercise_data as any)?.details?.level_identifier as string) || 'Bilinmiyor'}
+                          {(session.exercise_data.details as Record<string, unknown>)?.level_identifier || 'Bilinmiyor'}
                         </Badge>
                       </TableCell>  
                       <TableCell className="font-bold text-primary">
-                        {((session.exercise_data as any)?.score as number) || 0}
+                        {getExerciseValue(session.exercise_data, 'score')}
                       </TableCell>
-                      <TableCell>{((session.exercise_data as any)?.duration as number) || 0}sn</TableCell>
-                      <TableCell>{((session.exercise_data as any)?.details?.moves_count as number) || 0}</TableCell>
+                      <TableCell>{getExerciseValue(session.exercise_data, 'duration')}sn</TableCell>
+                      <TableCell>{(session.exercise_data.details as Record<string, unknown>)?.moves_count || 0}</TableCell>
                       <TableCell className="text-destructive">
-                        {((session.exercise_data as any)?.details?.incorrect_moves_count as number) || 0}
+                        {(session.exercise_data.details as Record<string, unknown>)?.incorrect_moves_count || 0}
                       </TableCell>
                       <TableCell>
                         <Badge variant={session.is_client_mode_session ? "default" : "secondary"}>

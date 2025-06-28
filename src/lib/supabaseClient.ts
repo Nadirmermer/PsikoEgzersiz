@@ -4,7 +4,7 @@ import { ExerciseResult } from '../utils/localStorage'
 export interface ClientStatisticData {
   professional_id: string
   client_identifier: string
-  exercise_data: Record<string, unknown> | ExerciseResult
+  exercise_data: ExerciseResult['details'] | ExerciseResult | Record<string, unknown>
   is_client_mode_session: boolean
 }
 

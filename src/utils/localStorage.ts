@@ -130,6 +130,19 @@ interface LogicSequenceClinicalData {
   }
 }
 
+// Union type for all possible exercise details
+type ExerciseDetails = 
+  | MemoryGameDetails
+  | TowerOfLondonDetails  
+  | ImageWordClinicalData
+  | WordImageClinicalData
+  | NumberSequenceClinicalData
+  | ColorSequenceClinicalData
+  | LogicSequenceClinicalData
+  | HanoiTowersClinicalData
+  | TowerOfLondonClinicalData
+  | Record<string, unknown> // Fallback for unknown exercise types
+
 // Enhanced ExerciseResult interface with proper typing
 export interface ExerciseResult {
   id: string
@@ -140,7 +153,7 @@ export interface ExerciseResult {
   completed: boolean
   exitedEarly?: boolean
   accuracy?: number
-  details?: any // Temporarily using any to avoid complex union type issues
+  details?: ExerciseDetails
 }
 
 export interface MemoryGameDetails {

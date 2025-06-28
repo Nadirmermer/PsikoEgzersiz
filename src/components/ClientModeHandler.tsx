@@ -19,17 +19,34 @@ const ClientModeHandler: React.FC<ClientModeHandlerProps> = ({
   const [password, setPassword] = useState('')
   const [showExitDialog, setShowExitDialog] = useState(false)
   const [isExiting, setIsExiting] = useState(false)
-  const { professional, refreshProfessional } = useAuth()
+  const { professional, refreshProfessional, verifyPassword } = useAuth()
 
   const handlePasswordSubmit = async () => {
-    if (password !== '1923') {
-      toast.error('Hatalı şifre!')
+    if (!password) {
+      toast.error('Şifre girin!')
       setPassword('')
       return
     }
+    
+    if (!professional?.email) {
+      toast.error('Uzman bilgisi bulunamadı!')
+      return
+    }
 
-    console.log('ClientModeHandler - Starting exit process')
+    console.log('ClientModeHandler - Verifying password')
     setIsExiting(true)
+
+    // Gerçek şifre doğrulama - Supabase authentication
+    const isPasswordValid = await verifyPassword(password)
+    
+    if (!isPasswordValid) {
+      toast.error('Hatalı şifre!')
+      setPassword('')
+      setIsExiting(false)
+      return
+    }
+
+    console.log('ClientModeHandler - Password verified, starting exit process')
     
     try {
       // Clear client mode data
@@ -146,7 +163,7 @@ const ClientModeHandler: React.FC<ClientModeHandlerProps> = ({
                 className="mt-1.5 h-10 sm:h-11"
               />
               <p className="text-xs text-muted-foreground mt-1.5">
-                Standart uzman şifresi: 1923
+                Hesabınızın şifresini girin
               </p>
             </div>
             <div className="flex gap-2 pt-2">
