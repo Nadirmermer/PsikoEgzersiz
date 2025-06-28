@@ -181,7 +181,7 @@ const KelimeResimEslestirmeSayfasi: React.FC<KelimeResimEslestirmeSayfasiProps> 
     return null
   }
 
-      return (
+  return (
     <UniversalGameEngine
       gameConfig={WORD_IMAGE_MATCHING_CONFIG}
       gameHook={gameHook}

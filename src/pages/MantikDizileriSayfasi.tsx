@@ -258,7 +258,7 @@ const MantikDizileriSayfasi: React.FC<MantikDizileriSayfasiProps> = ({ onBack })
                     <Button
                     key={index}
                     variant="outline"
-                    size="lg"
+                      size="lg"
                     onClick={() => handleAnswerSelect(option)}
                     onTouchStart={(e) => e.preventDefault()} // Prevent double-tap zoom
                     disabled={logicGame.showFeedback || !logicGame.isAnswering}

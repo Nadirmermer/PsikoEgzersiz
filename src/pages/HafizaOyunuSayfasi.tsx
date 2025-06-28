@@ -252,12 +252,12 @@ const HafizaOyunuSayfasi: React.FC<HafizaOyunuSayfasiProps> = ({ onBack }) => {
                     ? 'gap-1.5 sm:gap-2 max-w-[300px] sm:max-w-[380px]'
                     : 'gap-1 sm:gap-1.5 max-w-[280px] sm:max-w-[360px]' // 20+ kart için kompakt
                 }`}
-                style={{ 
-                  gridTemplateColumns: `repeat(${currentLevel.gridSize.cols}, 1fr)`,
+            style={{ 
+              gridTemplateColumns: `repeat(${currentLevel.gridSize.cols}, 1fr)`,
                   gridTemplateRows: `repeat(${currentLevel.gridSize.rows}, 1fr)`
                   // 🔧 FIX: Removed aspectRatio from container - cards will be square individually
-                }}
-              >
+            }}
+          >
                 {memoryGame.cards.map((card) => (
               <button
                 key={card.id}
@@ -275,9 +275,9 @@ const HafizaOyunuSayfasi: React.FC<HafizaOyunuSayfasiProps> = ({ onBack }) => {
                   "aspect-square rounded-md sm:rounded-lg font-bold transition-all duration-300 border-2 shadow-lg hover:shadow-xl",
                   touchTargetClasses.gameCard,
                   // Text sizing based on grid complexity
-                  currentLevel.gridSize.rows * currentLevel.gridSize.cols <= 12
+                        currentLevel.gridSize.rows * currentLevel.gridSize.cols <= 12
                     ? 'text-lg sm:text-2xl md:text-3xl'
-                    : currentLevel.gridSize.rows * currentLevel.gridSize.cols <= 16  
+                          : currentLevel.gridSize.rows * currentLevel.gridSize.cols <= 16  
                     ? 'text-base sm:text-xl md:text-2xl'
                     : 'text-sm sm:text-base md:text-lg',
                   getCardStyle(card),

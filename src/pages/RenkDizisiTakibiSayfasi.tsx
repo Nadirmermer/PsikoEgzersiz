@@ -445,9 +445,9 @@ const RenkDizisiTakibiSayfasi: React.FC<RenkDizisiTakibiSayfasiProps> = ({ onBac
                           className={`
                             w-10 h-10 md:w-12 md:h-12 lg:w-14 lg:h-14 ${colors[colorId].bg} 
                             border rounded-lg shadow-lg ${
-                              isCorrect 
-                                ? 'border-green-300 dark:border-green-700'
-                                : 'border-red-300 dark:border-red-700'
+                          isCorrect 
+                            ? 'border-green-300 dark:border-green-700'
+                            : 'border-red-300 dark:border-red-700'
                             }
                           `} 
                         />

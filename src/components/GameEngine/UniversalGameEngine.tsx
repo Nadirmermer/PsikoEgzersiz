@@ -30,7 +30,7 @@ const UniversalGameEngine: React.FC<UniversalGameEngineProps> = ({
         gameActions.onExitEarly()
       } else {
         console.warn('onExitEarly not implemented for this game')
-      }
+    }
     }
     
     // Sayfa geçişinde en yukarı git

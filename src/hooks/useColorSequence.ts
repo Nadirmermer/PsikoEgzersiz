@@ -218,18 +218,18 @@ export const useColorSequence = ({ initialLevel = 1 }: UseColorSequenceProps = {
         clearTimeout(sequenceTimerRef.current)
       }
       
-      setState({
-        currentLevel: initialLevel,
-        sequence: [],
-        userInput: [],
-        phase: 'ready',
-        showingIndex: 0,
-        highlightedColor: null,
-        score: 0,
-        correctCount: 0,
-        incorrectCount: 0,
-        questionStartTime: 0,
-        isGameCompleted: false,
+    setState({
+      currentLevel: initialLevel,
+      sequence: [],
+      userInput: [],
+      phase: 'ready',
+      showingIndex: 0,
+      highlightedColor: null,
+      score: 0,
+      correctCount: 0,
+      incorrectCount: 0,
+      questionStartTime: 0,
+      isGameCompleted: false,
         maxLevelReached: initialLevel,
         
         // Enhanced tracking for visual-spatial memory clinical assessment
@@ -289,21 +289,21 @@ export const useColorSequence = ({ initialLevel = 1 }: UseColorSequenceProps = {
     try {
       if (error || isLoading) return
       
-      const sequenceLength = 1 + state.currentLevel
-      const newSequence = generateSequence(sequenceLength)
+    const sequenceLength = 1 + state.currentLevel
+    const newSequence = generateSequence(sequenceLength)
       
       // Clear any existing timer
       if (sequenceTimerRef.current) {
         clearTimeout(sequenceTimerRef.current)
       }
-      
-      setState(prev => ({
-        ...prev,
-        sequence: newSequence,
-        userInput: [],
-        phase: 'showing',
-        showingIndex: 0,
-        highlightedColor: null,
+    
+    setState(prev => ({
+      ...prev,
+      sequence: newSequence,
+      userInput: [],
+      phase: 'showing',
+      showingIndex: 0,
+      highlightedColor: null,
         questionStartTime: Date.now(),
         // 🧠 Enhanced clinical tracking
         visualEncodingStartTime: Date.now(),
@@ -326,23 +326,23 @@ export const useColorSequence = ({ initialLevel = 1 }: UseColorSequenceProps = {
 
     try {
       let currentIndex = 0
-      
+
       const showNextColor = () => {
         if (!mountedRef.current || currentIndex >= state.sequence.length) {
           // Sequence completed, switch to input phase with clinical tracking
-          setState(prev => ({
-            ...prev,
+      setState(prev => ({
+        ...prev,
             phase: 'input',
             highlightedColor: null,
             visualEncodingEndTime: Date.now(),
             spatialRetrievalStartTime: Date.now()
-          }))
+      }))
           return
-        }
+    }
 
         // Show current color
-        setState(prev => ({
-          ...prev,
+      setState(prev => ({
+        ...prev,
           highlightedColor: prev.sequence[currentIndex],
           showingIndex: currentIndex
         }))
@@ -367,7 +367,7 @@ export const useColorSequence = ({ initialLevel = 1 }: UseColorSequenceProps = {
       sequenceTimerRef.current = setTimeout(() => {
         if (mountedRef.current) {
           showNextColor()
-        }
+            }
       }, TIMING_CONFIG.INITIAL_DELAY)
 
     } catch (err) {
@@ -384,7 +384,7 @@ export const useColorSequence = ({ initialLevel = 1 }: UseColorSequenceProps = {
     if (state.phase === 'showing' && state.sequence.length > 0) {
       showSequence()
     }
-    
+
     return () => {
       if (sequenceTimerRef.current) {
         clearTimeout(sequenceTimerRef.current)
@@ -398,13 +398,13 @@ export const useColorSequence = ({ initialLevel = 1 }: UseColorSequenceProps = {
 
       const inputTime = Date.now()
       const reactionTime = inputTime - (state.spatialRetrievalStartTime + (state.userInput.length * 500)) // Approximate time for this specific input
-      const newUserInput = [...state.userInput, colorId]
+    const newUserInput = [...state.userInput, colorId]
       const newReactionTimes = [...state.currentColorReactionTimes, reactionTime]
-      const isCorrect = newUserInput[newUserInput.length - 1] === state.sequence[newUserInput.length - 1]
+    const isCorrect = newUserInput[newUserInput.length - 1] === state.sequence[newUserInput.length - 1]
 
-      if (!isCorrect) {
-        // Hatalı giriş - seviye başarısız
-        playSound('wrong-answer')
+    if (!isCorrect) {
+      // Hatalı giriş - seviye başarısız
+      playSound('wrong-answer')
         
         // Record failed level data for visual-spatial analysis
         const levelData = {
@@ -460,24 +460,24 @@ export const useColorSequence = ({ initialLevel = 1 }: UseColorSequenceProps = {
           console.log(`🧠 Color Sequence - Incorrect answer. Count: ${newIncorrectCount}/3. ${shouldEndGame ? 'ENDING GAME' : 'Continue'}`)
           
           return {
-            ...prev,
-            phase: 'feedback',
-            userInput: newUserInput,
+        ...prev,
+        phase: 'feedback',
+        userInput: newUserInput,
             incorrectCount: newIncorrectCount,
             currentColorReactionTimes: newReactionTimes,
             isGameCompleted: shouldEndGame,
             clinicalData: newClinicalData
           }
         })
-        return 'incorrect'
-      }
+      return 'incorrect'
+    }
 
-      if (newUserInput.length === state.sequence.length) {
-        // Seviye tamamlandı - doğru
-        playSound('correct-answer')
-        const newScore = state.score + (state.currentLevel * 10)
-        const newLevel = state.currentLevel + 1
-        
+    if (newUserInput.length === state.sequence.length) {
+      // Seviye tamamlandı - doğru
+      playSound('correct-answer')
+      const newScore = state.score + (state.currentLevel * 10)
+      const newLevel = state.currentLevel + 1
+      
         // Record successful level data for visual-spatial analysis
         const levelData = {
           level: state.currentLevel,
@@ -530,28 +530,28 @@ export const useColorSequence = ({ initialLevel = 1 }: UseColorSequenceProps = {
           console.log(`🧠 Color Sequence - Level ${state.currentLevel} completed! New level: ${newLevel}. ${shouldEndGame ? 'ENDING GAME - Max level reached' : 'Continue'}`)
           
           return {
-            ...prev,
-            phase: 'feedback',
-            userInput: newUserInput,
-            score: newScore,
-            correctCount: prev.correctCount + 1,
-            currentLevel: newLevel,
+        ...prev,
+        phase: 'feedback',
+        userInput: newUserInput,
+        score: newScore,
+        correctCount: prev.correctCount + 1,
+        currentLevel: newLevel,
             maxLevelReached: Math.max(prev.maxLevelReached, newLevel),
             currentColorReactionTimes: newReactionTimes,
             isGameCompleted: shouldEndGame,
             clinicalData: newClinicalData
           }
         })
-        return 'level_complete'
-      } else {
-        // Doğru renk seçildi, devam et
-        setState(prev => ({
-          ...prev,
+      return 'level_complete'
+    } else {
+      // Doğru renk seçildi, devam et
+      setState(prev => ({
+        ...prev,
           userInput: newUserInput,
           currentColorReactionTimes: newReactionTimes
-        }))
-        return 'continue'
-      }
+      }))
+      return 'continue'
+    }
     } catch (err) {
       console.error('Color input error:', err)
       setError({

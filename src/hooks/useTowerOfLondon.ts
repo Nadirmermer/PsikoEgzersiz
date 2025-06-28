@@ -90,17 +90,17 @@ export const useTowerOfLondon = ({ maxLevel = 10 }: UseTowerOfLondonProps = {}) 
       setError(null)
       setIsLoading(true)
       
-      setState({
-        currentLevel: 1,
-        towers: [[], [], []],
-        selectedTower: null,
-        moves: 0,
-        minMoves: 0,
-        score: 0,
-        levelsCompleted: 0,
-        isGameCompleted: false,
-        diskCount: 3
-      })
+    setState({
+      currentLevel: 1,
+      towers: [[], [], []],
+      selectedTower: null,
+      moves: 0,
+      minMoves: 0,
+      score: 0,
+      levelsCompleted: 0,
+      isGameCompleted: false,
+      diskCount: 3
+    })
       
       setIsLoading(false)
     } catch (err) {
@@ -117,19 +117,19 @@ export const useTowerOfLondon = ({ maxLevel = 10 }: UseTowerOfLondonProps = {}) 
     try {
       if (error || isLoading) return
       
-      const diskCount = Math.min(2 + level, 6) // Seviye 1: 3 disk, Seviye 4: 6 disk
-      const initialTower = Array.from({ length: diskCount }, (_, i) => diskCount - i) // En büyük disk altta
-      const minMoves = calculateMinMoves(diskCount)
+    const diskCount = Math.min(2 + level, 6) // Seviye 1: 3 disk, Seviye 4: 6 disk
+    const initialTower = Array.from({ length: diskCount }, (_, i) => diskCount - i) // En büyük disk altta
+    const minMoves = calculateMinMoves(diskCount)
 
-      setState(prev => ({
-        ...prev,
-        currentLevel: level,
-        towers: [initialTower, [], []],
-        selectedTower: null,
-        moves: 0,
-        minMoves,
-        diskCount
-      }))
+    setState(prev => ({
+      ...prev,
+      currentLevel: level,
+      towers: [initialTower, [], []],
+      selectedTower: null,
+      moves: 0,
+      minMoves,
+      diskCount
+    }))
     } catch (err) {
       console.error('Level initialization error:', err)
       setError({
@@ -141,16 +141,16 @@ export const useTowerOfLondon = ({ maxLevel = 10 }: UseTowerOfLondonProps = {}) 
 
   const canMoveDisk = useCallback((fromTower: number, toTower: number): boolean => {
     try {
-      if (fromTower === toTower) return false
-      
-      const from = state.towers[fromTower]
-      const to = state.towers[toTower]
-      
-      if (from.length === 0) return false
-      if (to.length === 0) return true
-      
-      // Küçük disk büyük diskin üstüne gidebilir (küçük sayı > büyük sayı)
-      return from[from.length - 1] < to[to.length - 1]
+    if (fromTower === toTower) return false
+    
+    const from = state.towers[fromTower]
+    const to = state.towers[toTower]
+    
+    if (from.length === 0) return false
+    if (to.length === 0) return true
+    
+    // Küçük disk büyük diskin üstüne gidebilir (küçük sayı > büyük sayı)
+    return from[from.length - 1] < to[to.length - 1]
     } catch (err) {
       console.error('Move validation error:', err)
       setError({
@@ -165,28 +165,28 @@ export const useTowerOfLondon = ({ maxLevel = 10 }: UseTowerOfLondonProps = {}) 
     try {
       if (error || isLoading) return
       
-      if (state.selectedTower === null) {
-        // Kule seçimi - sadece disk varsa seçilebilir
-        if (state.towers[towerIndex].length > 0) {
-          playSound('button-click')
-          setState(prev => ({ ...prev, selectedTower: towerIndex }))
-        }
+    if (state.selectedTower === null) {
+      // Kule seçimi - sadece disk varsa seçilebilir
+      if (state.towers[towerIndex].length > 0) {
+        playSound('button-click')
+        setState(prev => ({ ...prev, selectedTower: towerIndex }))
+      }
+    } else {
+      // Disk hareketi
+      if (state.selectedTower === towerIndex) {
+        // Aynı kuleye tıklandı, seçimi iptal et
+        setState(prev => ({ ...prev, selectedTower: null }))
       } else {
-        // Disk hareketi
-        if (state.selectedTower === towerIndex) {
-          // Aynı kuleye tıklandı, seçimi iptal et
-          setState(prev => ({ ...prev, selectedTower: null }))
+        // Farklı kuleye tıklandı, disk taşımaya çalış
+        if (canMoveDisk(state.selectedTower, towerIndex)) {
+          moveDisk(state.selectedTower, towerIndex)
         } else {
-          // Farklı kuleye tıklandı, disk taşımaya çalış
-          if (canMoveDisk(state.selectedTower, towerIndex)) {
-            moveDisk(state.selectedTower, towerIndex)
-          } else {
-            // Geçersiz hamle
-            playSound('wrong-answer')
-            setState(prev => ({ ...prev, selectedTower: null }))
-          }
+          // Geçersiz hamle
+          playSound('wrong-answer')
+          setState(prev => ({ ...prev, selectedTower: null }))
         }
       }
+    }
     } catch (err) {
       console.error('Tower click error:', err)
       setError({

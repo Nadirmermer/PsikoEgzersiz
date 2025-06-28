@@ -43,13 +43,13 @@ export const ReadyScreen: React.FC<ReadyScreenProps> = ({ config, onStart }) => 
               {config.title}
             </h2>
                          <div className="space-y-3 text-gray-600 dark:text-gray-300 leading-relaxed">
-               {config.instructions.map((instruction, index) => (
+              {config.instructions.map((instruction, index) => (
                  <p key={index} className="text-sm sm:text-base">
-                   <span className="font-medium">{instruction.title}: </span>
+                    <span className="font-medium">{instruction.title}: </span>
                    {instruction.description}
                  </p>
                ))}
-             </div>
+                  </div>
           </div>
 
           {/* Başlat Butonu */}
@@ -97,7 +97,7 @@ export const PauseScreen: React.FC<PauseScreenProps> = ({ config, stats, onResum
           {/* Aksiyon Butonları */}
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Button 
-              onClick={onResume}
+              onClick={onResume} 
               size="lg"
               className="bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white"
             >
