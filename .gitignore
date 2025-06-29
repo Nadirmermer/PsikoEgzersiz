@@ -62,9 +62,13 @@ lerna-debug.log*
 
 # Mobil uygulama dosyaları (Capacitor)
 /ios/
-/android/
+/android/app/build/
+/android/build/
+/android/.gradle/
+/android/captures/
+/android/local.properties
+/android/app/build/outputs/
 capacitor.config.json
-capacitor.config.ts
 *.aab
 *.ipa
 

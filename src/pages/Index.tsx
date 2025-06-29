@@ -8,6 +8,8 @@ import { useClientMode } from "../hooks/useClientMode";
 import { useAuth } from "../contexts/AuthContext";
 import { syncPendingData } from "../lib/supabaseClient";
 import { useAudio } from "../hooks/useAudio";
+import { useBackButton } from "../hooks/useBackButton";
+import { App } from "@capacitor/app";
 
 // 🚀 PERFORMANCE: Lazy load page components to reduce initial bundle size
 const EgzersizlerSayfasi = lazy(() => import("./EgzersizlerSayfasi"));
@@ -212,6 +214,50 @@ const Index = () => {
     setActivePage(page);
     });
   }, [isClientMode, playSound]);
+
+  // 🚀 BACK BUTTON: Navigation handlers
+  const handleNavigateBack = useCallback(() => {
+    playSound('button-click');
+    // Ana sayfaya geri dön
+    setActivePage('egzersizler');
+  }, [playSound]);
+
+  const handleExitApp = useCallback(() => {
+    App.exitApp();
+  }, []);
+
+  const handleExitGame = useCallback(() => {
+    playSound('button-click');
+    // Aktif olan oyunu kapat
+    setIsMemoryGameActive(false);
+    setIsImageWordMatchingActive(false);
+    setIsWordImageMatchingActive(false);
+    setIsTowerOfLondonActive(false);
+    setIsNumberSequenceActive(false);
+    setIsColorSequenceActive(false);
+    setIsLogicSequencesActive(false);
+    setIsHanoiTowersActive(false);
+  }, [playSound]);
+
+  // 🚀 BACK BUTTON: Check if user is in game mode
+  const isInGame = isMemoryGameActive || 
+                   isImageWordMatchingActive || 
+                   isWordImageMatchingActive || 
+                   isTowerOfLondonActive || 
+                   isNumberSequenceActive || 
+                   isColorSequenceActive || 
+                   isLogicSequencesActive || 
+                   isHanoiTowersActive;
+
+  // 🚀 BACK BUTTON: Initialize back button handling
+  useBackButton({
+    activePage,
+    isInGame,
+    isGamePlaying: isInGame, // Oyun aktifse muhtemelen oynanıyor
+    onNavigateBack: handleNavigateBack,
+    onExitApp: handleExitApp,
+    onExitGame: handleExitGame
+  });
 
   // 🚀 PERFORMANCE: Memoized page renderer to prevent unnecessary re-renders
   const renderActivePage = useCallback(() => {
