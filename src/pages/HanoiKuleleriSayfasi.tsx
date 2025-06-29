@@ -218,10 +218,11 @@ const HanoiTowersGame: React.FC<{
     }
   }, [])
 
-  // İlk seviyeyi başlat
+  // Seviye başlatıcı (evrensel state'e göre)
   React.useEffect(() => {
-    initializeLevel(1)
-  }, [initializeLevel])
+    const desiredLevel = universalGame.gameState.currentLevel || 1
+    initializeLevel(desiredLevel)
+  }, [initializeLevel, universalGame.gameState.currentLevel])
 
   // İlk hamle zamanını kaydet - MEMOIZED
   const recordFirstMove = React.useCallback(() => {
@@ -666,6 +667,16 @@ const HanoiKuleleriSayfasi: React.FC<HanoiKuleleriSayfasiProps> = ({ onBack }) =
         if (gameControlRef.current) {
           gameControlRef.current.handleNextLevel()
         }
+        // 🔄 UniversalGameEngine fazını playing'e al
+        universalGame.updateGameState({
+          phase: 'playing',
+          isCompleted: false,
+          currentLevel: universalGame.gameState.currentLevel + 1,
+          duration: 0,
+          startTime: Date.now()
+        })
+        // Kronometreyi yeniden başlat
+        universalGame.gameActions.onStart()
       }
     }
   })

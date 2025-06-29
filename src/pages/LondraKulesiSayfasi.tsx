@@ -456,10 +456,11 @@ const TowerOfLondonGame: React.FC<{
     }
   }, [])
 
-  // İlk seviyeyi başlat
+  // Seviye başlatıcı (evrensel state'e göre)
   React.useEffect(() => {
-    initializeLevel(1)
-  }, [initializeLevel])
+    const desiredLevel = universalGame.gameState.currentLevel || 1
+    initializeLevel(desiredLevel)
+  }, [initializeLevel, universalGame.gameState.currentLevel])
 
   // İlk hamle zamanını kaydet (planlama süresi ölçümü - önemli!)
   const recordFirstMove = React.useCallback(() => {
@@ -765,6 +766,14 @@ const LondraKulesiSayfasi: React.FC<LondraKulesiSayfasiProps> = ({ onBack }) => 
         if (gameControlRef.current) {
           gameControlRef.current.handleNextLevel()
         }
+        universalGame.updateGameState({
+          phase: 'playing',
+          isCompleted: false,
+          currentLevel: universalGame.gameState.currentLevel + 1,
+          duration: 0,
+          startTime: Date.now()
+        })
+        universalGame.gameActions.onStart()
       }
     }
   })
