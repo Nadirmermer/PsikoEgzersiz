@@ -60,16 +60,11 @@ lerna-debug.log*
 *.tmproj
 .history/
 
-# Capacitor & Mobil uygulama dosyaları
-/ios/App/build/
-/ios/App/Pods/
-/ios/DerivedData/
-/android/app/build/
-/android/build/
-/android/.gradle/
-/android/captures/
-/android/local.properties
-/android/app/build/outputs/apk/
+# Mobil uygulama dosyaları (Capacitor)
+/ios/
+/android/
+capacitor.config.json
+capacitor.config.ts
 *.aab
 *.ipa
 

@@ -110,7 +110,7 @@ export default defineConfig(({ mode }) => ({
       'lucide-react',
       'recharts'
     ],
-    exclude: ['@capacitor/core', '@capacitor/android', '@capacitor/ios']
+    exclude: []
   },
   plugins: [
     react({
