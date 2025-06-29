@@ -113,7 +113,7 @@ export const useMemoryGame = ({ level }: UseMemoryGameProps) => {
     if (level.previewTime > 3000) {
       setTimeout(() => {
           if (mountedRef.current) {
-        playSound('countdown')
+        // playSound('countdown') // Geri sayım sesi kaldırıldı
           }
       }, level.previewTime - 3000)
     }
