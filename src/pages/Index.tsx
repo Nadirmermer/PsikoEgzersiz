@@ -49,16 +49,47 @@ const Index = () => {
   const { isClientMode, exitClientMode } = useClientMode();
   const { user, professional, loading: authLoading } = useAuth();
 
-  // Handle URL parameters for navigation
+  // 🚀 İYİLEŞTİRME: URL parameter handling ve custom event listener
   useEffect(() => {
-    const urlParams = new URLSearchParams(window.location.search);
-    const pageParam = urlParams.get('page');
-    if (pageParam === 'uzman-dashboard' && professional) {
-      setActivePage('uzman-dashboard');
-      // Clean URL
-      window.history.replaceState({}, '', '/');
+    const handleUrlParams = () => {
+      const urlParams = new URLSearchParams(window.location.search);
+      const pageParam = urlParams.get('page');
+      
+      if (pageParam === 'uzman-dashboard') {
+        // Professional varsa veya auth loading bitmişse dashboard'a git
+        if (professional || (!authLoading && user)) {
+          console.log('Index - Navigating to dashboard from URL parameter')
+          setActivePage('uzman-dashboard');
+          // URL'i temizle
+          window.history.replaceState({}, '', '/');
+        } else if (!authLoading && !user) {
+          // Auth loading bitti ama user yok - URL'i temizle
+          console.log('Index - No user found, clearing URL parameter')
+          window.history.replaceState({}, '', '/');
+          setActivePage('egzersizler');
+        }
+      }
     }
-  }, [professional]);
+
+    // İlk load'da kontrol et
+    handleUrlParams()
+
+    // Custom event listener - ClientModeHandler'dan gelen navigasyon için
+    const handleNavigateEvent = (event: CustomEvent<{ page: string }>) => {
+      console.log('Index - Custom navigation event received:', event.detail.page)
+      if (event.detail.page === 'uzman-dashboard' && (professional || user)) {
+        setActivePage('uzman-dashboard')
+      }
+    }
+
+    // Event listener ekle
+    window.addEventListener('navigateToPage', handleNavigateEvent as EventListener)
+
+    // Cleanup
+    return () => {
+      window.removeEventListener('navigateToPage', handleNavigateEvent as EventListener)
+    }
+  }, [professional, authLoading, user])
 
   // Sync pending data on load
   useEffect(() => {
@@ -73,6 +104,18 @@ const Index = () => {
       setActivePage("egzersizler");
     }
   }, [isClientMode, activePage]);
+
+  // 🚀 İYİLEŞTİRME: ClientModeHandler navigation callback
+  const handleNavigateToDashboard = useCallback(() => {
+    console.log('Index - Navigating to dashboard via callback')
+    if (professional || user) {
+      setActivePage('uzman-dashboard')
+    } else {
+      console.warn('Index - Cannot navigate to dashboard: no professional/user data')
+      // Fallback to egzersizler
+      setActivePage('egzersizler')
+    }
+  }, [professional, user])
 
   // 🚀 PERFORMANCE: Memoized game state handlers to prevent re-renders
   const handleMemoryGameStart = useCallback(() => {
@@ -218,6 +261,8 @@ const Index = () => {
         <ClientModeHandler 
           isClientMode={isClientMode}
           onExitClientMode={exitClientMode}
+          onNavigateToDashboard={handleNavigateToDashboard}
+          showHeader={false}
         />
       </>
     );
@@ -234,6 +279,8 @@ const Index = () => {
         <ClientModeHandler 
           isClientMode={isClientMode}
           onExitClientMode={exitClientMode}
+          onNavigateToDashboard={handleNavigateToDashboard}
+          showHeader={false}
         />
       </>
     );
@@ -250,6 +297,8 @@ const Index = () => {
         <ClientModeHandler 
           isClientMode={isClientMode}
           onExitClientMode={exitClientMode}
+          onNavigateToDashboard={handleNavigateToDashboard}
+          showHeader={false}
         />
       </>
     );
@@ -266,6 +315,8 @@ const Index = () => {
         <ClientModeHandler 
           isClientMode={isClientMode}
           onExitClientMode={exitClientMode}
+          onNavigateToDashboard={handleNavigateToDashboard}
+          showHeader={false}
         />
       </>
     );
@@ -282,6 +333,8 @@ const Index = () => {
         <ClientModeHandler 
           isClientMode={isClientMode}
           onExitClientMode={exitClientMode}
+          onNavigateToDashboard={handleNavigateToDashboard}
+          showHeader={false}
         />
       </>
     );
@@ -298,6 +351,8 @@ const Index = () => {
         <ClientModeHandler 
           isClientMode={isClientMode}
           onExitClientMode={exitClientMode}
+          onNavigateToDashboard={handleNavigateToDashboard}
+          showHeader={false}
         />
       </>
     );
@@ -314,6 +369,8 @@ const Index = () => {
         <ClientModeHandler 
           isClientMode={isClientMode}
           onExitClientMode={exitClientMode}
+          onNavigateToDashboard={handleNavigateToDashboard}
+          showHeader={false}
         />
       </>
     );
@@ -330,6 +387,8 @@ const Index = () => {
         <ClientModeHandler 
           isClientMode={isClientMode}
           onExitClientMode={exitClientMode}
+          onNavigateToDashboard={handleNavigateToDashboard}
+          showHeader={false}
         />
       </>
     );
@@ -344,15 +403,20 @@ const Index = () => {
         </Suspense>
       </main>
       
-      <BottomNavigation 
-        activePage={activePage} 
-        setActivePage={handlePageChange}
-        showUzmanDashboard={!!professional}
-      />
+      {/* 🚀 İYİLEŞTİRME: Danışan modunda bottom navigation gizli */}
+      {!isClientMode && (
+        <BottomNavigation 
+          activePage={activePage} 
+          setActivePage={handlePageChange}
+          showUzmanDashboard={!!professional}
+        />
+      )}
       
+      {/* Ana sayfalarda header gösterilir (showHeader default true) */}
       <ClientModeHandler 
         isClientMode={isClientMode}
         onExitClientMode={exitClientMode}
+        onNavigateToDashboard={handleNavigateToDashboard}
       />
     </>
   );

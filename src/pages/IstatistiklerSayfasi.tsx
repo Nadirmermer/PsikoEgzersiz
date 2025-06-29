@@ -11,6 +11,7 @@ import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { BarChart3, TrendingUp, Clock, Trophy, Target, Brain, User, Trash2, Download, Zap, Award, Star, Layers, Filter, Calendar, Gauge, CheckCircle, XCircle, ArrowRightLeft, Lightbulb, Palette, Building, Calculator, Book } from 'lucide-react'
 import { useAudio } from '../hooks/useAudio'
+import { toast } from 'sonner'
 
 const IstatistiklerSayfasi: React.FC = () => {
   const { playSound } = useAudio()
@@ -134,8 +135,12 @@ const IstatistiklerSayfasi: React.FC = () => {
     localStorage.removeItem('uploadedResults')
     localStorage.removeItem('currentMemoryGameLevel')
     
-    // Force refresh of statistics
-    window.location.reload()
+    // 🚀 İYİLEŞTİRME: Page reload yerine state refresh
+    // State immediately cleared with setExerciseResults([]) above
+    // All other result arrays are computed from exerciseResults via useMemo
+    
+    // Show success message
+    toast.success('Tüm egzersiz verileri temizlendi!')
     
     console.log('All exercise data cleared successfully')
   }, [playSound])

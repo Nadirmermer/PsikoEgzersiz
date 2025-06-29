@@ -220,92 +220,94 @@ export interface MemoryGameLevel {
 }
 
 export const MEMORY_GAME_LEVELS: MemoryGameLevel[] = [
-  // 🧠 CLINICAL TIER 1: BASELINE ASSESSMENT (Working Memory: 3-4 items)
+  // 🌟 TIER 1: BAŞLANGIÇ SEVİYELERİ (Maksimum Ayırt Edicilik)
+  // Yaşlılar ve çocuklar için çok farklı kategorilerden objeler
+  
   {
     id: 1,
-    name: "Temel Seviye",
-    gridSize: { rows: 2, cols: 3 },
-    description: "Başlangıç Değerlendirmesi (6 kart - 3 çift)",
+    name: "Başlangıç",
+    gridSize: { rows: 2, cols: 2 }, // 4 kart - 2x2 perfect square ✅
+    description: "İlk adım (4 kart - 2 çift) - Farklı kategoriler",
     previewTime: 3000
   },
   {
     id: 2,
-    name: "Kolay Seviye",
-    gridSize: { rows: 2, cols: 4 },
-    description: "Hafif İlerleme (8 kart - 4 çift)",
+    name: "Kolay",
+    gridSize: { rows: 2, cols: 3 }, // 6 kart - 2x3 eşit satırlar ✅
+    description: "Hafif ilerleme (6 kart - 3 çift) - Farklı kategoriler",
     previewTime: 3000
   },
-  
-  // 🧠 CLINICAL TIER 2: WORKING MEMORY TEST (5-6 items)
   {
     id: 3,
-    name: "Orta Seviye",
-    gridSize: { rows: 2, cols: 5 },
-    description: "Çalışma Belleği Testi (10 kart - 5 çift)",
+    name: "Alıştırma",
+    gridSize: { rows: 2, cols: 4 }, // 8 kart - 2x4 eşit satırlar ✅
+    description: "Alışma dönemi (8 kart - 4 çift) - Farklı kategoriler", 
     previewTime: 3500
   },
+
+  // 🌟 TIER 2: ORTA SEVİYELER (Orta Ayırt Edicilik)
+  // Aynı kategoriden farklı türler (hayvanlar, araçlar vs)
+  
   {
     id: 4,
-    name: "Gelişmiş Seviye",
-    gridSize: { rows: 3, cols: 4 },
-    description: "Hafif Zorluk (12 kart - 6 çift)",
+    name: "Orta",
+    gridSize: { rows: 3, cols: 4 }, // 12 kart - 3x4 eşit satırlar ✅
+    description: "Orta zorluk (12 kart - 6 çift) - Benzer kategoriler",
     previewTime: 4000
   },
-  
-  // 🧠 CLINICAL TIER 3: MILLER'S LIMIT (7±2 items)
   {
     id: 5,
-    name: "Zor Seviye",
-    gridSize: { rows: 2, cols: 7 },
-    description: "Miller Limiti Testi (14 kart - 7 çift)",
+    name: "Gelişmiş",
+    gridSize: { rows: 4, cols: 4 }, // 16 kart - 4x4 perfect square ✅
+    description: "Gelişme dönemi (16 kart - 8 çift) - Benzer kategoriler",
     previewTime: 4500
   },
   {
     id: 6,
-    name: "Uzman Seviye",
-    gridSize: { rows: 4, cols: 4 },
-    description: "Üst Ortalama Yetenek (16 kart - 8 çift)",
+    name: "Ustalaşma", 
+    gridSize: { rows: 5, cols: 4 }, // 20 kart - 5x4 eşit satırlar ✅
+    description: "Ustalaşma (20 kart - 10 çift) - Benzer kategoriler",
     previewTime: 5000
   },
+
+  // 🌟 TIER 3: İLERİ SEVİYELER (İnce Ayırt Edicilik)
+  // Benzer objeler, ince farklar - dikkat gerektirir
   
-  // 🧠 CLINICAL TIER 4: ADVANCED ASSESSMENT (Above average cognitive ability)
   {
     id: 7,
-    name: "İleri Seviye",
-    gridSize: { rows: 3, cols: 6 },
-    description: "İleri Değerlendirme (18 kart - 9 çift)",
+    name: "İleri",
+    gridSize: { rows: 4, cols: 6 }, // 24 kart - 4x6 eşit satırlar ✅
+    description: "İleri zorluk (24 kart - 12 çift) - İnce farklar",
     previewTime: 5500
   },
   {
     id: 8,
-    name: "Master Seviye",
-    gridSize: { rows: 4, cols: 5 },
-    description: "Üstün Yetenek Testi (20 kart - 10 çift)",
+    name: "Uzman",
+    gridSize: { rows: 6, cols: 4 }, // 24 kart - 6x4 eşit satırlar ✅
+    description: "Uzmanlık testi (24 kart - 12 çift) - İnce farklar",
     previewTime: 6000
   },
-  
-  // 🧠 CLINICAL TIER 5: EXCEPTIONAL ABILITY (Research/Gaming purposes only)
   {
     id: 9,
-    name: "Süper İleri",
-    gridSize: { rows: 3, cols: 8 },
-    description: "İstisnaî Yetenek (24 kart - 12 çift)",
+    name: "Master",
+    gridSize: { rows: 6, cols: 5 }, // 30 kart - 6x5 eşit satırlar ✅
+    description: "Master seviye (30 kart - 15 çift) - İnce farklar",
     previewTime: 6500
   },
   {
     id: 10,
-    name: "Efsanevi",
-    gridSize: { rows: 4, cols: 6 },
-    description: "🏆 Efsanevi Seviye (24 kart - 12 çift)",
+    name: "Şampiyon",
+    gridSize: { rows: 6, cols: 6 }, // 36 kart - 6x6 perfect square ✅  
+    description: "Şampiyonluk testi (36 kart - 18 çift) - İnce farklar",
     previewTime: 7000
   }
   
-  // 🧠 CLINICAL NOTE: Levels 11-20 REMOVED for therapeutic appropriateness
-  // Levels beyond 10 create cognitive overload and patient frustration
-  // Maximum working memory capacity is ~7±2 items for clinical populations
-  
-  // FOR GAMING ENTHUSIASTS: Could be added as separate "Challenge Mode"
-  // But NOT recommended for clinical or therapeutic assessment
+  // 🎯 YENİ SİSTEM ÖZELLİKLERİ:
+  // ✅ Tüm seviyeler eşit satır/sütun dağılımı
+  // ✅ Tablet-friendly perfect square ve rectangles
+  // ✅ Mobile-friendly rotation destekli
+  // ✅ Yaşlılar ve çocuklar için optimize edilmiş progression
+  // ✅ Ayırt edicilik seviyelerine göre emoji kategorileri
 ]
 
 export interface ConnectionData {

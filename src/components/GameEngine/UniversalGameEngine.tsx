@@ -41,16 +41,19 @@ const UniversalGameEngine: React.FC<UniversalGameEngineProps> = ({
   // Hazırlık ekranı
   if (gameState.phase === 'ready') {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/30 to-indigo-50/50 dark:from-slate-950 dark:via-blue-950/30 dark:to-indigo-950/50">
+      <div className="h-screen bg-gradient-to-br from-slate-50 via-blue-50/30 to-indigo-50/50 dark:from-slate-950 dark:via-blue-950/30 dark:to-indigo-950/50 flex flex-col">
         <ExerciseHeader
           title={gameConfig.title}
           onBack={onBack}
           showExitConfirmation={false}
         />
-        <ReadyScreen 
-          config={gameConfig} 
-          onStart={gameActions.onStart}
-        />
+        {/* Ready Screen - Header'dan sonra kalan alanı kullan */}
+        <div className="flex-1 flex items-center justify-center p-4">
+          <ReadyScreen 
+            config={gameConfig} 
+            onStart={gameActions.onStart}
+          />
+        </div>
       </div>
     )
   }
@@ -58,7 +61,7 @@ const UniversalGameEngine: React.FC<UniversalGameEngineProps> = ({
   // Oyun ekranı
   if (gameState.phase === 'playing') {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/30 to-indigo-50/50 dark:from-slate-950 dark:via-blue-950/30 dark:to-indigo-950/50">
+      <div className="h-screen bg-gradient-to-br from-slate-50 via-blue-50/30 to-indigo-50/50 dark:from-slate-950 dark:via-blue-950/30 dark:to-indigo-950/50 flex flex-col">
         <ExerciseHeader
           title={gameConfig.title}
           onBack={handleBackWithProgress}
@@ -69,9 +72,11 @@ const UniversalGameEngine: React.FC<UniversalGameEngineProps> = ({
           showExitConfirmation={true}
         />
         
-        {/* Oyun İçeriği */}
-        <div className="container mx-auto px-2 sm:px-4 py-4 sm:py-6 md:py-8 pb-28 max-w-full sm:max-w-2xl md:max-w-4xl overflow-x-hidden">
-          {children}
+        {/* Oyun İçeriği - Header'dan sonra kalan tüm alanı kullan */}
+        <div className="flex-1 flex flex-col overflow-hidden">
+          <div className="flex-1 flex items-center justify-center p-4">
+            {children}
+          </div>
         </div>
       </div>
     )
@@ -80,7 +85,7 @@ const UniversalGameEngine: React.FC<UniversalGameEngineProps> = ({
   // Duraklatma ekranı
   if (gameState.phase === 'paused') {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/30 to-indigo-50/50 dark:from-slate-950 dark:via-blue-950/30 dark:to-indigo-950/50">
+      <div className="h-screen bg-gradient-to-br from-slate-50 via-blue-50/30 to-indigo-50/50 dark:from-slate-950 dark:via-blue-950/30 dark:to-indigo-950/50 flex flex-col">
         <ExerciseHeader
           title={gameConfig.title}
           onBack={handleBackWithProgress}
@@ -91,12 +96,15 @@ const UniversalGameEngine: React.FC<UniversalGameEngineProps> = ({
           showExitConfirmation={true}
         />
         
-        <PauseScreen
-          config={gameConfig}
-          stats={gameStats}
-          onResume={gameActions.onResume}
-          onRestart={gameActions.onRestart}
-        />
+        {/* Pause Screen - Overlay style korundu */}
+        <div className="flex-1 relative">
+          <PauseScreen
+            config={gameConfig}
+            stats={gameStats}
+            onResume={gameActions.onResume}
+            onRestart={gameActions.onRestart}
+          />
+        </div>
       </div>
     )
   }
@@ -104,7 +112,7 @@ const UniversalGameEngine: React.FC<UniversalGameEngineProps> = ({
   // Tamamlanma ekranı
   if (gameState.phase === 'completed') {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/30 to-indigo-50/50 dark:from-slate-950 dark:via-blue-950/30 dark:to-indigo-950/50">
+      <div className="h-screen bg-gradient-to-br from-slate-50 via-blue-50/30 to-indigo-50/50 dark:from-slate-950 dark:via-blue-950/30 dark:to-indigo-950/50 flex flex-col">
         <ExerciseHeader
           title={gameConfig.title}
           onBack={onBack}
@@ -117,29 +125,34 @@ const UniversalGameEngine: React.FC<UniversalGameEngineProps> = ({
           }}
         />
         
-        <CompletedScreen
-          config={gameConfig}
-          stats={gameStats}
-          onRestart={gameActions.onRestart}
-          onBack={onBack}
-          showNextLevel={(() => {
-            // 🧠 Intelligent showNextLevel logic based on game type and completion context
-            if (gameConfig.id === 'number-sequence') {
-              // Number Sequence: No next level for assessment-style completion
-              return false
-            } else if (gameConfig.id === 'color-sequence') {
-              // Color Sequence: No next level for visual-spatial memory assessment completion
-              return false
-            } else if (gameConfig.id === 'memory-game') {
-              // Memory Game: Show next level if available
-              return gameConfig.hasLevels && Boolean(gameActions.onNextLevel)
-            } else {
-              // Other games: Default behavior
-              return gameConfig.hasLevels
-            }
-          })()}
-          onNextLevel={gameActions.onNextLevel}
-        />
+        {/* Completion Screen - Header'dan sonra kalan tüm alanı kullan */}
+        <div className="flex-1 flex flex-col overflow-hidden">
+          <div className="flex-1 flex items-center justify-center p-4">
+            <CompletedScreen
+              config={gameConfig}
+              stats={gameStats}
+              onRestart={gameActions.onRestart}
+              onBack={onBack}
+              showNextLevel={(() => {
+                // 🧠 Intelligent showNextLevel logic based on game type and completion context
+                if (gameConfig.id === 'number-sequence') {
+                  // Number Sequence: No next level for assessment-style completion
+                  return false
+                } else if (gameConfig.id === 'color-sequence') {
+                  // Color Sequence: No next level for visual-spatial memory assessment completion
+                  return false
+                } else if (gameConfig.id === 'memory-game') {
+                  // Memory Game: Show next level if available
+                  return gameConfig.hasLevels && Boolean(gameActions.onNextLevel)
+                } else {
+                  // Other games: Default behavior
+                  return gameConfig.hasLevels
+                }
+              })()}
+              onNextLevel={gameActions.onNextLevel}
+            />
+          </div>
+        </div>
       </div>
     )
   }

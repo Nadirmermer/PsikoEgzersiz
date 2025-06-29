@@ -71,9 +71,8 @@ export const generateCards = (gridSize: { rows: number; cols: number }, level: n
   const totalCards = gridSize.rows * gridSize.cols
   const totalPairs = totalCards / 2
   
-  // 🧠 CLINICAL IMPROVEMENT: Use appropriate emoji set for level
-  const availableEmojis = getEmojiSetForLevel(level)
-  const selectedEmojis = availableEmojis.slice(0, totalPairs)
+  // 🚀 YENİ: Akıllı emoji seçim sistemi kullan
+  const selectedEmojis = getIntelligentEmojiSet(level, totalPairs)
   
   // Her emoji'den iki tane oluştur
   const cardPairs: Card[] = []
@@ -180,4 +179,152 @@ export const calculateClinicalScore = (stats: Omit<GameStats, 'score' | 'timesta
 // Legacy function for backward compatibility
 export const calculateScore = (stats: Omit<GameStats, 'score' | 'timestamp' | 'exercise_name'>): number => {
   return calculateClinicalScore(stats).totalScore
+}
+
+/**
+ * Optimal Grid Layout Calculator
+ * Verilen kart sayısı için en uygun rows x cols kombinasyonunu hesaplar
+ */
+export const calculateOptimalGridSize = (totalCards: number): { rows: number; cols: number } => {
+  // Kart sayısı çift olmalı (her emoji'den 2 tane)
+  if (totalCards % 2 !== 0) {
+    throw new Error('Total cards must be even number')
+  }
+
+  // Özel durumlar - UI açısından optimize edilmiş
+  const specialCases: Record<number, { rows: number; cols: number }> = {
+    6: { rows: 2, cols: 3 },   // 2x3 - güzel rectangle
+    8: { rows: 2, cols: 4 },   // 2x4 - orta rectangle  
+    10: { rows: 2, cols: 5 },  // 2x5 - uzun ama tolere edilebilir
+    12: { rows: 3, cols: 4 },  // 3x4 - güzel rectangle ✅
+    14: { rows: 2, cols: 7 },  // 2x7 - çok uzun, değiştirilmeli
+    16: { rows: 4, cols: 4 },  // 4x4 - perfect square ✅
+    18: { rows: 3, cols: 6 },  // 3x6 - uzun ama tolere edilebilir
+    20: { rows: 4, cols: 5 },  // 4x5 - güzel rectangle ✅
+    24: { rows: 4, cols: 6 },  // 4x6 - reasonable rectangle ✅
+    30: { rows: 5, cols: 6 },  // 5x6 - büyük ama organized ✅
+    36: { rows: 6, cols: 6 }   // 6x6 - perfect square ✅
+  }
+
+  // Özel durum varsa onu kullan
+  if (specialCases[totalCards]) {
+    return specialCases[totalCards]
+  }
+
+  // Genel algoritma: En kareye yakın kombinasyon bul
+  let bestRatio = Infinity
+  let bestLayout = { rows: 1, cols: totalCards }
+
+  // Tüm faktörleri kontrol et
+  for (let rows = 1; rows <= Math.sqrt(totalCards); rows++) {
+    if (totalCards % rows === 0) {
+      const cols = totalCards / rows
+      const ratio = Math.max(rows, cols) / Math.min(rows, cols) // Aspect ratio
+      
+      // En kareye yakın olanı seç (ratio 1'e yakın olanı)
+      if (ratio < bestRatio) {
+        bestRatio = ratio
+        bestLayout = { rows, cols }
+      }
+    }
+  }
+
+  return bestLayout
+}
+
+/**
+ * Improved Grid Size Generator
+ * Optimal layout hesaplayarak yeni grid size döndürür
+ */
+export const generateOptimalGridSize = (pairCount: number): { rows: number; cols: number } => {
+  const totalCards = pairCount * 2
+  return calculateOptimalGridSize(totalCards)
+}
+
+/**
+ * Layout Analysis - Debug için
+ */
+export const analyzeGridLayout = (gridSize: { rows: number; cols: number }) => {
+  const totalCards = gridSize.rows * gridSize.cols
+  const aspectRatio = Math.max(gridSize.rows, gridSize.cols) / Math.min(gridSize.rows, gridSize.cols)
+  
+  return {
+    totalCards,
+    aspectRatio: Math.round(aspectRatio * 100) / 100,
+    isSquarish: aspectRatio <= 1.5, // 1.5'ten küçükse "kareye yakın"
+    layoutType: aspectRatio === 1 ? 'perfect-square' : 
+                aspectRatio <= 1.5 ? 'good-rectangle' : 
+                aspectRatio <= 2.5 ? 'long-rectangle' : 'too-long'
+  }
+}
+
+// 🧠 TABLET-FRIENDLy EMOJI SYSTEM for Seniors & Children
+// Yaşlılar ve çocuklar için optimize edilmiş emoji kategorileri
+
+export const SENIOR_CHILD_EMOJI_SYSTEM = {
+  // 🌟 TIER 1: MAXIMUM DISTINCTION (İlk seviyeler - çok farklı kategoriler)
+  highContrast: {
+    // Büyük hayvanlar - kolay tanınır
+    bigAnimals: ['🐶', '🐱', '🐸', '🐧', '🦁', '🐯'],
+    // Ulaşım araçları - çok farklı şekiller  
+    vehicles: ['🚗', '✈️', '🚢', '🚂', '🚲', '🏍️'],
+    // Meyveler - renkli ve tanıdık
+    fruits: ['🍎', '🍌', '🍊', '🍇', '🍓', '🥝'],
+    // Ev eşyaları - günlük objeler
+    household: ['🏠', '⌚', '📱', '💻', '🎈', '⚽']
+  },
+
+  // 🌟 TIER 2: MODERATE DISTINCTION (Orta seviyeler - aynı kategori farklı türler)
+  mediumContrast: {
+    // Farklı hayvan türleri
+    animalVariety: ['🐶', '🐱', '🐰', '🐭', '🐸', '🐧', '🦁', '🐯', '🐼', '🐨'],
+    // Farklı araç türleri  
+    vehicleTypes: ['🚗', '🚌', '🚛', '🏍️', '🚲', '✈️', '🚢', '🚂', '🚜', '🏎️'],
+    // Yiyecek çeşitleri
+    foodVariety: ['🍎', '🍌', '🍞', '🥛', '🍕', '🍰', '☕', '🥪', '🍝', '🍪'],
+    // Doğa objeleri
+    nature: ['🌳', '🌺', '⭐', '🌙', '☀️', '🌈', '🏔️', '🌊', '🔥', '❄️']
+  },
+
+  // 🌟 TIER 3: FINE DISTINCTION (İleri seviyeler - benzer objeler, ince farklar)
+  fineContrast: {
+    // Benzer hayvanlar - ince farklar
+    similarAnimals: ['🐶', '🐕', '🦮', '🐩', '🐺', '🦊', '🐱', '🐈', '🦁', '🐯', '🐆', '🐴'],
+    // Benzer emojiler - dikkat gerektirir
+    similarObjects: ['😊', '😍', '🤗', '😎', '🥳', '😌', '🤔', '😮', '😢', '��', '😡', '😱'],
+    // Benzer semboller  
+    similarSymbols: ['❤️', '💙', '💚', '💛', '🧡', '💜', '⭐', '🌟', '💫', '✨', '💎', '🔥'],
+    // Kompleks objeler
+    complexObjects: ['🎭', '🎨', '🎪', '🎯', '🏆', '🎖️', '🏅', '🎗️', '🏵️', '🎀', '🎁', '🎊']
+  }
+}
+
+// 🧠 INTELLIGENT EMOJI SELECTION - Seviye tabanlı akıllı seçim
+export const getIntelligentEmojiSet = (level: number, totalPairs: number): string[] => {
+  const { highContrast, mediumContrast, fineContrast } = SENIOR_CHILD_EMOJI_SYSTEM
+
+  // Level 1-3: Maksimum ayırt edicilik (Farklı kategorilerden)
+  if (level <= 3) {
+    const mixed = [
+      ...highContrast.bigAnimals.slice(0, Math.ceil(totalPairs * 0.4)),
+      ...highContrast.vehicles.slice(0, Math.ceil(totalPairs * 0.3)), 
+      ...highContrast.fruits.slice(0, Math.ceil(totalPairs * 0.2)),
+      ...highContrast.household.slice(0, Math.ceil(totalPairs * 0.1))
+    ]
+    return mixed.slice(0, totalPairs)
+  }
+
+  // Level 4-6: Orta ayırt edicilik (Aynı kategori, farklı türler)
+  if (level <= 6) {
+    const categoryPool = Math.random() > 0.5 
+      ? mediumContrast.animalVariety 
+      : mediumContrast.vehicleTypes
+    return categoryPool.slice(0, totalPairs)
+  }
+
+  // Level 7+: İnce ayırt edicilik (Benzer objeler, dikkat gerektirir)
+  const challengePool = level % 2 === 0 
+    ? fineContrast.similarAnimals 
+    : fineContrast.similarObjects
+  return challengePool.slice(0, totalPairs)
 }

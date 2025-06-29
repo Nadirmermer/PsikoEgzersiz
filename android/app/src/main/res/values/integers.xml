@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Default (phone) integer values corresponding to tablet-specific overrides -->
+    <integer name="memory_game_columns">3</integer>
+    <integer name="memory_game_rows">3</integer>
+
+    <integer name="exercise_grid_columns">2</integer>
+
+    <integer name="dashboard_cards_per_row">1</integer>
+
+    <integer name="bottom_nav_max_items">4</integer>
+
+    <integer name="max_dialog_width_dp">320</integer>
+</resources> 

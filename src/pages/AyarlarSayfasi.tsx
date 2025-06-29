@@ -15,6 +15,7 @@ import { LocalStorageManager } from '../utils/localStorage'
 import { uploadLocalDataToSupabase, saveToSupabase } from '../lib/supabaseClient'
 import { useAudio } from '../hooks/useAudio'
 import { Slider } from '@/components/ui/slider'
+import { EnhancedAuthForm } from '@/components/auth/EnhancedAuthForm'
 
 const AyarlarSayfasi: React.FC = () => {
   const { theme, toggleTheme } = useTheme()
@@ -34,12 +35,7 @@ const AyarlarSayfasi: React.FC = () => {
   // Ses ayarları için state
   const [audioSettings, setAudioSettings] = useState(() => getAudioSettings())
 
-  // Uzman giriş form states
-  const [isLoginMode, setIsLoginMode] = useState(true)
-  const [email, setEmail] = useState('')
-  const [password, setPassword] = useState('')
-  const [displayName, setDisplayName] = useState('')
-  const [isLoading, setIsLoading] = useState(false)
+  // Uzman giriş form artık EnhancedAuthForm component'inde yönetiliyor
 
   // Uzmana bağlan form states
   const [professionalId, setProfessionalId] = useState('')
@@ -133,45 +129,11 @@ const AyarlarSayfasi: React.FC = () => {
     }
   }
 
-  const handleUzmanAuth = async (e: React.FormEvent) => {
-    e.preventDefault()
-    
-    if (!email || !password) {
-      toast.error('Lütfen email ve şifre girin')
-      return
-    }
-
-    if (!isLoginMode && !displayName) {
-      toast.error('Lütfen görünen ad girin')
-      return
-    }
-
-    setIsLoading(true)
-
-    try {
-      if (isLoginMode) {
-        await signIn(email, password)
-      } else {
-        await signUp(email, password, displayName)
-      }
-      
-      // Clear form
-      setEmail('')
-      setPassword('')
-      setDisplayName('')
-    } catch (error) {
-      console.error('Auth error:', error)
-    } finally {
-      setIsLoading(false)
-    }
-  }
-
+  // Authentication fonksiyonları artık EnhancedAuthForm içinde yönetiliyor
+  
   const handleSignOut = async () => {
     try {
       await signOut()
-      setEmail('')
-      setPassword('')
-      setDisplayName('')
     } catch (error) {
       console.error('Sign out error:', error)
     }
@@ -571,85 +533,20 @@ const AyarlarSayfasi: React.FC = () => {
                   onClick={handleSignOut}
                   variant="outline" 
                   className="w-full"
-                  disabled={isLoading}
                 >
                   <LogOut className="w-4 h-4 mr-2" />
                   Çıkış Yap
                 </Button>
               </div>
             ) : (
-              // Uzman giriş formu
-              <form onSubmit={handleUzmanAuth} className="space-y-4">
-                <div className="flex rounded-lg border p-1 bg-muted">
-                  <Button
-                    type="button"
-                    variant={isLoginMode ? "default" : "ghost"}
-                    size="sm"
-                    onClick={() => setIsLoginMode(true)}
-                    className="flex-1"
-                  >
-                    Giriş Yap
-                  </Button>
-                  <Button
-                    type="button"
-                    variant={!isLoginMode ? "default" : "ghost"}
-                    size="sm"
-                    onClick={() => setIsLoginMode(false)}
-                    className="flex-1"
-                  >
-                    Kayıt Ol
-                  </Button>
-                </div>
-
-                <div className="space-y-3">
-                  <div>
-                    <Label htmlFor="email">E-posta</Label>
-                    <Input
-                      id="email"
-                      type="email"
-                      value={email}
-                      onChange={(e) => setEmail(e.target.value)}
-                      placeholder="uzman@ornek.com"
-                      disabled={isLoading}
-                    />
-                  </div>
-
-                  {!isLoginMode && (
-                    <div>
-                      <Label htmlFor="displayName">Görünen Ad</Label>
-                      <Input
-                        id="displayName"
-                        type="text"
-                        value={displayName}
-                        onChange={(e) => setDisplayName(e.target.value)}
-                        placeholder="Dr. Ad Soyad"
-                        disabled={isLoading}
-                      />
-                    </div>
-                  )}
-
-                  <div>
-                    <Label htmlFor="password">Şifre</Label>
-                    <Input
-                      id="password"
-                      type="password"
-                      value={password}
-                      onChange={(e) => setPassword(e.target.value)}
-                      placeholder="••••••••"
-                      disabled={isLoading}
-                      autoComplete="current-password"
-                    />
-                  </div>
-                </div>
-
-                <Button 
-                  type="submit" 
-                  className="w-full" 
-                  disabled={isLoading}
-                >
-                  {isLoading ? 'İşleniyor...' : (isLoginMode ? 'Giriş Yap' : 'Kayıt Ol')}
-                </Button>
-              </form>
+              // Gelişmiş uzman giriş formu
+              <EnhancedAuthForm 
+                onSuccess={() => {
+                  // Form başarıyla tamamlandığında yapılacaklar
+                  console.log('Auth form completed successfully')
+                }}
+                className="space-y-4"
+              />
             )}
           </CardContent>
         </Card>
