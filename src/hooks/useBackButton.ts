@@ -1,54 +1,131 @@
-import { useEffect, useRef } from 'react';
+import { useEffect } from 'react';
 import { App } from '@capacitor/app';
 import { Capacitor } from '@capacitor/core';
 import { toast } from 'sonner';
 
 interface UseBackButtonProps {
   activePage: string;
+  isInGame: boolean;
+  isGamePlaying?: boolean;
   onNavigateBack: () => void;
   onExitApp: () => void;
+  onExitGame?: () => void;
 }
 
 export const useBackButton = ({ 
   activePage, 
+  isInGame, 
+  isGamePlaying = false,
   onNavigateBack, 
   onExitApp,
+  onExitGame
 }: UseBackButtonProps) => {
-  const exitToastRef = useRef<string | number | undefined>();
-
+  
   useEffect(() => {
+    // Sadece mobil platformlarda çalışsın
     if (!Capacitor.isNativePlatform()) {
       return;
     }
 
+    let exitToast: string | number | undefined;
+    let gameExitToast: string | number | undefined;
+
     const handleBackButton = () => {
-      // Eğer ana Egzersizler sayfasındaysa, çıkış için onayla
+      // Eğer oyun/egzersiz modundaysa
+      if (isInGame) {
+        // Oyun oynanıyorsa onay iste (üst buton gibi)
+        if (isGamePlaying) {
+          // Eğer zaten bir oyun çıkış toast'ı gösteriliyorsa, çık
+          if (gameExitToast) {
+            toast.dismiss(gameExitToast);
+            if (onExitGame) {
+              onExitGame();
+            }
+            return;
+          }
+
+          // Oyun çıkış onayı toast'ı göster
+          gameExitToast = toast.warning('Egzersizden çıkmak için tekrar geri tuşuna basın', {
+            duration: 3000,
+            action: {
+              label: 'Çık',
+              onClick: () => {
+                if (onExitGame) {
+                  onExitGame();
+                }
+              }
+            },
+            onDismiss: () => {
+              gameExitToast = undefined;
+            }
+          });
+
+          // 3 saniye sonra toast'ı temizle
+          setTimeout(() => {
+            gameExitToast = undefined;
+          }, 3000);
+
+        } else {
+          // Oyun oynanmıyorsa (hazırlık, tamamlanma ekranı) direkt çık
+          if (onExitGame) {
+            onExitGame();
+          }
+        }
+        return;
+      }
+
+      // Eğer ana sayfadaysa (egzersizler) → Çıkış onayı
       if (activePage === 'egzersizler') {
-        if (exitToastRef.current) {
-          toast.dismiss(exitToastRef.current);
+        // Eğer zaten bir çıkış toast'ı gösteriliyorsa, uygulamadan çık
+        if (exitToast) {
+          toast.dismiss(exitToast);
           onExitApp();
           return;
         }
 
-        exitToastRef.current = toast.info('Uygulamadan çıkmak için tekrar geri tuşuna basın.', {
-          duration: 2000,
-          onDismiss: () => {
-            exitToastRef.current = undefined;
+        // Çıkış onayı toast'ı göster
+        exitToast = toast.info('Uygulamadan çıkmak için tekrar geri tuşuna basın', {
+          duration: 3000,
+          action: {
+            label: 'Çık',
+            onClick: onExitApp
           },
+          onDismiss: () => {
+            exitToast = undefined;
+          }
         });
+
+        // 3 saniye sonra toast'ı temizle
+        setTimeout(() => {
+          exitToast = undefined;
+        }, 3000);
+
       } else {
-        // Diğer tüm sayfalarda sadece bir önceki sayfaya git
+        // Diğer sayfalardaysa → Önceki sayfaya git
         onNavigateBack();
       }
     };
 
-    const listener = App.addListener('backButton', handleBackButton);
+    // Back button listener'ı ekle
+    let backButtonListener: any;
+    
+    const addListener = async () => {
+      backButtonListener = await App.addListener('backButton', handleBackButton);
+    };
+    
+    addListener();
 
+    // Cleanup
     return () => {
-      listener.then(l => l.remove());
-      if (exitToastRef.current) {
-        toast.dismiss(exitToastRef.current);
+      if (backButtonListener?.remove) {
+        backButtonListener.remove();
+      }
+      if (exitToast) {
+        toast.dismiss(exitToast);
+      }
+      if (gameExitToast) {
+        toast.dismiss(gameExitToast);
       }
     };
-  }, [activePage, onNavigateBack, onExitApp]);
+  }, [activePage, isInGame, isGamePlaying, onNavigateBack, onExitApp, onExitGame]);
 }; 

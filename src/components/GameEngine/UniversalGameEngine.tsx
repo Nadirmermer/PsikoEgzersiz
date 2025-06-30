@@ -1,6 +1,4 @@
-import React, { useEffect } from 'react'
-import { App } from '@capacitor/app'
-import { Capacitor } from '@capacitor/core'
+import React from 'react'
 import ExerciseHeader from '../ExerciseHeader'
 import { ReadyScreen, PauseScreen, CompletedScreen } from './GameScreens'
 import { UniversalGameEngineProps } from './types'
@@ -39,27 +37,6 @@ const UniversalGameEngine: React.FC<UniversalGameEngineProps> = ({
     window.scrollTo({ top: 0, behavior: 'smooth' })
     onBack()
   }
-
-  // Egzersize özel geri tuşu yönetimi
-  useEffect(() => {
-    if (Capacitor.isNativePlatform() && (gameState.phase === 'playing' || gameState.phase === 'paused')) {
-      const listenerPromise = App.addListener('backButton', () => {
-        // Geri tuşuna basıldığında, header'daki çıkış butonuyla aynı fonksiyonu çağır.
-        // Bu, çıkış onay modal'ını tetikleyecektir.
-        handleBackWithProgress();
-      });
-
-      // Cleanup: Bu effect'ten çıkıldığında (örneğin oyun bittiğinde veya sayfa değiştiğinde)
-      // eklediğimiz özel dinleyiciyi kaldırıyoruz ki diğer sayfalarda çalışmasın.
-      return () => {
-        listenerPromise.then(listener => listener.remove());
-      };
-    }
-
-    // Eğer oyun 'playing' veya 'paused' durumunda değilse,
-    // bu effect bir dinleyici eklemez ve cleanup fonksiyonu da çalışmaz.
-    // Bu sayede varsayılan geri tuşu davranışı (useBackButton hook'u tarafından yönetilen) devam eder.
-  }, [gameState.phase]); // Bu effect sadece oyunun durumu değiştiğinde çalışır.
 
   // Hazırlık ekranı
   if (gameState.phase === 'ready') {
