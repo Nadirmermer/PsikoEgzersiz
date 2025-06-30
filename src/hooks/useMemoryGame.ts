@@ -2,6 +2,8 @@ import { useState, useEffect, useCallback, useRef } from 'react'
 import { Card, GameStats, generateCards, calculateScore, calculateClinicalScore } from '../utils/memoryGameUtils'
 import { LocalStorageManager, MemoryGameLevel, MEMORY_GAME_LEVELS } from '../utils/localStorage'
 import { useAudio } from './useAudio'
+import { useHaptics } from './useHaptics'
+import { NotificationType } from '@capacitor/haptics'
 
 interface UseMemoryGameProps {
   level: MemoryGameLevel
@@ -15,6 +17,7 @@ interface MemoryGameError {
 
 export const useMemoryGame = ({ level }: UseMemoryGameProps) => {
   const { playSound } = useAudio()
+  const { notification } = useHaptics()
   const mountedRef = useRef(true)
   const previewTimerRef = useRef<NodeJS.Timeout>()
   const flipTimerRef = useRef<NodeJS.Timeout>()
@@ -257,6 +260,7 @@ export const useMemoryGame = ({ level }: UseMemoryGameProps) => {
       if (card1.emoji === card2.emoji) {
         // Eşleşme bulundu
         playSound('correct-answer')
+        notification(NotificationType.Success)
         if (firstMatchTime === null && startTime) {
           setFirstMatchTime(Math.floor((Date.now() - startTime) / 1000))
         }
@@ -273,6 +277,7 @@ export const useMemoryGame = ({ level }: UseMemoryGameProps) => {
       } else {
         // Eşleşme yok
         playSound('wrong-answer')
+        notification(NotificationType.Warning)
         setIncorrectMoves(prev => prev + 1)
         
           flipTimerRef.current = setTimeout(() => {

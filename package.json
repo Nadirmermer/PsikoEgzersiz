@@ -1,7 +1,7 @@
 {
   "name": "psikoegzersiz",
   "private": true,
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "Bilişsel egzersiz ve ruh sağlığı uygulaması",
   "main": "public/electron.cjs",
   "homepage": "./",
@@ -35,6 +35,9 @@
     "@capacitor/app": "^7.0.1",
     "@capacitor/cli": "^7.4.0",
     "@capacitor/core": "^7.4.0",
+    "@capacitor/haptics": "^7.0.1",
+    "@capacitor/splash-screen": "^7.0.1",
+    "@capacitor/status-bar": "^7.0.1",
     "@hookform/resolvers": "^3.9.0",
     "@radix-ui/react-accordion": "^1.2.0",
     "@radix-ui/react-alert-dialog": "^1.1.1",

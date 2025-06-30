@@ -3,12 +3,15 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { HashRouter, Routes, Route } from "react-router-dom";
-import { ThemeProvider } from "./contexts/ThemeContext";
+import { ThemeProvider, useTheme } from "./contexts/ThemeContext";
 import { AuthProvider } from "./contexts/AuthContext";
 import ErrorBoundary from "./components/ErrorBoundary";
 import { useNetworkStatus } from "./hooks/useNetworkStatus";
 import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
+import { useEffect } from "react";
+import { Capacitor } from "@capacitor/core";
+import { StatusBar, Style } from "@capacitor/status-bar";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -28,6 +31,20 @@ const queryClient = new QueryClient({
 const AppContent = () => {
   // Initialize network status monitoring
   useNetworkStatus();
+  const { theme } = useTheme();
+
+  useEffect(() => {
+    // This code will only run on native mobile platforms
+    if (Capacitor.isNativePlatform()) {
+      const setStatusBarStyle = async () => {
+        // Set the status bar style based on the current theme
+        await StatusBar.setStyle({
+          style: theme === 'dark' ? Style.Dark : Style.Light,
+        });
+      };
+      setStatusBarStyle();
+    }
+  }, [theme]); // Rerun this effect when the theme changes
 
   return (
     <HashRouter
